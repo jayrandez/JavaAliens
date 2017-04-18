@@ -7,13 +7,11 @@ class JavaTests packageUsing: manifest = (|
 |) (
 class VMInstanceTest mainClass: mainClass classPath: classPath = (
 (* Instantiate VM Instance and run mainClass in classPath. *)|
-	jvmPtr
-	envPtr
 	jvm
 	env
 |) (
 createVM = (
-	| options initArgs result success |
+	| options initArgs jvmPtrAddr envPtrAddr result success |
 
 	options:: jni JavaVMOption newC.
 	options optionString: ('-Djava.class.path=..\JavaGraphics\bin' asAlien address).
@@ -26,17 +24,19 @@ createVM = (
 
 	(* 	envPtr is equivalent to JNIEnv* env;
 		*env (i.e. the data pointed to by envPtr is itself the address of the JNINativeInterface struct	*)
-	jvmPtr:: Alien newC: 4.
-	envPtr:: Alien newC: 4.
+	jvmPtrAddr:: Alien newC: 4.
+	envPtrAddr:: Alien newC: 4.
 
-	result:: jni CreateJavaVM: (jvmPtr address) p_env: (envPtr address) vm_args: (initArgs address).
+	result:: jni CreateJavaVM: (jvmPtrAddr address) p_env: (envPtrAddr address) vm_args: (initArgs address).
 
 	result = (jni OK)
 	ifTrue: [
-		jvmPtr:: Alien forPointer: (jvmPtr unsignedLongAt: 1).
-		jvm:: jni JNIInvokeInterface on: (Alien forPointer: (jvmPtr unsignedLongAt: 1)).
-		envPtr:: Alien forPointer: (envPtr unsignedLongAt: 1).
-		env:: jni JNINativeInterface on: (Alien forPointer: (envPtr unsignedLongAt: 1)).
+		| jvmPtr envPtr |
+		jvmPtr:: Alien forPointer: (jvmPtrAddr unsignedLongAt: 1).
+		envPtr:: Alien forPointer: (envPtrAddr unsignedLongAt: 1).
+		
+		jvm:: jni JavaVM withVmPtr: jvmPtr.
+		env:: jni JNIEnv withEnvPtr: envPtr.
 	].
 
 	^result
@@ -45,15 +45,13 @@ destroyVM = (
 	
 )
 getMain = (
-	| javaGraphicsClass result |
+	| javaGraphicsClass |
 
-	result:: Alien newC: 4.
-	javaGraphicsClass:: env FindClass primFFICallResult: result with: (envPtr address) with: ('JavaGraphics' asAlien address).
-
-	
+	javaGraphicsClass:: env FindClass: ('JavaGraphics' asAlien address).
+	javaGraphicsClass inspect.
 )
 instantiateMainClass = (
-	
+	getMain
 )
 loadExistingVM = (
 	
