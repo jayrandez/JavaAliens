@@ -97,10 +97,34 @@ public class JavaVM withVmPtr: vmPointerAlien = (
 	vm = vmPointerAlien.
 	api = struct JNIInvokeInterface on: (Alien forPointer: (vmPointerAlien unsignedLongAt: 1)).
 |) (
+public GetEnv: env version: version = (
+	(* 	jint GetEnv(JavaVM *vm, void **env, jint version);
+		
+		If the current thread is not attached to the VM, sets *env to NULL, and returns JNI_EDETACHED. If the specified version is not supported, sets *env to NULL, and returns JNI_EVERSION. Otherwise, sets *env to the appropriate interface, and returns JNI_OK.	*)
+
+	| result = Alien new: 4. |
+	api GetEnv primFFICallResult: result with: vm with: env with: version.
+	^result signedLongAt: 1.
+)
 ) : (
 )
 private class Structures = (||) (
 public class JNIInvokeInterface on: anAlien = Struct on: anAlien (||) (
+public AttachCurrentThread = (
+	^Alien forPointer: (data unsignedLongAt: 17)
+)
+public AttachCurrentThreadAsDaemon = (
+	^Alien forPointer: (data unsignedLongAt: 29)
+)
+public DestroyJavaVM = (
+	^Alien forPointer: (data unsignedLongAt: 13)
+)
+public DetachCurrentThread = (
+	^Alien forPointer: (data unsignedLongAt: 21)
+)
+public GetEnv = (
+	^Alien forPointer: (data unsignedLongAt: 25)
+)
 ) : (
 )
 public class JNINativeInterface on: anAlien = Struct on: anAlien (||) (
@@ -172,8 +196,27 @@ public CreateJavaVM: p_vm p_env: p_env vm_args: vm_args = (
 	(Alien lookup: 'JNI_CreateJavaVM' inLibrary: 'jvm.dll') primFFICallResult: result with: p_vm with: p_env with: vm_args.
 	^result signedLongAt: 1
 )
-public def = (
+public GetCreatedJavaVMs: vmBuf bufLen: bufLen nVMs: nVMs = (
+	(*	jint JNI_GetCreatedJavaVMs(JavaVM **vmBuf, jsize bufLen, jsize *nVMs);
+		
+		Returns all Java VMs that have been created. Pointers to VMs are written in the buffer vmBuf in the order they are created. At most bufLen number of entries will be written. The total number of created VMs is returned in *nVMs.
+
+		As of JDK/JRE 1.2, creation of multiple VMs in a single process is not supported.	*)
+
+	| result = Alien new: 4. |
+	(Alien lookup: 'JNI_GetCreatedJavaVMs' inLibrary: 'jvm.dll')
+		primFFICallResult: result
+		with: vmBuf with: bufLen with: nVMs.
+	^result signedLongAt: 1
+)
+public const = (
 	^definitions
+)
+public derefPtrPtr: pointerPointerAlien = (
+	(* pointerPointerAlien points to a value "A". Return a pointer to the value at address "A". *)
+	| pointerAlien |
+	pointerAlien:: Alien forPointer: (pointerPointerAlien unsignedLongAt: 1).
+	^pointerAlien
 )
 public doesNotUnderstand: message = (
 	(definitions respondsTo: (message selector)) ifTrue: [

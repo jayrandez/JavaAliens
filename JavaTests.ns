@@ -11,7 +11,7 @@ class VMInstanceTest mainClass: mainClass classPath: classPath = (
 	env
 |) (
 createVM = (
-	| options initArgs jvmPtrAddr envPtrAddr result success |
+	| options initArgs jvmPtrBuffer envPtrBuffer result success |
 
 	options:: jni JavaVMOption newC.
 	options optionString: ('-Djava.class.path=..\JavaGraphics\bin' asAlien address).
@@ -24,22 +24,27 @@ createVM = (
 
 	(* 	envPtr is equivalent to JNIEnv* env;
 		*env (i.e. the data pointed to by envPtr is itself the address of the JNINativeInterface struct	*)
-	jvmPtrAddr:: Alien newC: 4.
-	envPtrAddr:: Alien newC: 4.
+	jvmPtrBuffer:: Alien newC: 4.
+	envPtrBuffer:: Alien newC: 4.
 
-	result:: jni CreateJavaVM: (jvmPtrAddr address) p_env: (envPtrAddr address) vm_args: (initArgs address).
+	result:: jni CreateJavaVM: (jvmPtrBuffer address) p_env: (envPtrBuffer address) vm_args: (initArgs address).
 
 	result = (jni OK)
 	ifTrue: [
-		| jvmPtr envPtr |
-		jvmPtr:: Alien forPointer: (jvmPtrAddr unsignedLongAt: 1).
-		envPtr:: Alien forPointer: (envPtrAddr unsignedLongAt: 1).
-		
-		jvm:: jni JavaVM withVmPtr: jvmPtr.
-		env:: jni JNIEnv withEnvPtr: envPtr.
+		jvm:: jni JavaVM withVmPtr: (derefPtrPtr: jvmPtrBuffer).
+		env:: jni JNIEnv withEnvPtr: (derefPtrPtr: envPtrBuffer).
 	].
 
 	^result
+)
+createVMAndIfAlreadyExistsTry: block = (
+	| result |
+	result:: createVM.
+	result = (jni EEXIST) ifTrue: [result:: block value].
+	^result = (jni OK)
+)
+derefPtrPtr: pointerPointerAlien = (
+	^jni derefPtrPtr: pointerPointerAlien
 )
 destroyVM = (
 	
@@ -53,34 +58,46 @@ getMain = (
 instantiateMainClass = (
 	getMain
 )
+loadEnvFromVM: jvmInst = (
+	| envPtrBuffer result |
+	envPtrBuffer:: Alien newC: 4.
+	result:: Alien new: 4.
+
+	result:: jvmInst GetEnv: (envPtrBuffer address) version: (jni VERSION_1_2).
+	result = (jni OK) ifTrue: [env:: jni JNIEnv withEnvPtr: (derefPtrPtr: envPtrBuffer)].
+	^result
+)
 loadExistingVM = (
+	| jvmPtrBuffer jvmInst nVMsBuffer numVMs result |
+	jvmPtrBuffer:: Alien newC: 4.
+	nVMsBuffer:: Alien newC: 4.
 	
+	result:: jni GetCreatedJavaVMs: (jvmPtrBuffer address) bufLen: 1 nVMs: (nVMsBuffer address).
+	result = (jni OK) ifFalse: [^result].
+
+	numVMs:: nVMsBuffer unsignedLongAt: 1.
+	numVMs = 1 ifFalse: [^jni ERR]. (* Would always be 0 or 1 in modern JNI *)
+
+	jvmInst:: jni JavaVM withVmPtr: (derefPtrPtr: jvmPtrBuffer).
+	result:: loadEnvFromVM: jvmInst.
+	result = (jni OK) ifTrue: [jvm:: jvmInst].
+	
+	^result
+)
+openFreshVM = (
+	^createVMAndIfAlreadyExistsTry: [recreateVM]
+)
+openVM = (
+	^createVMAndIfAlreadyExistsTry: [loadExistingVM]
+)
+recreateVM = (
+	^jni ERR
 )
 public run = (
-	(*setupVM*)
-	setupFreshVM
+	(*openFreshVM*)
+	openVM
 	ifTrue: [instantiateMainClass]
-	ifFalse: ['could not setup vm' boom]
-)
-setupFreshVM = (
-	| result |
-	result:: createVM.
-	result = (jni EEXIST)
-	ifTrue: [
-		result:: result.
-		(*DestroyVM and attempt to reload *)
-	].
-	^result = (jni OK)
-)
-setupVM = (
-	| result |
-	result:: createVM.
-	result = (jni EEXIST)
-	ifTrue: [
-		result:: result.
-		(*Attempt to load VM *)
-	].
-	^result = (jni OK)
+	ifFalse: [couldNotOpenVM]
 )
 ) : (
 )
