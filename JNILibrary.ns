@@ -63,6 +63,15 @@ public VERSION_1_8 = (
 )
 ) : (
 )
+public class JNIInvokeInterface on: anAlien = Struct on: anAlien (||) (
+) : (
+)
+public class JNINativeInterface on: anAlien = Struct on: anAlien (||) (
+public FindClass = (
+	^Alien forPointer: (data unsignedLongAt: 25)
+)
+) : (
+)
 public class JavaVMInitArgs on: anAlien = Struct on: anAlien (
 (*	typedef struct JavaVMInitArgs {
 		jint version;
@@ -79,11 +88,11 @@ public options: pointerOrAddress = ( data unsignedLongAt: 9 put: pointerOrAddres
 public version = ( ^data signedLongAt: 1 )
 public version: integer = ( data signedLongAt: 1 put: integer )
 ) : (
-public alloc = (
-	^self on: (Alien newC: size)
-)
-size = (
+dataSize = (
 	^13.
+)
+public newC = (
+	^self on: (Alien newC: dataSize)
 )
 )
 public class JavaVMOption on: anAlien = Struct on: anAlien (
@@ -96,27 +105,21 @@ public extraInfo: addressOrPointer = ( data unsignedLongAt: 5 put: addressOrPoin
 public optionString = ( ^Alien forPointer: (data unsignedLongAt: 1) )
 public optionString: addressOrPointer = ( data unsignedLongAt: 1 put: addressOrPointer )
 ) : (
-public alloc = (
-	^self on: (Alien newC: (self size))
-)
-size = (
+dataSize = (
 	^8
+)
+public newC = (
+	^self on: (Alien newC: (self dataSize))
 )
 )
 public class Struct on: anAlien = (|
 	data = anAlien.
 |) (
-public alloc = (
-	data:: Alien newC: size
+dataSize = (
+	subclassResponsibility
 )
 public doesNotUnderstand: message = (
 	^message sendTo: data
-)
-public on: anAlien = (
-	data:: anAlien
-)
-size = (
-	subclassResponsibility
 )
 ) : (
 )

@@ -9,36 +9,80 @@ class VMInstanceTest mainClass: mainClass classPath: classPath = (
 (* Instantiate VM Instance and run mainClass in classPath. *)|
 	jvmPtr
 	envPtr
+	jvm
+	env
 |) (
 createVM = (
 	| options initArgs result success |
 
-	options:: jni JavaVMOption alloc.
-	options optionString: ('-Djava.class.path=..\\JavaGraphics\\bin' asAlien address).
+	options:: jni JavaVMOption newC.
+	options optionString: ('-Djava.class.path=..\JavaGraphics\bin' asAlien address).
 	
-	initArgs:: jni JavaVMInitArgs alloc.
+	initArgs:: jni JavaVMInitArgs newC.
 	initArgs version: (jni VERSION_1_2).
 	initArgs nOptions: 1.
 	initArgs options: (options address).
 	initArgs ignoreUnrecognized = (jni FALSE).
 
+	(* 	envPtr is equivalent to JNIEnv* env;
+		*env (i.e. the data pointed to by envPtr is itself the address of the JNINativeInterface struct	*)
 	jvmPtr:: Alien newC: 4.
 	envPtr:: Alien newC: 4.
 
-	result:: jni CreateJavaVM: (jvmPtr pointer) p_env: (envPtr pointer) vm_args: (initArgs pointer).
+	result:: jni CreateJavaVM: (jvmPtr address) p_env: (envPtr address) vm_args: (initArgs address).
 
-	success:: (result = (jni OK)).
-	success:: success or: (result = (jni EEXIST)).
-	success ifFalse: ['Error creating Java VM' fault].
-	^success
+	result = (jni OK)
+	ifTrue: [
+		jvmPtr:: Alien forPointer: (jvmPtr unsignedLongAt: 1).
+		jvm:: jni JNIInvokeInterface on: (Alien forPointer: (jvmPtr unsignedLongAt: 1)).
+		envPtr:: Alien forPointer: (envPtr unsignedLongAt: 1).
+		env:: jni JNINativeInterface on: (Alien forPointer: (envPtr unsignedLongAt: 1)).
+	].
+
+	^result
 )
-getMainClass = (
+destroyVM = (
+	
+)
+getMain = (
+	| javaGraphicsClass result |
+
+	result:: Alien newC: 4.
+	javaGraphicsClass:: env FindClass primFFICallResult: result with: (envPtr address) with: ('JavaGraphics' asAlien address).
+
+	
+)
+instantiateMainClass = (
+	
+)
+loadExistingVM = (
 	
 )
 public run = (
-	| success |
-	createVM ifFalse: [^self]
-	
+	(*setupVM*)
+	setupFreshVM
+	ifTrue: [instantiateMainClass]
+	ifFalse: ['could not setup vm' boom]
+)
+setupFreshVM = (
+	| result |
+	result:: createVM.
+	result = (jni EEXIST)
+	ifTrue: [
+		result:: result.
+		(*DestroyVM and attempt to reload *)
+	].
+	^result = (jni OK)
+)
+setupVM = (
+	| result |
+	result:: createVM.
+	result = (jni EEXIST)
+	ifTrue: [
+		result:: result.
+		(*Attempt to load VM *)
+	].
+	^result = (jni OK)
 )
 ) : (
 )
