@@ -1,0 +1,139 @@
+Newspeak3
+'Java'
+class JNILibrary usingPlatform: platform = (
+(*Bindings for Java Native Interface via Aliens FFI *)|
+	Alien = platform aliens Alien.
+	private definitions = Definitions new.
+|) (
+private class Definitions = (||) (
+public ABORT = (
+	^2
+)
+public COMMIT = (
+	^1
+)
+public EDETACHED = (
+	(* thread detached from the VM *)
+	^-2
+)
+public EEXIST = (
+	(* VM already created *)
+	^-5
+)
+public EINVAL = (
+	(* invalid arguments *)
+	^-6
+)
+public ENOMEM = (
+	(* not enough memory *)
+	^-4
+)
+public ERR = (
+	(* unknown error *)
+	^-1
+)
+public EVERSION = (
+	(* JNI version error *)
+	^-3
+)
+public FALSE = (
+	^0
+)
+public OK = (
+	(* success *)
+	^0
+)
+public TRUE = (
+	^1
+)
+public VERSION_1_1 = (
+	^65537 (*0x00010001*)
+)
+public VERSION_1_2 = (
+	^65538 (*0x00010002*)
+)
+public VERSION_1_4 = (
+	^65540 (*0x00010004*)
+)
+public VERSION_1_6 = (
+	^65542 (*0x00010006*)
+)
+public VERSION_1_8 = (
+	^65544 (*0x00010008*)
+)
+) : (
+)
+public class JavaVMInitArgs on: anAlien = Struct on: anAlien (
+(*	typedef struct JavaVMInitArgs {
+		jint version;
+		jint nOptions;
+    		JavaVMOption *options;
+    		jboolean ignoreUnrecognized;
+} JavaVMInitArgs;	*)||) (
+public ignoreUnrecognized = ( ^data unsignedByteAt: 13 )
+public ignoreUnrecognized: byte = ( data unsignedByteAt: 13 put: byte )
+public nOptions = ( ^data signedLongAt: 5. )
+public nOptions: integer = ( data signedLongAt: 5 put: integer )
+public options = ( ^Alien forPointer: (data unsignedLongAt: 9) )
+public options: pointerOrAddress = ( data unsignedLongAt: 9 put: pointerOrAddress )
+public version = ( ^data signedLongAt: 1 )
+public version: integer = ( data signedLongAt: 1 put: integer )
+) : (
+public alloc = (
+	^self on: (Alien newC: size)
+)
+size = (
+	^13.
+)
+)
+public class JavaVMOption on: anAlien = Struct on: anAlien (
+(*	typedef struct JavaVMOption {
+	char *optionString;
+    	void *extraInfo;
+	} JavaVMOption;	*)||) (
+public extraInfo = ( ^Alien forPointer: (data unsignedLongAt: 5) )
+public extraInfo: addressOrPointer = ( data unsignedLongAt: 5 put: addressOrPointer )
+public optionString = ( ^Alien forPointer: (data unsignedLongAt: 1) )
+public optionString: addressOrPointer = ( data unsignedLongAt: 1 put: addressOrPointer )
+) : (
+public alloc = (
+	^self on: (Alien newC: (self size))
+)
+size = (
+	^8
+)
+)
+public class Struct on: anAlien = (|
+	data = anAlien.
+|) (
+public alloc = (
+	data:: Alien newC: size
+)
+public doesNotUnderstand: message = (
+	^message sendTo: data
+)
+public on: anAlien = (
+	data:: anAlien
+)
+size = (
+	subclassResponsibility
+)
+) : (
+)
+public CreateJavaVM: p_vm p_env: p_env vm_args: vm_args = (
+	(*	jint JNI_CreateJavaVM(JavaVM **p_vm, void **p_env, void *vm_args);
+		Loads and initializes a Java VM. The current thread becomes the main thread. Sets the env argument to the JNI interface pointer of the main thread.	*)
+
+	| result |
+	result:: Alien new: 4.
+	(Alien lookup: 'JNI_CreateJavaVM' inLibrary: 'jvm.dll') primFFICallResult: result with: p_vm with: p_env with: vm_args.
+	^result signedLongAt: 1
+)
+public doesNotUnderstand: message = (
+	(definitions respondsTo: (message selector)) ifTrue: [
+		^message sendTo: definitions	
+	].
+	^super doesNotUnderstand: message
+)
+) : (
+)

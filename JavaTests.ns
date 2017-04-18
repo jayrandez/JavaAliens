@@ -1,0 +1,55 @@
+Newspeak3
+'Java'
+class JavaTests packageUsing: manifest = (|
+	manifest = manifest.
+	Alien
+	jni
+|) (
+class VMInstanceTest mainClass: mainClass classPath: classPath = (
+(* Instantiate VM Instance and run mainClass in classPath. *)|
+	jvmPtr
+	envPtr
+|) (
+createVM = (
+	| options initArgs result success |
+
+	options:: jni JavaVMOption alloc.
+	options optionString: ('-Djava.class.path=..\\JavaGraphics\\bin' asAlien address).
+	
+	initArgs:: jni JavaVMInitArgs alloc.
+	initArgs version: (jni VERSION_1_2).
+	initArgs nOptions: 1.
+	initArgs options: (options address).
+	initArgs ignoreUnrecognized = (jni FALSE).
+
+	jvmPtr:: Alien newC: 4.
+	envPtr:: Alien newC: 4.
+
+	result:: jni CreateJavaVM: (jvmPtr pointer) p_env: (envPtr pointer) vm_args: (initArgs pointer).
+
+	success:: (result = (jni OK)).
+	success:: success or: (result = (jni EEXIST)).
+	success ifFalse: ['Error creating Java VM' fault].
+	^success
+)
+getMainClass = (
+	
+)
+public run = (
+	| success |
+	createVM ifFalse: [^self]
+	
+)
+) : (
+)
+public main: platform args: args = (
+	jni:: manifest JNILibrary usingPlatform: platform.
+	Alien:: platform aliens Alien.
+
+	runTests
+)
+runTests = (
+	(VMInstanceTest mainClass: 'JavaGraphics' classPath: '..\\JavaGraphics\\bin') run.
+)
+) : (
+)
