@@ -18,7 +18,7 @@ createVM = (
 	| options initArgs jvmPtrBuffer envPtrBuffer result success |
 
 	options:: jni JavaVMOption newC.
-	options optionString: (('-Djava.class.path=', classPath) asAlien address).
+	options optionString: (('-Djava.class.path=', classpath) asAlien address).
 	
 	initArgs:: jni JavaVMInitArgs newC.
 	initArgs version: (jni VERSION_1_2).

@@ -72,51 +72,32 @@ public class JNIEnv withEnvPtr: envPointerAlien = (
 public CallStaticObjectMethod: clazz methodID: methodID = (
 	(* 	jobject CallStaticObjectMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
 
-		This family of operations invokes a static method on a Java object, according to the specified method ID. The methodID argument must be obtained by calling GetStaticMethodID().
-
-		The method ID must be derived from clazz, not from one of its superclasses.
-
-		Programmers should place all arguments that are to be passed to the method immediately following the methodID argument. The CallStatic<type>Method routine accepts these arguments and passes them to the Java method that the programmer wishes to invoke.	*)
-
-	^pointerResult: [:result | api CallStaticObjectMethod primFFICallResult: result with: env with: clazz with: methodID].
+		See documentation for CallStaticTypeMethod.	*)
+	^pointerResult: (CallStaticTypeMethod: (api CallStaticObjectMethod) clazz: clazz methodID: methodID).
 )
 public CallStaticObjectMethod: clazz methodID: methodID with: arg1= (
 	(* 	jobject CallStaticObjectMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
 
-		This family of operations invokes a static method on a Java object, according to the specified method ID. The methodID argument must be obtained by calling GetStaticMethodID().
+		See documentation for CallStaticTypeMethod.	*)
 
-		The method ID must be derived from clazz, not from one of its superclasses.
-
-		Programmers should place all arguments that are to be passed to the method immediately following the methodID argument. The CallStatic<type>Method routine accepts these arguments and passes them to the Java method that the programmer wishes to invoke.	*)
-
-	^pointerResult: [:result | api CallStaticObjectMethod primFFICallResult: result with: env with: clazz with: methodID with: arg1].
+	^pointerResult: (CallStaticTypeMethod: (api CallStaticObjectMethod) clazz: clazz methodID: methodID with: arg1).
 )
 public CallStaticObjectMethod: clazz methodID: methodID withArguments: varArgs = (
 	(* 	jobject CallStaticObjectMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
 
-		The method ID must be derived from clazz, not from one of its superclasses.
+		See documentation for CallStaticTypeMethod.	*)
 
-		Programmers should place all arguments that are to be passed to the method immediately following the methodID argument. The CallStatic<type>Method routine accepts these arguments and passes them to the Java method that the programmer wishes to invoke.	*)
-
-	| arguments |
-	arguments:: {env. clazz. methodID}, varArgs.
-	^pointerResult: [:result | api CallStaticObjectMethod primFFICallResult: result withArguments: arguments].
+	^pointerResult: (CallStaticTypeMethod: (api CallStaticObjectMethod) clazz: clazz methodID: methodID withArguments: varArgs).
 )
 public CallStaticObjectMethodA: clazz methodID: methodID args: args= (
-	(* 	jobject CallStaticObjectMethodA(JNIEnv *env, jclass clazz,
-jmethodID methodID, jvalue *args);
+	(* 	jobject CallStaticObjectMethodA(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args);
 
-		This family of operations invokes a static method on a Java object, according to the specified method ID. The methodID argument must be obtained by calling GetStaticMethodID().
+		See documentation for CallStaticTypeMethodA.	*)
 
-		The method ID must be derived from clazz, not from one of its superclasses.
-
-		Programmers should place all arguments to the method in an args array of jvalues that immediately follows the methodID argument. The CallStaticMethodA routine accepts the arguments in this array, and, in turn, passes them to the Java method that the programmer wishes to invoke.	*)
-
-	^pointerResult: [:result | api CallStaticObjectMethodA primFFICallResult: result with: env with: clazz with: methodID with: args].
+	^pointerResult: (CallStaticTypeMethodA: (api CallStaticObjectMethodA) clazz: clazz methodID: methodID args: args).
 )
-public CallStaticVoidMethod: clazz methodID: methodID = (
-	(*	void CallStaticVoidMethod(JNIEnv *env, jclass clazz,
-		jmethodID methodID, ...);
+private CallStaticTypeMethod: apiMethod clazz: clazz methodID: methodID = (
+	(* 	NativeType CallStatic<type>Method(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
 
 		This family of operations invokes a static method on a Java object, according to the specified method ID. The methodID argument must be obtained by calling GetStaticMethodID().
 
@@ -124,39 +105,70 @@ public CallStaticVoidMethod: clazz methodID: methodID = (
 
 		Programmers should place all arguments that are to be passed to the method immediately following the methodID argument. The CallStatic<type>Method routine accepts these arguments and passes them to the Java method that the programmer wishes to invoke.	*)
 
-	^voidResult: [:result | api CallStaticVoidMethod primFFICallResult: result with: env with: clazz with: methodID].
+	^[:result | apiMethod primFFICallResult: result with: env with: clazz with: methodID].
 )
-public CallStaticVoidMethod: clazz methodID: methodID with: arg1 = (
-	(*	void CallStaticVoidMethod(JNIEnv *env, jclass clazz,
-		jmethodID methodID, ...);
+private CallStaticTypeMethod: apiMethod clazz: clazz methodID: methodID with: arg1= (
+	(* 	NativeType CallStatic<type>Method(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
 
 		This family of operations invokes a static method on a Java object, according to the specified method ID. The methodID argument must be obtained by calling GetStaticMethodID().
 
+		The method ID must be derived from clazz, not from one of its superclasses.
+
 		Programmers should place all arguments that are to be passed to the method immediately following the methodID argument. The CallStatic<type>Method routine accepts these arguments and passes them to the Java method that the programmer wishes to invoke.	*)
 
-	^voidResult: [:result | api CallStaticVoidMethod primFFICallResult: result with: env with: clazz with: methodID with: arg1].
+	^[:result | apiMethod primFFICallResult: result with: env with: clazz with: methodID with: arg1].
 )
-public CallStaticVoidMethod: clazz methodID: methodID withArguments: varArgs = (
-	(*	void CallStaticVoidMethod(JNIEnv *env, jclass clazz,
-		jmethodID methodID, ...);
+private CallStaticTypeMethod: apiMethod clazz: clazz methodID: methodID withArguments: varArgs = (
+		(* 	NativeType CallStatic<type>Method(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
 
 		This family of operations invokes a static method on a Java object, according to the specified method ID. The methodID argument must be obtained by calling GetStaticMethodID().
 
+		The method ID must be derived from clazz, not from one of its superclasses.
+
 		Programmers should place all arguments that are to be passed to the method immediately following the methodID argument. The CallStatic<type>Method routine accepts these arguments and passes them to the Java method that the programmer wishes to invoke.	*)
-	
+
 	| arguments |
 	arguments:: {env. clazz. methodID}, varArgs.
-	^voidResult: [:result | api CallStaticVoidMethod primFFICallResult: result withArguments: arguments].
+	^[:result | apiMethod primFFICallResult: result withArguments: arguments].
 )
-public CallStaticVoidMethodA: clazz methodID: methodID  args: args = (
-	(*	void CallStaticVoidMethodA(JNIEnv *env, jclass clazz,
-		jmethodID methodID, jvalue *args);
+private CallStaticTypeMethodA: apiMethodA clazz: clazz methodID: methodID args: args= (
+	(* 	NativeType CallStatic<type>MethodA(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args);
 
 		This family of operations invokes a static method on a Java object, according to the specified method ID. The methodID argument must be obtained by calling GetStaticMethodID().
 
+		The method ID must be derived from clazz, not from one of its superclasses.
+
 		Programmers should place all arguments to the method in an args array of jvalues that immediately follows the methodID argument. The CallStaticMethodA routine accepts the arguments in this array, and, in turn, passes them to the Java method that the programmer wishes to invoke.	*)
 
-	^voidResult: [:result | api CallStaticVoidMethodA primFFICallResult: result with: env with: clazz with: methodID with: args].
+	^[:result | apiMethodA primFFICallResult: result with: env with: clazz with: methodID with: args].
+)
+public CallStaticVoidMethod: clazz methodID: methodID = (
+	(*	void CallStaticVoidMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
+
+		See documentation for CallStaticTypeMethod.	*)
+
+	^voidResult: (CallStaticTypeMethod: (api CallStaticVoidMethod) clazz: clazz methodID: methodID)
+)
+public CallStaticVoidMethod: clazz methodID: methodID with: arg1 = (
+	(*	void CallStaticVoidMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
+
+		See documentation for CallStaticTypeMethod.	*)
+
+	^voidResult: (CallStaticTypeMethod: (api CallStaticVoidMethod) clazz: clazz methodID: methodID with: arg1).
+)
+public CallStaticVoidMethod: clazz methodID: methodID withArguments: varArgs = (
+	(*	void CallStaticVoidMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
+
+		See documentation for CallStaticTypeMethod.	*)
+	
+	^voidResult: (CallStaticTypeMethod: (api CallStaticVoidMethod) clazz: clazz methodID: methodID withArguments: varArgs).
+)
+public CallStaticVoidMethodA: clazz methodID: methodID  args: args = (
+	(*	void CallStaticVoidMethodA(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args);
+
+		See documentation for CallStaticTypeMethodA.	*)
+
+	^voidResult: (CallStaticTypeMethodA: (api CallStaticVoidMethodA) clazz: clazz methodID: methodID args: args).
 )
 public FindClass: name  = (
 	(*	jclass FindClass(JNIEnv *env, const char *name);
@@ -228,12 +240,17 @@ public SetObjectArrayElement: array index: index value: value = (
 
 	^voidResult: [:result | api SetObjectArrayElement primFFICallResult: result with: env with: array with: index with: value].
 )
-pointerResult: primFFIBlock = (
+private byteResult: primFFIBlock = (
+	| result = Alien new: 1. |
+	primFFIBlock value: result.
+	^result.
+)
+private pointerResult: primFFIBlock = (
 	| result = Alien new: 4. |
 	primFFIBlock value: result.
 	^Alien forPointer: (result unsignedLongAt: 1).
 )
-voidResult: primFFIBlock = (
+private voidResult: primFFIBlock = (
 	primFFIBlock value: nil.
 )
 ) : (
