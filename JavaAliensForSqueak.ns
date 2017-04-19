@@ -89,10 +89,17 @@ private returnSignature: methodSignature = (
 public translateStaticMethodCall: staticMethodName sig: sig = (
 	| methodID returnSig |
 	methodID:: env GetStaticMethodID: jclass name: (help cstring: staticMethodName) sig: (help cstring: sig).
-	returnSig:: returnSignature: sig.
+	(help isNullPtr: methodID) ifTrue: [^StaticMethodNotFound].
 	
+	
+	(* Can/should we query JNI for the return type instead of examining the signature? *)
+	returnSig:: returnSignature: sig.
+
 	returnSig = 'V' ifTrue: [^[ :finalArgs |
 		invokeCallStaticVoidMethod: methodID args: finalArgs.
+	]].
+	(returnSig at: 1) = "L" ifTrue: [^[ :finalArgs |
+		invokeCallStaticObjectMethod: methodID args: finalArgs.
 	]].
 
 	^nil
@@ -101,6 +108,9 @@ public translateStaticMethodCall: staticMethodName sig: sig = (
 )
 public asAlien = (
 	^jclass.
+)
+public call: staticMethodName = (
+	^call: staticMethodName args: (List new).
 )
 public call: staticMethodName arg: arg = (
 	^call: staticMethodName args: (List with: arg).
@@ -112,6 +122,9 @@ public call: staticMethodName args: args = (
 	^invocation isNil
 		ifTrue: [super doesNotUnderstand]
 		ifFalse: [invocation value: nativeArgs]
+)
+public call: staticMethodName sig: sig = (
+	^call: staticMethodName sig: sig args: (List new).
 )
 public call: staticMethodName sig: sig arg: arg = (
 	^call: staticMethodName sig: sig args: (List with: arg)
@@ -135,11 +148,14 @@ public doesNotUnderstand: message = (
 public get: fieldName = (
 	
 )
-invokeCallStaticBooleanMethod: methodID args: args <Collection> = (
-	
+invokeCallStaticObjectMethod: methodID args: args <Collection> = (
+	| result |
+	result:: env CallStaticObjectMethod: jclass methodID: methodID withArguments: args.
+	result inspect.
+	^result.
 )
 invokeCallStaticVoidMethod: methodID args: args <Collection> = (
-	env CallStaticVoidMethod: jclass methodID: methodID withArguments: args 
+	env CallStaticVoidMethod: jclass methodID: methodID withArguments: args.
 )
 public new: arg = (
 	
@@ -157,6 +173,13 @@ public translateCall: staticMethodName sig: sig = (
 	^translator translateStaticMethodCall: staticMethodName sig: sig.
 )
 ) : (
+public find: name = (
+	| jclass |
+	jclass:: env FindClass: (name asAlien address).
+	^(help isNullPtr: jclass)
+		ifTrue: [nil]
+		ifFalse: [JavaClass jclass: jclass].
+)
 )
 public class JavaString jstring: jstring = (|
 	jstring = jstring.

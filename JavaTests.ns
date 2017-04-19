@@ -7,11 +7,10 @@ class JavaTests packageUsing: manifest = (|
 	Alien
 	jni
 	java
+	allTests = {JNILibraryStartVM. JavaAliensCallStaticMethods. JavaAliensRunApplication.}.
 |) (
-class JNIStartVMTest mainClass: mainClass classPath: classPath = (
+class JNILibraryStartVM classpath: classpath = Test classpath: classpath (
 (* Instantiate VM Instance and run mainClass in classPath. *)|
-	mainClass = mainClass.
-	classPath = classPath.
 	jvm
 	env
 |) (
@@ -133,7 +132,7 @@ public run = (
 )
 runMainClass = (
 	| javaGraphicsClass javaGraphicsMain stringClass objectArrayArg arrayOfArgs |
-	javaGraphicsClass:: findClass: mainClass.
+	javaGraphicsClass:: findClass: 'JavaGraphics'.
 	javaGraphicsClass isNil ifTrue: [^false].
 
 	javaGraphicsMain:: getMainMethodID: javaGraphicsClass.
@@ -164,13 +163,30 @@ runMainClass = (
 )
 ) : (
 )
-class JavaFFIRunApplicationTest mainClass: mainClass classpath: classpath = (|
-	mainClass = mainClass.
-	classpath = classpath.
+class JavaAliensCallStaticMethods classpath: classpath = Test classpath: classpath (|
+|) (
+public run = (
+	| javaClass javaObject |
+	java loadClasspath: classpath.
+
+	javaClass:: java JavaClass find: 'JavaGraphics'.
+	javaObject:: javaClass call: 'builder' sig: '()LJavaGraphics;'.
+)
+) : (
+)
+class JavaAliensRunApplication classpath: classpath = Test classpath: classpath (|
 |) (
 public run = (
 	java loadClasspath: classpath.
-	java runApplication: mainClass args: {'Java App Started By Newspeak'}.
+	java runApplication: 'JavaGraphics' args: {'Java App Started By Newspeak'}.
+)
+) : (
+)
+class Test classpath: classpath = (|
+	public classpath = classpath.
+|run) (
+run = (
+	subclassResponsibility.
 )
 ) : (
 )
@@ -183,18 +199,12 @@ public main: platform args: args = (
 
 	runTests
 )
-runJNIStartVMTest: classpath = (
-	(JNIStartVMTest mainClass: 'JavaGraphics' classPath: classpath) run.
-)
-runJavaFFIRunApplicationTest: classpath = (
-	(JavaFFIRunApplicationTest mainClass: 'JavaGraphics' classpath: classpath) run.
-)
 runTests = (
-	| classpath |
+	| tests classpath |
 	classpath:: '.\bin'.
-
-	(*runJNIStartVMTest: classpath.*)
-	runJavaFFIRunApplicationTest: classpath.
+	(*tests:: allTests.*)
+	tests:: {JavaAliensCallStaticMethods}.
+	tests do: [:eachTest | eachTest classpath: classpath].
 )
 ) : (
 )
