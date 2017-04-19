@@ -79,15 +79,17 @@ public CallStaticVoidMethod: clazz methodID: methodID = (
 
 	api CallStaticVoidMethod primFFICallResult: nil with: env with: clazz with: methodID
 )
-public CallStaticVoidMethod: clazz methodID: methodID  args: args = (
-	(*	void CallStaticVoidMethodA(JNIEnv *env, jclass clazz,
-		jmethodID methodID, jvalue *args);
+public CallStaticVoidMethod: clazz methodID: methodID with: arg1 = (
+	(*	void CallStaticVoidMethod(JNIEnv *env, jclass clazz,
+		jmethodID methodID, ...);
 
-		Programmers should place all arguments to the method in an args array of jvalues that immediately follows the methodID argument. The CallStaticMethodA routine accepts the arguments in this array, and, in turn, passes them to the Java method that the programmer wishes to invoke.	*)
+		This family of operations invokes a static method on a Java object, according to the specified method ID. The methodID argument must be obtained by calling GetStaticMethodID().
 
-	api CallStaticVoidMethodA primFFICallResult: nil with: env with: clazz with: methodID with: args.
+		The method ID must be derived from clazz, not from one of its superclasses.	*)
+
+	api CallStaticVoidMethod primFFICallResult: nil with: env with: clazz with: methodID with: arg1
 )
-public CallStaticVoidMethod: clazz methodID: methodID varArgs: varArgs = (
+public CallStaticVoidMethod: clazz methodID: methodID withArguments: varArgs = (
 	(*	void CallStaticVoidMethod(JNIEnv *env, jclass clazz,
 		jmethodID methodID, ...);
 
@@ -98,6 +100,14 @@ public CallStaticVoidMethod: clazz methodID: methodID varArgs: varArgs = (
 	| arguments |
 	arguments:: {env. clazz. methodID}, varArgs.
 	api CallStaticVoidMethod primFFICallResult: nil withArguments: arguments.
+)
+public CallStaticVoidMethodA: clazz methodID: methodID  args: args = (
+	(*	void CallStaticVoidMethodA(JNIEnv *env, jclass clazz,
+		jmethodID methodID, jvalue *args);
+
+		Programmers should place all arguments to the method in an args array of jvalues that immediately follows the methodID argument. The CallStaticMethodA routine accepts the arguments in this array, and, in turn, passes them to the Java method that the programmer wishes to invoke.	*)
+
+	api CallStaticVoidMethodA primFFICallResult: nil with: env with: clazz with: methodID with: args.
 )
 public FindClass: name  = (
 	(*	jclass FindClass(JNIEnv *env, const char *name);

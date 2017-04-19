@@ -139,7 +139,7 @@ invokeCallStaticBooleanMethod: methodID args: args <Collection> = (
 	
 )
 invokeCallStaticVoidMethod: methodID args: args <Collection> = (
-	env CallStaticVoidMethod: jclass methodID: methodID varArgs: args 
+	env CallStaticVoidMethod: jclass methodID: methodID withArguments: args 
 )
 public new: arg = (
 	

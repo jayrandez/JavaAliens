@@ -132,7 +132,7 @@ public run = (
 	]
 )
 runMainClass = (
-	| javaGraphicsClass javaGraphicsMain stringClass argArray |
+	| javaGraphicsClass javaGraphicsMain stringClass objectArrayArg arrayOfArgs |
 	javaGraphicsClass:: findClass: mainClass.
 	javaGraphicsClass isNil ifTrue: [^false].
 
@@ -142,16 +142,29 @@ runMainClass = (
 	stringClass:: findClass: 'java/lang/String'.	
 	stringClass isNil ifTrue: [^false].
 
-	argArray:: makeEmptyArrayOf: stringClass.
-	argArray isNil ifTrue: [^false].
+	objectArrayArg:: makeEmptyArrayOf: stringClass.
+	objectArrayArg isNil ifTrue: [^false].
 
-	env CallStaticVoidMethod: javaGraphicsClass methodID: javaGraphicsMain args: argArray.
+	(* Through CallStaticVoidMethodA method, which takes an array of jvalue arguments...*)
+
+	(* Here a pointer to an array of java arguments *)
+	(*arrayOfArgs:: Alien newC: 4.
+	arrayOfArgs unsignedLongAt: 1 put: (objectArrayArg address).
+	env CallStaticVoidMethodA: javaGraphicsClass methodID: javaGraphicsMain args: (arrayOfArgs address).*)
 	
-	^true
+	(* Through CallStaticVoidMethod method, which accepts a variable number of jvalue arguments... *)
+	
+	(* Here just sending one argument *)
+	env CallStaticVoidMethod: javaGraphicsClass methodID: javaGraphicsMain with: objectArrayArg.
+	
+	(* Here sending variable number of arguments *)
+	(*env CallStaticVoidMethod: javaGraphicsClass methodID: javaGraphicsMain withArguments: {objectArrayArg}.*)
+
+	^true.
 )
 ) : (
 )
-class JavaFFIStartVMTest mainClass: mainClass classpath: classpath = (|
+class JavaFFIRunApplicationTest mainClass: mainClass classpath: classpath = (|
 	mainClass = mainClass.
 	classpath = classpath.
 |) (
@@ -170,11 +183,18 @@ public main: platform args: args = (
 
 	runTests
 )
+runJNIStartVMTest: classpath = (
+	(JNIStartVMTest mainClass: 'JavaGraphics' classPath: classpath) run.
+)
+runJavaFFIRunApplicationTest: classpath = (
+	(JavaFFIRunApplicationTest mainClass: 'JavaGraphics' classpath: classpath) run.
+)
 runTests = (
 	| classpath |
 	classpath:: '.\bin'.
-	(*(JNIStartVMTest mainClass: 'JavaGraphics' classPath: classpath) run.*)
-	(JavaFFIStartVMTest mainClass: 'JavaGraphics' classpath: classpath) run.
+
+	(*runJNIStartVMTest: classpath.*)
+	runJavaFFIRunApplicationTest: classpath.
 )
 ) : (
 )
