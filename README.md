@@ -1,5 +1,5 @@
 # JavaAliens
-Access to the Java Runtime in Newspeak via the Aliens FFI and Java Native Interface (JNI)
+Access the Java Runtime in Newspeak through the Aliens FFI and Java Native Interface (JNI)
 
 **Usage:**
 1. Have Java.
