@@ -1,5 +1,5 @@
-# JNI-NS
-Newspeak FFI Bindings for Java Native Interface
+# JavaAliens
+Access to Java Runtime in Newspeak via the Aliens FFI and Java Native Interface (JNI)
 
 **Usage:**
 1. Have Java.
