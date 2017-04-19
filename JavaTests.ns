@@ -7,6 +7,8 @@ class JavaTests packageUsing: manifest = (|
 |) (
 class VMInstanceTest mainClass: mainClass classPath: classPath = (
 (* Instantiate VM Instance and run mainClass in classPath. *)|
+	mainClass = mainClass.
+	classPath = classPath.
 	jvm
 	env
 |) (
@@ -14,7 +16,7 @@ createVM = (
 	| options initArgs jvmPtrBuffer envPtrBuffer result success |
 
 	options:: jni JavaVMOption newC.
-	options optionString: ('-Djava.class.path=..\JavaGraphics\bin' asAlien address).
+	options optionString: (('-Djava.class.path=', classPath) asAlien address).
 	
 	initArgs:: jni JavaVMInitArgs newC.
 	initArgs version: (jni VERSION_1_2).
@@ -41,22 +43,25 @@ createVMAndIfAlreadyExistsTry: block = (
 	| result |
 	result:: createVM.
 	result = (jni EEXIST) ifTrue: [result:: block value].
+
 	^result = (jni OK)
 )
 derefPtrPtr: pointerPointerAlien = (
 	^jni derefPtrPtr: pointerPointerAlien
 )
 destroyVM = (
-	
+	^jvm DestroyJavaVM
 )
-getMain = (
-	| javaGraphicsClass |
-
-	javaGraphicsClass:: env FindClass: ('JavaGraphics' asAlien address).
-	javaGraphicsClass inspect.
+findClass: name = (
+	| javaClass |
+	javaClass:: env FindClass: (name asAlien address).
+	^(javaClass address = 0) ifFalse: [javaClass] ifTrue: [nil].
 )
-instantiateMainClass = (
-	getMain
+getMainMethodID: javaClass = (
+	| sig mainMethod |
+	sig:: '([Ljava/lang/String;)V' asAlien.
+	mainMethod:: env GetStaticMethodID: javaClass name: ('main' asAlien address) sig: (sig address).
+	^(mainMethod address = 0) ifFalse: [mainMethod] ifTrue: [nil].
 )
 loadEnvFromVM: jvmInst = (
 	| envPtrBuffer result |
@@ -84,20 +89,61 @@ loadExistingVM = (
 	
 	^result
 )
+makeEmptyArrayOf: javaClass = (
+	| emptyArray |
+	emptyArray:: env NewObjectArray: 0 elementClass: javaClass initialElement: nullPtr.
+	^(emptyArray address = 0) ifFalse: [emptyArray] ifTrue: [nil]
+)
+nullPtr = (
+	^Alien forPointer: 0
+)
 openFreshVM = (
+	(* 	THIS MAY NEVER WORK
+		JDK-4712793 : JNI : Failure in JNI_CreateJavaVM() after calling DestroyJavaVM()
+		http://bugs.java.com/bugdatabase/view_bug.do?bug_id=4712793	*)
+
 	^createVMAndIfAlreadyExistsTry: [recreateVM]
 )
 openVM = (
 	^createVMAndIfAlreadyExistsTry: [loadExistingVM]
 )
 recreateVM = (
-	^jni ERR
+	| result |
+
+	result:: loadExistingVM.
+	result = (jni OK) ifFalse: [^result].
+
+	result:: destroyVM.
+	result = (jni OK) ifFalse: [^result].
+
+	^createVM
 )
 public run = (
-	(*openFreshVM*)
-	openVM
-	ifTrue: [instantiateMainClass]
-	ifFalse: [couldNotOpenVM]
+	(*openFreshVM ifTrue: [*)
+	openVM ifTrue: [
+		runMainClass ifFalse: [
+			couldNotInstantiateMainClass
+		]
+	] ifFalse: [
+		couldNotOpenVM
+	]
+)
+runMainClass = (
+	| javaGraphicsClass javaGraphicsMain stringClass argArray |
+	javaGraphicsClass:: findClass: 'JavaGraphics'.
+	javaGraphicsClass isNil ifTrue: [^false].
+
+	javaGraphicsMain:: getMainMethodID: javaGraphicsClass.
+	javaGraphicsMain isNil ifTrue: [^false].
+
+	stringClass:: findClass: 'java/lang/String'.	
+	stringClass isNil ifTrue: [^false].
+
+	argArray:: makeEmptyArrayOf: stringClass.
+	argArray isNil ifTrue: [^false].
+
+	env CallStaticVoidMethod: javaGraphicsClass methodID: javaGraphicsMain args: argArray.
+	^true
 )
 ) : (
 )

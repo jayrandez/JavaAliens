@@ -69,6 +69,31 @@ public class JNIEnv withEnvPtr: envPointerAlien = (
 	env = envPointerAlien.
 	api = struct JNINativeInterface on: (Alien forPointer: (envPointerAlien unsignedLongAt: 1)).
 |) (
+public CallStaticVoidMethod: clazz methodID: methodID = (
+	(*	void CallStaticVoidMethod(JNIEnv *env, jclass clazz,
+		jmethodID methodID, ...);
+
+		This family of operations invokes a static method on a Java object, according to the specified method ID. The methodID argument must be obtained by calling GetStaticMethodID().
+
+		The method ID must be derived from clazz, not from one of its superclasses.	*)
+	api CallStaticVoidMethod primFFICallResult: nil with: env with: clazz with: methodID.
+)
+public CallStaticVoidMethod: clazz methodID: methodID  args: args = (
+	(*	void CallStaticVoidMethodA(JNIEnv *env, jclass clazz,
+		jmethodID methodID, jvalue *args);
+
+		Programmers should place all arguments to the method in an args array of jvalues that immediately follows the methodID argument. The CallStaticMethodA routine accepts the arguments in this array, and, in turn, passes them to the Java method that the programmer wishes to invoke.	*)
+
+	api CallStaticVoidMethodA primFFICallResult: nil with: env with: clazz with: methodID with: args.
+)
+public CallStaticVoidMethod: clazz methodID: methodID with: arg1 = (
+	(*	void CallStaticVoidMethod(JNIEnv *env, jclass clazz,
+		jmethodID methodID, ...);
+
+		Programmers should place all arguments that are to be passed to the method immediately following the methodID argument. The CallStatic<type>Method routine accepts these arguments and passes them to the Java method that the programmer wishes to invoke.	*)
+
+	api CallStaticVoidMethod primFFICallResult: nil with: env with: clazz with: methodID with: arg1
+)
 public FindClass: name  = (
 	(*	jclass FindClass(JNIEnv *env, const char *name);
 
@@ -88,7 +113,31 @@ public FindClass: name  = (
 
 	| result = Alien new: 4. |
 	api FindClass primFFICallResult: result with: env with: name.
-	^safePointer: result
+	^Alien forPointer: (result unsignedLongAt: 1).
+)
+public GetStaticMethodID: clazz name: name sig: sig = (
+	(*	jmethodID GetStaticMethodID(JNIEnv *env, jclass clazz,
+		const char *name, const char *sig);
+
+		Returns the method ID for a static method of a class. The method is specified by its name and signature.
+
+		GetStaticMethodID() causes an uninitialized class to be initialized.	*)
+
+	| result = Alien new: 4. |
+	api GetStaticMethodID primFFICallResult: result with: env with: clazz with: name with: sig.
+	^Alien forPointer: (result unsignedLongAt: 1).
+)
+public NewObjectArray: length elementClass: elementClass initialElement: initialElement = (
+	(*	jobjectArray NewObjectArray(JNIEnv *env, jsize length,
+		jclass elementClass, jobject initialElement);
+
+		Constructs a new array holding objects in class elementClass. All elements are initially set to initialElement.	*)
+
+	| result = Alien new: 4. |
+	api NewObjectArray
+		primFFICallResult: result
+		with: env with: length with: elementClass with: initialElement.
+	^Alien forPointer: (result unsignedLongAt: 1).
 )
 ) : (
 )
@@ -97,6 +146,17 @@ public class JavaVM withVmPtr: vmPointerAlien = (
 	vm = vmPointerAlien.
 	api = struct JNIInvokeInterface on: (Alien forPointer: (vmPointerAlien unsignedLongAt: 1)).
 |) (
+public DestroyJavaVM = (
+	(*	jint DestroyJavaVM(JavaVM *vm);
+
+	Unloads a Java VM and reclaims its resources.
+
+	The support for DestroyJavaVM was not complete in JDK/JRE 1.1. As of JDK/JRE 1.1 Only the main thread may call DestroyJavaVM. Since JDK/JRE 1.2, any thread, whether attached or not, can call this function. If the current thread is attached, the VM waits until the current thread is the only non-daemon user-level Java thread. If the current thread is not attached, the VM attaches the current thread and then waits until the current thread is the only non-daemon user-level thread. The JDK/JRE still does not support VM unloading, however.	*)
+
+	| result = Alien new: 4. |
+	api DestroyJavaVM primFFICallResult: result with: vm.
+	^result signedLongAt: 1
+)
 public GetEnv: env version: version = (
 	(* 	jint GetEnv(JavaVM *vm, void **env, jint version);
 		
@@ -104,32 +164,52 @@ public GetEnv: env version: version = (
 
 	| result = Alien new: 4. |
 	api GetEnv primFFICallResult: result with: vm with: env with: version.
-	^result signedLongAt: 1.
+	^result signedLongAt: 1
 )
 ) : (
 )
 private class Structures = (||) (
 public class JNIInvokeInterface on: anAlien = Struct on: anAlien (||) (
 public AttachCurrentThread = (
-	^Alien forPointer: (data unsignedLongAt: 17)
+	^methodIndex: 4
 )
 public AttachCurrentThreadAsDaemon = (
-	^Alien forPointer: (data unsignedLongAt: 29)
+	^methodIndex: 7
 )
 public DestroyJavaVM = (
-	^Alien forPointer: (data unsignedLongAt: 13)
+	^methodIndex: 3
 )
 public DetachCurrentThread = (
-	^Alien forPointer: (data unsignedLongAt: 21)
+	^methodIndex: 5
 )
 public GetEnv = (
-	^Alien forPointer: (data unsignedLongAt: 25)
+	^methodIndex: 6
+)
+private methodIndex: index = (
+	| location = ((index * 4) + 1). |
+	^Alien forPointer: (data unsignedLongAt: location)
 )
 ) : (
 )
 public class JNINativeInterface on: anAlien = Struct on: anAlien (||) (
+public CallStaticVoidMethod = (
+	^methodIndex: 141
+)
+public CallStaticVoidMethodA = (
+	^methodIndex: 143
+)
 public FindClass = (
-	^Alien forPointer: (data unsignedLongAt: 25)
+	^methodIndex: 6
+)
+public GetStaticMethodID = (
+	^methodIndex: 113
+)
+public NewObjectArray = (
+	^methodIndex: 172
+)
+private methodIndex: index = (
+	| location = ((index * 4) + 1).|
+	^Alien forPointer: (data unsignedLongAt: location)
 )
 ) : (
 )
