@@ -1,0 +1,373 @@
+Newspeak3
+'JavaAliens'
+class JNILibrary usingPlatform: platform = (
+(*Bindings for Java Native Interface via Aliens FFI *)|
+	Alien = platform aliens Alien.
+	private definitions = Definitions new.
+	private structures = Structures new.
+|) (
+private class Definitions = (||) (
+public ABORT = (
+	^2
+)
+public COMMIT = (
+	^1
+)
+public EDETACHED = (
+	(* thread detached from the VM *)
+	^-2
+)
+public EEXIST = (
+	(* VM already created *)
+	^-5
+)
+public EINVAL = (
+	(* invalid arguments *)
+	^-6
+)
+public ENOMEM = (
+	(* not enough memory *)
+	^-4
+)
+public ERR = (
+	(* unknown error *)
+	^-1
+)
+public EVERSION = (
+	(* JNI version error *)
+	^-3
+)
+public FALSE = (
+	^0
+)
+public OK = (
+	(* success *)
+	^0
+)
+public TRUE = (
+	^1
+)
+public VERSION_1_1 = (
+	^65537 (*0x00010001*)
+)
+public VERSION_1_2 = (
+	^65538 (*0x00010002*)
+)
+public VERSION_1_4 = (
+	^65540 (*0x00010004*)
+)
+public VERSION_1_6 = (
+	^65542 (*0x00010006*)
+)
+public VERSION_1_8 = (
+	^65544 (*0x00010008*)
+)
+) : (
+)
+public class JNIEnv withEnvPtr: envPointerAlien = (
+(* Encapsulates standard env methods. Function pointers provided by struct JNINativeInterface. *)|
+	env = envPointerAlien.
+	api = struct JNINativeInterface on: (Alien forPointer: (envPointerAlien unsignedLongAt: 1)).
+|) (
+public CallStaticVoidMethod: clazz methodID: methodID = (
+	(*	void CallStaticVoidMethod(JNIEnv *env, jclass clazz,
+		jmethodID methodID, ...);
+
+		This family of operations invokes a static method on a Java object, according to the specified method ID. The methodID argument must be obtained by calling GetStaticMethodID().
+
+		The method ID must be derived from clazz, not from one of its superclasses.	*)
+
+	api CallStaticVoidMethod primFFICallResult: nil with: env with: clazz with: methodID
+)
+public CallStaticVoidMethod: clazz methodID: methodID  args: args = (
+	(*	void CallStaticVoidMethodA(JNIEnv *env, jclass clazz,
+		jmethodID methodID, jvalue *args);
+
+		Programmers should place all arguments to the method in an args array of jvalues that immediately follows the methodID argument. The CallStaticMethodA routine accepts the arguments in this array, and, in turn, passes them to the Java method that the programmer wishes to invoke.	*)
+
+	api CallStaticVoidMethodA primFFICallResult: nil with: env with: clazz with: methodID with: args.
+)
+public CallStaticVoidMethod: clazz methodID: methodID varArgs: varArgs = (
+	(*	void CallStaticVoidMethod(JNIEnv *env, jclass clazz,
+		jmethodID methodID, ...);
+
+		This family of operations invokes a static method on a Java object, according to the specified method ID. The methodID argument must be obtained by calling GetStaticMethodID().
+
+		The method ID must be derived from clazz, not from one of its superclasses.	*)
+	
+	| arguments |
+	arguments:: {env. clazz. methodID}, varArgs.
+	api CallStaticVoidMethod primFFICallResult: nil withArguments: arguments.
+)
+public FindClass: name  = (
+	(*	jclass FindClass(JNIEnv *env, const char *name);
+
+		In JDK release 1.1, this function loads a locally-defined class. It searches the directories and zip files specified by the CLASSPATH environment variable for the class with the specified name.
+
+		Since Java 2 SDK release 1.2, the Java security model allows non-system classes to load and call native methods. FindClass locates the class loader associated with the current native method; that is, the class loader of the class that declared the native method. If the native method belongs to a system class, no class loader will be involved. Otherwise, the proper class loader will be invoked to load and link the named class.
+
+		Since Java 2 SDK release 1.2, when FindClass is called through the Invocation Interface, there is no current native method or its associated class loader. In that case, the result of ClassLoader.getSystemClassLoader is used. This is the class loader the virtual machine creates for applications, and is able to locate classes listed in the java.class.path property.
+
+		The name argument is a fully-qualified class name or an array type signature . For example, the fully-qualified class name for the java.lang.String class is:
+
+		"java/lang/String"
+
+		The array type signature of the array class java.lang.Object[] is:
+
+		"[Ljava/lang/Object;"		*)
+
+	| result = Alien new: 4. |
+	api FindClass primFFICallResult: result with: env with: name.
+	^Alien forPointer: (result unsignedLongAt: 1)
+)
+public GetObjectArrayElement: array index: index = (
+	(*	jobject GetObjectArrayElement(JNIEnv *env, jobjectArray array, jsize index);
+
+		Returns an element of an Object array.	*)
+
+	| result = Alien new: 4. |
+	api GetObjectArrayElement primFFICallResult: result with: env with: array with: index.
+	^Alien forPointer: (result unsignedLongAt: 1).
+)
+public GetStaticMethodID: clazz name: name sig: sig = (
+	(*	jmethodID GetStaticMethodID(JNIEnv *env, jclass clazz,
+		const char *name, const char *sig);
+
+		Returns the method ID for a static method of a class. The method is specified by its name and signature.
+
+		GetStaticMethodID() causes an uninitialized class to be initialized.	*)
+
+	| result = Alien new: 4. |
+	api GetStaticMethodID primFFICallResult: result with: env with: clazz with: name with: sig.
+	^Alien forPointer: (result unsignedLongAt: 1).
+)
+public GetStringUTFChars: string isCopy: isCopy = (
+	(*	const char * GetStringUTFChars(JNIEnv *env, jstring string,
+		jboolean *isCopy);
+
+		Returns a pointer to an array of bytes representing the string in modified UTF-8 encoding. This array is valid until it is released by 			ReleaseStringUTFChars().
+
+		If isCopy is not NULL, then *isCopy is set to JNI_TRUE if a copy is made; or it is set to JNI_FALSE if no copy is made.	*)
+	
+	| result = Alien new: 4. |
+	api GetStringUTFChars primFFICallResult: result with: env with: string with: isCopy.
+	^Alien forPointer: (result unsignedLongAt: 1).
+)
+public NewObjectArray: length elementClass: elementClass initialElement: initialElement = (
+	(*	jobjectArray NewObjectArray(JNIEnv *env, jsize length,
+		jclass elementClass, jobject initialElement);
+
+		Constructs a new array holding objects in class elementClass. All elements are initially set to initialElement.	*)
+
+	| result = Alien new: 4. |
+	api NewObjectArray
+		primFFICallResult: result
+		with: env with: length with: elementClass with: initialElement.
+	^Alien forPointer: (result unsignedLongAt: 1).
+)
+public NewStringUTF: bytes = (
+	(*	jstring NewStringUTF(JNIEnv *env, const char *bytes);
+
+		Constructs a new java.lang.String object from an array of characters in modified UTF-8 encoding.	*)
+
+	| result = Alien new: 4. |
+	api NewStringUTF primFFICallResult: result with: env with: bytes.
+	^Alien forPointer: (result unsignedLongAt: 1).
+)
+public SetObjectArrayElement: array index: index value: value = (
+	(*	void SetObjectArrayElement(JNIEnv *env, jobjectArray array,
+		jsize index, jobject value);
+
+		Sets an element of an Object array.	*)
+	api SetObjectArrayElement primFFICallResult: nil with: env with: array with: index with: value
+)
+) : (
+)
+public class JavaVM withVmPtr: vmPointerAlien = (
+(* Encapsulates standard vm methods. Function pointers provided by struct JNIInvokeInterface. *)|
+	vm = vmPointerAlien.
+	api = struct JNIInvokeInterface on: (Alien forPointer: (vmPointerAlien unsignedLongAt: 1)).
+|) (
+public DestroyJavaVM = (
+	(*	jint DestroyJavaVM(JavaVM *vm);
+
+	Unloads a Java VM and reclaims its resources.
+
+	The support for DestroyJavaVM was not complete in JDK/JRE 1.1. As of JDK/JRE 1.1 Only the main thread may call DestroyJavaVM. Since JDK/JRE 1.2, any thread, whether attached or not, can call this function. If the current thread is attached, the VM waits until the current thread is the only non-daemon user-level Java thread. If the current thread is not attached, the VM attaches the current thread and then waits until the current thread is the only non-daemon user-level thread. The JDK/JRE still does not support VM unloading, however.	*)
+
+	| result = Alien new: 4. |
+	api DestroyJavaVM primFFICallResult: result with: vm.
+	^result signedLongAt: 1
+)
+public GetEnv: env version: version = (
+	(* 	jint GetEnv(JavaVM *vm, void **env, jint version);
+		
+		If the current thread is not attached to the VM, sets *env to NULL, and returns JNI_EDETACHED. If the specified version is not supported, sets *env to NULL, and returns JNI_EVERSION. Otherwise, sets *env to the appropriate interface, and returns JNI_OK.	*)
+
+	| result = Alien new: 4. |
+	api GetEnv primFFICallResult: result with: vm with: env with: version.
+	^result signedLongAt: 1
+)
+) : (
+)
+private class Structures = (||) (
+public class JNIInvokeInterface on: anAlien = Struct on: anAlien (||) (
+public AttachCurrentThread = (
+	^methodIndex: 4
+)
+public AttachCurrentThreadAsDaemon = (
+	^methodIndex: 7
+)
+public DestroyJavaVM = (
+	^methodIndex: 3
+)
+public DetachCurrentThread = (
+	^methodIndex: 5
+)
+public GetEnv = (
+	^methodIndex: 6
+)
+private methodIndex: index = (
+	| location = ((index * 4) + 1). |
+	^Alien forPointer: (data unsignedLongAt: location)
+)
+) : (
+)
+public class JNINativeInterface on: anAlien = Struct on: anAlien (||) (
+public CallStaticVoidMethod = (
+	^methodIndex: 141
+)
+public CallStaticVoidMethodA = (
+	^methodIndex: 143
+)
+public FindClass = (
+	^methodIndex: 6
+)
+public GetObjectArrayElement = (
+	^methodIndex: 173
+)
+public GetStaticMethodID = (
+	^methodIndex: 113
+)
+public GetStringUTFChars = (
+	^methodIndex: 169
+)
+public NewObjectArray = (
+	^methodIndex: 172
+)
+public NewStringUTF = (
+	^methodIndex: 167
+)
+public SetObjectArrayElement = (
+	^methodIndex: 174
+)
+private methodIndex: index = (
+	| location = ((index * 4) + 1).|
+	^Alien forPointer: (data unsignedLongAt: location)
+)
+) : (
+)
+public class JavaVMInitArgs on: anAlien = Struct on: anAlien (
+(*	typedef struct JavaVMInitArgs {
+		jint version;
+		jint nOptions;
+    		JavaVMOption *options;
+    		jboolean ignoreUnrecognized;
+} JavaVMInitArgs;	*)||) (
+public ignoreUnrecognized = ( ^data unsignedByteAt: 13 )
+public ignoreUnrecognized: byte = ( data unsignedByteAt: 13 put: byte )
+public nOptions = ( ^data signedLongAt: 5. )
+public nOptions: integer = ( data signedLongAt: 5 put: integer )
+public options = ( ^Alien forPointer: (data unsignedLongAt: 9) )
+public options: pointerOrAddress = ( data unsignedLongAt: 9 put: pointerOrAddress )
+public version = ( ^data signedLongAt: 1 )
+public version: integer = ( data signedLongAt: 1 put: integer )
+) : (
+dataSize = (
+	^13.
+)
+public newC = (
+	^self on: (Alien newC: dataSize)
+)
+)
+public class JavaVMOption on: anAlien = Struct on: anAlien (
+(*	typedef struct JavaVMOption {
+	char *optionString;
+    	void *extraInfo;
+	} JavaVMOption;	*)||) (
+public extraInfo = ( ^Alien forPointer: (data unsignedLongAt: 5) )
+public extraInfo: addressOrPointer = ( data unsignedLongAt: 5 put: addressOrPointer )
+public optionString = ( ^Alien forPointer: (data unsignedLongAt: 1) )
+public optionString: addressOrPointer = ( data unsignedLongAt: 1 put: addressOrPointer )
+) : (
+dataSize = (
+	^8
+)
+public newC = (
+	^self on: (Alien newC: (self dataSize))
+)
+)
+class Struct on: anAlien = (
+(* Normally, each struct should extend Alien, but NS does not (yet?) support variable-byte classes. *)|
+	data = anAlien.
+|) (
+dataSize = (
+	subclassResponsibility
+)
+public doesNotUnderstand: message = (
+	^message sendTo: data
+)
+) : (
+)
+) : (
+)
+public CreateJavaVM: p_vm p_env: p_env vm_args: vm_args = (
+	(*	jint JNI_CreateJavaVM(JavaVM **p_vm, void **p_env, void *vm_args);
+		Loads and initializes a Java VM. The current thread becomes the main thread. Sets the env argument to the JNI interface pointer of the main thread.	*)
+
+	| result |
+	result:: Alien new: 4.
+	(Alien lookup: 'JNI_CreateJavaVM' inLibrary: 'jvm.dll') primFFICallResult: result with: p_vm with: p_env with: vm_args.
+	^result signedLongAt: 1
+)
+public GetCreatedJavaVMs: vmBuf bufLen: bufLen nVMs: nVMs = (
+	(*	jint JNI_GetCreatedJavaVMs(JavaVM **vmBuf, jsize bufLen, jsize *nVMs);
+		
+		Returns all Java VMs that have been created. Pointers to VMs are written in the buffer vmBuf in the order they are created. At most bufLen number of entries will be written. The total number of created VMs is returned in *nVMs.
+
+		As of JDK/JRE 1.2, creation of multiple VMs in a single process is not supported.	*)
+
+	| result = Alien new: 4. |
+	(Alien lookup: 'JNI_GetCreatedJavaVMs' inLibrary: 'jvm.dll')
+		primFFICallResult: result
+		with: vmBuf with: bufLen with: nVMs.
+	^result signedLongAt: 1
+)
+public const = (
+	^definitions
+)
+public derefPtrPtr: pointerPointerAlien = (
+	(* pointerPointerAlien points to a value "A". Return a pointer to the value at address "A". *)
+	| pointerAlien |
+	pointerAlien:: Alien forPointer: (pointerPointerAlien unsignedLongAt: 1).
+	^pointerAlien
+)
+public doesNotUnderstand: message = (
+	(definitions respondsTo: (message selector)) ifTrue: [
+		^message sendTo: definitions	
+	].
+	(structures respondsTo: (message selector)) ifTrue: [
+		^message sendTo: structures
+	].
+	^super doesNotUnderstand: message
+)
+safePointer: addressOrPointer = (
+	| address |
+	address:: addressOrPointer unsignedLongAt: 1.
+	^(address = 0) ifTrue: [nil] ifFalse: [Alien forPointer: address]
+)
+public struct = (
+	^structures
+)
+) : (
+)

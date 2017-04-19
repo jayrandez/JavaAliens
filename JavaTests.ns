@@ -1,0 +1,180 @@
+Newspeak3
+'JavaAliens'
+class JavaTests packageUsing: manifest = (|
+	private JNILibrary = manifest JNILibrary.
+	private JavaAliens = manifest JavaAliensForSqueak.
+	List
+	Alien
+	jni
+	java
+|) (
+class JNIStartVMTest mainClass: mainClass classPath: classPath = (
+(* Instantiate VM Instance and run mainClass in classPath. *)|
+	mainClass = mainClass.
+	classPath = classPath.
+	jvm
+	env
+|) (
+createVM = (
+	| options initArgs jvmPtrBuffer envPtrBuffer result success |
+
+	options:: jni JavaVMOption newC.
+	options optionString: (('-Djava.class.path=', classPath) asAlien address).
+	
+	initArgs:: jni JavaVMInitArgs newC.
+	initArgs version: (jni VERSION_1_2).
+	initArgs nOptions: 1.
+	initArgs options: (options address).
+	initArgs ignoreUnrecognized = (jni FALSE).
+
+	(* 	envPtr is equivalent to JNIEnv* env;
+		*env (i.e. the data pointed to by envPtr is itself the address of the JNINativeInterface struct	*)
+	jvmPtrBuffer:: Alien newC: 4.
+	envPtrBuffer:: Alien newC: 4.
+
+	result:: jni CreateJavaVM: (jvmPtrBuffer address) p_env: (envPtrBuffer address) vm_args: (initArgs address).
+
+	result = (jni OK)
+	ifTrue: [
+		jvm:: jni JavaVM withVmPtr: (derefPtrPtr: jvmPtrBuffer).
+		env:: jni JNIEnv withEnvPtr: (derefPtrPtr: envPtrBuffer).
+	].
+
+	^result
+)
+createVMAndIfAlreadyExistsTry: block = (
+	| result |
+	result:: createVM.
+	result = (jni EEXIST) ifTrue: [result:: block value].
+
+	^result = (jni OK)
+)
+derefPtrPtr: pointerPointerAlien = (
+	^jni derefPtrPtr: pointerPointerAlien
+)
+destroyVM = (
+	^jvm DestroyJavaVM
+)
+findClass: name = (
+	| javaClass |
+	javaClass:: env FindClass: (name asAlien address).
+	^(javaClass address = 0) ifFalse: [javaClass] ifTrue: [nil].
+)
+getMainMethodID: javaClass = (
+	| sig mainMethod |
+	sig:: '([Ljava/lang/String;)V' asAlien.
+	mainMethod:: env GetStaticMethodID: javaClass name: ('main' asAlien address) sig: (sig address).
+	^(mainMethod address = 0) ifFalse: [mainMethod] ifTrue: [nil].
+)
+loadEnvFromVM: jvmInst = (
+	| envPtrBuffer result |
+	envPtrBuffer:: Alien newC: 4.
+	result:: Alien new: 4.
+
+	result:: jvmInst GetEnv: (envPtrBuffer address) version: (jni VERSION_1_2).
+	result = (jni OK) ifTrue: [env:: jni JNIEnv withEnvPtr: (derefPtrPtr: envPtrBuffer)].
+	^result
+)
+loadExistingVM = (
+	| jvmPtrBuffer jvmInst nVMsBuffer numVMs result |
+	jvmPtrBuffer:: Alien newC: 4.
+	nVMsBuffer:: Alien newC: 4.
+	
+	result:: jni GetCreatedJavaVMs: (jvmPtrBuffer address) bufLen: 1 nVMs: (nVMsBuffer address).
+	result = (jni OK) ifFalse: [^result].
+
+	numVMs:: nVMsBuffer unsignedLongAt: 1.
+	numVMs = 1 ifFalse: [^jni ERR]. (* Would always be 0 or 1 in modern JNI *)
+
+	jvmInst:: jni JavaVM withVmPtr: (derefPtrPtr: jvmPtrBuffer).
+	result:: loadEnvFromVM: jvmInst.
+	result = (jni OK) ifTrue: [jvm:: jvmInst].
+	
+	^result
+)
+makeEmptyArrayOf: javaClass = (
+	| emptyArray |
+	emptyArray:: env NewObjectArray: 0 elementClass: javaClass initialElement: nullPtr.
+	^(emptyArray address = 0) ifFalse: [emptyArray] ifTrue: [nil]
+)
+nullPtr = (
+	^Alien forPointer: 0
+)
+openFreshVM = (
+	(* 	THIS MAY NEVER WORK
+		JDK-4712793 : JNI : Failure in JNI_CreateJavaVM() after calling DestroyJavaVM()
+		http://bugs.java.com/bugdatabase/view_bug.do?bug_id=4712793	*)
+
+	^createVMAndIfAlreadyExistsTry: [recreateVM]
+)
+openVM = (
+	^createVMAndIfAlreadyExistsTry: [loadExistingVM]
+)
+recreateVM = (
+	| result |
+
+	result:: loadExistingVM.
+	result = (jni OK) ifFalse: [^result].
+
+	result:: destroyVM.
+	result = (jni OK) ifFalse: [^result].
+
+	^createVM
+)
+public run = (
+	(*openFreshVM ifTrue: [*)
+	openVM ifTrue: [
+		runMainClass ifFalse: [
+			couldNotInstantiateMainClass
+		]
+	] ifFalse: [
+		couldNotOpenVM
+	]
+)
+runMainClass = (
+	| javaGraphicsClass javaGraphicsMain stringClass argArray |
+	javaGraphicsClass:: findClass: mainClass.
+	javaGraphicsClass isNil ifTrue: [^false].
+
+	javaGraphicsMain:: getMainMethodID: javaGraphicsClass.
+	javaGraphicsMain isNil ifTrue: [^false].
+
+	stringClass:: findClass: 'java/lang/String'.	
+	stringClass isNil ifTrue: [^false].
+
+	argArray:: makeEmptyArrayOf: stringClass.
+	argArray isNil ifTrue: [^false].
+
+	env CallStaticVoidMethod: javaGraphicsClass methodID: javaGraphicsMain args: argArray.
+	^true
+)
+) : (
+)
+class JavaFFIStartVMTest mainClass: mainClass classpath: classpath = (|
+	mainClass = mainClass.
+	classpath = classpath.
+|) (
+public run = (
+	| runtime |
+	runtime:: java Runtime classpath: classpath.
+	runtime runApplication: 'JavaGraphics' args: {'Java App Started By Newspeak'}.
+)
+) : (
+)
+public main: platform args: args = (
+	jni:: JNILibrary usingPlatform: platform.
+	java:: JavaAliens usingPlatform: platform usingJNILibrary: jni.
+
+	List:: platform collections List.
+	Alien:: platform aliens Alien.
+
+	runTests
+)
+runTests = (
+	| classpath |
+	classpath:: '.\bin'.
+	(*(JNIStartVMTest mainClass: 'JavaGraphics' classPath: classpath) run.*)
+	(JavaFFIStartVMTest mainClass: 'JavaGraphics' classpath: classpath) run.
+)
+) : (
+)
