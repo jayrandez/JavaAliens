@@ -69,13 +69,60 @@ public class JNIEnv withEnvPtr: envPointerAlien = (
 	env = envPointerAlien.
 	api = struct JNINativeInterface on: (Alien forPointer: (envPointerAlien unsignedLongAt: 1)).
 |) (
+public CallStaticObjectMethod: clazz methodID: methodID = (
+	(* 	jobject CallStaticObjectMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
+
+		This family of operations invokes a static method on a Java object, according to the specified method ID. The methodID argument must be obtained by calling GetStaticMethodID().
+
+		The method ID must be derived from clazz, not from one of its superclasses.
+
+		Programmers should place all arguments that are to be passed to the method immediately following the methodID argument. The CallStatic<type>Method routine accepts these arguments and passes them to the Java method that the programmer wishes to invoke.	*)
+
+	api CallStaticObjectMethod primFFICallResult: nil with: env with: clazz with: methodID.
+)
+public CallStaticObjectMethod: clazz methodID: methodID with: arg1= (
+	(* 	jobject CallStaticObjectMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
+
+		This family of operations invokes a static method on a Java object, according to the specified method ID. The methodID argument must be obtained by calling GetStaticMethodID().
+
+		The method ID must be derived from clazz, not from one of its superclasses.
+
+		Programmers should place all arguments that are to be passed to the method immediately following the methodID argument. The CallStatic<type>Method routine accepts these arguments and passes them to the Java method that the programmer wishes to invoke.	*)
+
+	api CallStaticObjectMethod primFFICallResult: nil with: env with: clazz with: methodID with: arg1.
+)
+public CallStaticObjectMethod: clazz methodID: methodID withArguments: varArgs = (
+	(* 	jobject CallStaticObjectMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
+
+		The method ID must be derived from clazz, not from one of its superclasses.
+
+		Programmers should place all arguments that are to be passed to the method immediately following the methodID argument. The CallStatic<type>Method routine accepts these arguments and passes them to the Java method that the programmer wishes to invoke.	*)
+
+	| arguments |
+	arguments:: {env. clazz. methodID}, varArgs.
+	api CallStaticObjectMethod primFFICallResult: nil withArguments: arguments.
+)
+public CallStaticObjectMethodA: clazz methodID: methodID args: args= (
+	(* 	jobject CallStaticObjectMethodA(JNIEnv *env, jclass clazz,
+jmethodID methodID, jvalue *args);
+
+		This family of operations invokes a static method on a Java object, according to the specified method ID. The methodID argument must be obtained by calling GetStaticMethodID().
+
+		The method ID must be derived from clazz, not from one of its superclasses.
+
+		Programmers should place all arguments to the method in an args array of jvalues that immediately follows the methodID argument. The CallStaticMethodA routine accepts the arguments in this array, and, in turn, passes them to the Java method that the programmer wishes to invoke.	*)
+
+	api CallStaticObjectMethodA primFFICallResult: nil with: env with: clazz with: methodID with: args.
+)
 public CallStaticVoidMethod: clazz methodID: methodID = (
 	(*	void CallStaticVoidMethod(JNIEnv *env, jclass clazz,
 		jmethodID methodID, ...);
 
 		This family of operations invokes a static method on a Java object, according to the specified method ID. The methodID argument must be obtained by calling GetStaticMethodID().
 
-		The method ID must be derived from clazz, not from one of its superclasses.	*)
+		The method ID must be derived from clazz, not from one of its superclasses.
+
+		Programmers should place all arguments that are to be passed to the method immediately following the methodID argument. The CallStatic<type>Method routine accepts these arguments and passes them to the Java method that the programmer wishes to invoke.	*)
 
 	api CallStaticVoidMethod primFFICallResult: nil with: env with: clazz with: methodID
 )
@@ -85,7 +132,7 @@ public CallStaticVoidMethod: clazz methodID: methodID with: arg1 = (
 
 		This family of operations invokes a static method on a Java object, according to the specified method ID. The methodID argument must be obtained by calling GetStaticMethodID().
 
-		The method ID must be derived from clazz, not from one of its superclasses.	*)
+		Programmers should place all arguments that are to be passed to the method immediately following the methodID argument. The CallStatic<type>Method routine accepts these arguments and passes them to the Java method that the programmer wishes to invoke.	*)
 
 	api CallStaticVoidMethod primFFICallResult: nil with: env with: clazz with: methodID with: arg1
 )
@@ -95,7 +142,7 @@ public CallStaticVoidMethod: clazz methodID: methodID withArguments: varArgs = (
 
 		This family of operations invokes a static method on a Java object, according to the specified method ID. The methodID argument must be obtained by calling GetStaticMethodID().
 
-		The method ID must be derived from clazz, not from one of its superclasses.	*)
+		Programmers should place all arguments that are to be passed to the method immediately following the methodID argument. The CallStatic<type>Method routine accepts these arguments and passes them to the Java method that the programmer wishes to invoke.	*)
 	
 	| arguments |
 	arguments:: {env. clazz. methodID}, varArgs.
@@ -104,6 +151,8 @@ public CallStaticVoidMethod: clazz methodID: methodID withArguments: varArgs = (
 public CallStaticVoidMethodA: clazz methodID: methodID  args: args = (
 	(*	void CallStaticVoidMethodA(JNIEnv *env, jclass clazz,
 		jmethodID methodID, jvalue *args);
+
+		This family of operations invokes a static method on a Java object, according to the specified method ID. The methodID argument must be obtained by calling GetStaticMethodID().
 
 		Programmers should place all arguments to the method in an args array of jvalues that immediately follows the methodID argument. The CallStaticMethodA routine accepts the arguments in this array, and, in turn, passes them to the Java method that the programmer wishes to invoke.	*)
 
@@ -244,6 +293,12 @@ private methodIndex: index = (
 ) : (
 )
 public class JNINativeInterface on: anAlien = Struct on: anAlien (||) (
+public CallStaticObjectMethod = (
+	^methodIndex: 114
+)
+public CallStaticObjectMethodA = (
+	^methodIndex: 116
+)
 public CallStaticVoidMethod = (
 	^methodIndex: 141
 )
