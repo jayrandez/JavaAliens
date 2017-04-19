@@ -69,6 +69,33 @@ public class JNIEnv withEnvPtr: envPointerAlien = (
 	env = envPointerAlien.
 	api = struct JNINativeInterface on: (Alien forPointer: (envPointerAlien unsignedLongAt: 1)).
 |) (
+public CallStaticBooleanMethod: clazz methodID: methodID = (
+	(* 	jboolean CallStaticBooleanMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
+
+		See documentation for CallStaticTypeMethod.	*)
+	^byteResult: (CallStaticTypeMethod: (api CallStaticBooleanMethod) clazz: clazz methodID: methodID).
+)
+public CallStaticBooleanMethod: clazz methodID: methodID with: arg1= (
+	(* 	jboolean CallStaticBooleanMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
+
+		See documentation for CallStaticTypeMethod.	*)
+
+	^byteResult: (CallStaticTypeMethod: (api CallStaticBooleanMethod) clazz: clazz methodID: methodID with: arg1).
+)
+public CallStaticBooleanMethod: clazz methodID: methodID withArguments: varArgs = (
+	(* 	jboolean CallStaticBooleanMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
+
+		See documentation for CallStaticTypeMethod.	*)
+
+	^byteResult: (CallStaticTypeMethod: (api CallStaticBooleanMethod) clazz: clazz methodID: methodID withArguments: varArgs).
+)
+public CallStaticBooleanMethodA: clazz methodID: methodID args: args= (
+	(* 	jboolean CallStaticBooleanMethodA(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args);
+
+		See documentation for CallStaticTypeMethodA.	*)
+
+	^byteResult: (CallStaticTypeMethodA: (api CallStaticBooleanMethodA) clazz: clazz methodID: methodID args: args).
+)
 public CallStaticObjectMethod: clazz methodID: methodID = (
 	(* 	jobject CallStaticObjectMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
 
@@ -306,6 +333,12 @@ private methodIndex: index = (
 ) : (
 )
 public class JNINativeInterface on: anAlien = Struct on: anAlien (||) (
+public CallStaticBooleanMethod = (
+	^methodIndex: 117
+)
+public CallStaticBooleanMethodA = (
+	^methodIndex: 119
+)
 public CallStaticObjectMethod = (
 	^methodIndex: 114
 )

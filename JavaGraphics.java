@@ -157,6 +157,14 @@ public class JavaGraphics extends JFrame
 		}
 	}
 	
+	static boolean booleanValue = true;
+	public static void setBooleanValue(boolean val) {
+		booleanValue = booleanValue;
+	}
+	public static boolean getBooleanValue() {
+		return booleanValue;
+	}
+	
 	public static JavaGraphics builder() {
 		String title = "Static Factory";
 		String initialText = "Default Textbox String";

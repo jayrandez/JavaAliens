@@ -166,11 +166,15 @@ runMainClass = (
 class JavaAliensCallStaticMethods classpath: classpath = Test classpath: classpath (|
 |) (
 public run = (
-	| javaClass javaObject |
+	| javaClass javaObject javaBoolean |
 	java loadClasspath: classpath.
 
 	javaClass:: java JavaClass find: 'JavaGraphics'.
 	javaObject:: javaClass call: 'builder' sig: '()LJavaGraphics;'.
+	javaBoolean:: javaClass call: 'getBooleanValue' sig: '()Z'.
+
+	javaObject inspect.
+	javaBoolean inspect.
 )
 ) : (
 )

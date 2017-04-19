@@ -98,6 +98,9 @@ public translateStaticMethodCall: staticMethodName sig: sig = (
 	returnSig = 'V' ifTrue: [^[ :finalArgs |
 		invokeCallStaticVoidMethod: methodID args: finalArgs.
 	]].
+	returnSig = 'Z' ifTrue: [^[ :finalArgs |
+		invokeCallStaticBooleanMethod: methodID args: finalArgs.
+	]].
 	(returnSig at: 1) = "L" ifTrue: [^[ :finalArgs |
 		invokeCallStaticObjectMethod: methodID args: finalArgs.
 	]].
@@ -148,10 +151,14 @@ public doesNotUnderstand: message = (
 public get: fieldName = (
 	
 )
+invokeCallStaticBooleanMethod: methodID args: args <Collection> = (
+	| result |
+	result:: env CallStaticBooleanMethod: jclass methodID: methodID withArguments: args.
+	^result.
+)
 invokeCallStaticObjectMethod: methodID args: args <Collection> = (
 	| result |
 	result:: env CallStaticObjectMethod: jclass methodID: methodID withArguments: args.
-	result inspect.
 	^result.
 )
 invokeCallStaticVoidMethod: methodID args: args <Collection> = (
