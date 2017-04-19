@@ -130,7 +130,7 @@ public run = (
 )
 runMainClass = (
 	| javaGraphicsClass javaGraphicsMain stringClass argArray |
-	javaGraphicsClass:: findClass: 'JavaGraphics'.
+	javaGraphicsClass:: findClass: mainClass.
 	javaGraphicsClass isNil ifTrue: [^false].
 
 	javaGraphicsMain:: getMainMethodID: javaGraphicsClass.
@@ -154,7 +154,7 @@ public main: platform args: args = (
 	runTests
 )
 runTests = (
-	(VMInstanceTest mainClass: 'JavaGraphics' classPath: '..\\JavaGraphics\\bin') run.
+	(VMInstanceTest mainClass: 'JavaGraphics' classPath: '.\bin') run.
 )
 ) : (
 )
