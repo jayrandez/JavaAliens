@@ -76,7 +76,8 @@ public CallStaticVoidMethod: clazz methodID: methodID = (
 		This family of operations invokes a static method on a Java object, according to the specified method ID. The methodID argument must be obtained by calling GetStaticMethodID().
 
 		The method ID must be derived from clazz, not from one of its superclasses.	*)
-	api CallStaticVoidMethod primFFICallResult: nil with: env with: clazz with: methodID.
+
+	api CallStaticVoidMethod primFFICallResult: nil with: env with: clazz with: methodID
 )
 public CallStaticVoidMethod: clazz methodID: methodID  args: args = (
 	(*	void CallStaticVoidMethodA(JNIEnv *env, jclass clazz,
@@ -117,6 +118,15 @@ public FindClass: name  = (
 
 	| result = Alien new: 4. |
 	api FindClass primFFICallResult: result with: env with: name.
+	^Alien forPointer: (result unsignedLongAt: 1)
+)
+public GetObjectArrayElement: array index: index = (
+	(*	jobject GetObjectArrayElement(JNIEnv *env, jobjectArray array, jsize index);
+
+		Returns an element of an Object array.	*)
+
+	| result = Alien new: 4. |
+	api GetObjectArrayElement primFFICallResult: result with: env with: array with: index.
 	^Alien forPointer: (result unsignedLongAt: 1).
 )
 public GetStaticMethodID: clazz name: name sig: sig = (
@@ -131,6 +141,18 @@ public GetStaticMethodID: clazz name: name sig: sig = (
 	api GetStaticMethodID primFFICallResult: result with: env with: clazz with: name with: sig.
 	^Alien forPointer: (result unsignedLongAt: 1).
 )
+public GetStringUTFChars: string isCopy: isCopy = (
+	(*	const char * GetStringUTFChars(JNIEnv *env, jstring string,
+		jboolean *isCopy);
+
+		Returns a pointer to an array of bytes representing the string in modified UTF-8 encoding. This array is valid until it is released by 			ReleaseStringUTFChars().
+
+		If isCopy is not NULL, then *isCopy is set to JNI_TRUE if a copy is made; or it is set to JNI_FALSE if no copy is made.	*)
+	
+	| result = Alien new: 4. |
+	api GetStringUTFChars primFFICallResult: result with: env with: string with: isCopy.
+	^Alien forPointer: (result unsignedLongAt: 1).
+)
 public NewObjectArray: length elementClass: elementClass initialElement: initialElement = (
 	(*	jobjectArray NewObjectArray(JNIEnv *env, jsize length,
 		jclass elementClass, jobject initialElement);
@@ -142,6 +164,22 @@ public NewObjectArray: length elementClass: elementClass initialElement: initial
 		primFFICallResult: result
 		with: env with: length with: elementClass with: initialElement.
 	^Alien forPointer: (result unsignedLongAt: 1).
+)
+public NewStringUTF: bytes = (
+	(*	jstring NewStringUTF(JNIEnv *env, const char *bytes);
+
+		Constructs a new java.lang.String object from an array of characters in modified UTF-8 encoding.	*)
+
+	| result = Alien new: 4. |
+	api NewStringUTF primFFICallResult: result with: env with: bytes.
+	^Alien forPointer: (result unsignedLongAt: 1).
+)
+public SetObjectArrayElement: array index: index value: value = (
+	(*	void SetObjectArrayElement(JNIEnv *env, jobjectArray array,
+		jsize index, jobject value);
+
+		Sets an element of an Object array.	*)
+	api SetObjectArrayElement primFFICallResult: nil with: env with: array with: index with: value
 )
 ) : (
 )
@@ -205,11 +243,23 @@ public CallStaticVoidMethodA = (
 public FindClass = (
 	^methodIndex: 6
 )
+public GetObjectArrayElement = (
+	^methodIndex: 173
+)
 public GetStaticMethodID = (
 	^methodIndex: 113
 )
+public GetStringUTFChars = (
+	^methodIndex: 169
+)
 public NewObjectArray = (
 	^methodIndex: 172
+)
+public NewStringUTF = (
+	^methodIndex: 167
+)
+public SetObjectArrayElement = (
+	^methodIndex: 174
 )
 private methodIndex: index = (
 	| location = ((index * 4) + 1).|

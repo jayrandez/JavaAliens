@@ -5,26 +5,53 @@ class JavaFFI usingPlatform: platform usingJNILibrary: jni = (
 	Alien = platform aliens Alien.
 	List = platform collections List.
 	jni = jni.
+	sharedEnv
 |) (
-class Array jarray: jarray env: env = (
+public class Array jarray: jarray = (
 (* Encapsulates a jarray(jobject) pointer and invokes jarray-oriented api calls. *)|
 	jarray = jarray.
-	env = env.
 |) (
 public asAlien = (
 	^jarray
 )
+public getElement: index = (
+	(* Currently assuming the object is a String *)
+	| jobject |
+	jobject:: env GetObjectArrayElement: jarray index: index.
+	^(isNullPtr: jobject)
+		ifTrue: [nil]
+		ifFalse: [String jstring: jobject].
+)
+public setElements: values = (
+	| index |
+	index:: 0.
+	values do: [:eachValue |
+		| valuePointer |
+		valuePointer:: eachValue asAlien.
+		env SetObjectArrayElement: jarray index: index value: valuePointer.
+		index:: index + 1
+	]
+)
 ) : (
-public emptyOf: elementClass env: env = (
+public emptyOf: elementClass = (
+	^self of: elementClass size: 0
+)
+public of: elementClass size: size = (
 	| jarray |
-	jarray:: env NewObjectArray: 0 elementClass: (elementClass asAlien) initialElement: nullPtr.
-	^(jarray address = 0) ifFalse: [Array jarray: jarray env: env] ifTrue: [couldNotCreateArray. nil]
+	jarray:: env NewObjectArray: size elementClass: (elementClass asAlien) initialElement: nullPtr.
+	^(jarray address = 0) ifFalse: [Array jarray: jarray] ifTrue: [couldNotCreateArray. nil]
+)
+public of: elementClass values: values = (
+	| arrayObject |
+	arrayObject:: self of: elementClass size: (values size).
+	arrayObject setElements: values.
+	arrayObject inspect.
+	^arrayObject.
 )
 )
-class Class jclass: jclass env: env = (
+public class Class jclass: jclass = (
 (*Encapsulates a jclass pointer and invokes jclass-oriented api calls, notably static method api calls.*)|
 	jclass = jclass.
-	env = env.
 	translator = Translator new.
 |) (
 private class Translator = (
@@ -102,7 +129,7 @@ public new: arg = (
 public class Runtime classpath: classpath = (
 (* Encapsulates JVM and access to the classpath. Holds jvm and env pointers required for all interactions with Java. *)|
 	private vmInst = VMInstance classpath: classpath.
-|) (
+|(setSharedEnv: env)) (
 private class VMInstance classpath: classpath = (
 (* Instantiate VM Instance using classpath, or load the existing if already running. *)|
 	public jvm
@@ -205,7 +232,7 @@ public wasAlreadyRunning = (
 )
 ) : (
 )
-private env = (
+public env = (
 	^vmInst env
 )
 public getClass: name = (
@@ -213,17 +240,28 @@ public getClass: name = (
 	jclass:: env FindClass: (name asAlien address).
 	^(isNullPtr: jclass)
 		ifTrue: [nil]
-		ifFalse: [Class jclass: jclass env: env].
+		ifFalse: [Class jclass: jclass].
 )
 public isRunning = (
 	^vmInst isRunning
 )
-public runApplication: mainClassName  args: args <Collection> = (
+public runApplication: mainClassName = (
 	| mainClass stringClass |
 	(* For now this is passing an empty String array *)
 	stringClass:: getClass: 'java/lang/String'.
+	^runApplication: mainClassName argsArray: (Array emptyOf: stringClass)
+)
+public runApplication: mainClassName  args: args <Collection> = (
+	| stringClass argStringObjects |
+	(* For now this is passing an empty String array *)
+	stringClass:: getClass: 'java/lang/String'.
+	argStringObjects:: args collect: [:eachArg | String from: eachArg].
+	^runApplication: mainClassName argsArray: (Array of: stringClass values: argStringObjects)
+)
+private runApplication: mainClassName argsArray: argsArray = (
+	| mainClass |
 	mainClass:: getClass: mainClassName.
-	mainClass call: 'main' sig: '([Ljava/lang/String;)V' arg: (Array emptyOf: stringClass env: env).
+	mainClass call: 'main' sig: '([Ljava/lang/String;)V' arg: argsArray.
 )
 public wasAlreadyRunning = (
 	(* 	Currently the classpath is final once the first Runtime has been created.
@@ -233,11 +271,34 @@ public wasAlreadyRunning = (
 )
 ) : (
 )
+public class String jstring: jstring = (|
+	jstring = jstring.
+|) (
+public asAlien = (
+	^jstring
+)
+public stringValue = (
+	| cstring |
+	cstring:: env GetStringUTFChars: jstring isCopy: nullPtr.
+	^cstring strcpy.
+)
+) : (
+public from: nsString = (
+	| jstring |
+	jstring:: (env NewStringUTF: (cstring: nsString)).
+	^(jstring address = 0)
+		ifTrue: [CouldNotCreateString. nil.]
+		ifFalse: [String jstring: jstring.]
+)
+)
 coerce: argList <List> = (
 	^argList collect: [:arg | arg asAlien]
 )
 cstring: string = (
 	^Alien forPointer: (string asAlien address).
+)
+env = (
+	^sharedEnv
 )
 isNullPtr: pointerAlien = (
 	^pointerAlien address = 0
@@ -247,6 +308,9 @@ nullPtr = (
 )
 safePtr: pointerAlien = (
 	^(isNullPtr: pointerAlien) ifTrue: [nil] ifFalse: [pointerAlien]
+)
+setSharedEnv: aJNIEnv = (
+	sharedEnv:: aJNIEnv
 )
 ) : (
 )

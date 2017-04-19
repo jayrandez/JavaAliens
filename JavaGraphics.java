@@ -9,11 +9,11 @@ public class JavaGraphics extends JFrame
 	final ToolbarPanel toolbarPanel;
 	final GraphicsPanel graphicsPanel;
 	
-	public JavaGraphics() {
-		super("Java Graphics");
+	public JavaGraphics(String title, String initialValue) {
+		super(title);
 		
-		this.toolbarPanel = new ToolbarPanel();
-		this.graphicsPanel = new GraphicsPanel(toolbarPanel.textField.getText());
+		this.toolbarPanel = new ToolbarPanel(initialValue);
+		this.graphicsPanel = new GraphicsPanel(initialValue);
 		
 		toolbarPanel.textField.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
@@ -148,8 +148,8 @@ public class JavaGraphics extends JFrame
 	private class ToolbarPanel extends JPanel {
 		public JTextField textField;
 		
-		public ToolbarPanel() {
-			this.textField = new JTextField("Initial text.");
+		public ToolbarPanel(String initialText) {
+			this.textField = new JTextField(initialText);
 			textField.setPreferredSize(new Dimension(150, 26));
 			this.setLayout(new FlowLayout(FlowLayout.LEFT));
 			this.add(textField);
@@ -158,6 +158,12 @@ public class JavaGraphics extends JFrame
 	}
 	
 	public static void main(String[] args) {
-		new JavaGraphics();
+		String title = (args.length > 0) ? (args[0]) : ("Default Title");
+		if(title == null)
+			title = "null";
+		String initialText = (args.length > 1) ? (args[1]) : ("Default Textbox String");
+		if(initialText == null)
+			initialText = "null";
+		new JavaGraphics(title, initialText);
 	}
 }
