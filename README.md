@@ -6,4 +6,4 @@ Newspeak FFI Bindings for Java Native Interface
 2. Have in PATH env. var: `JRE_DIR\bin` & `JRE_DIR\bin\client`. Otherwise it'll crash. Also, it will probably crash anyway.
 3. Compile \*.java and place class files in directory `bin` next to the Image. The classpath used by tests is `.\bin`
 
-Note: Currently the VM crashes if you provide a bad Java classpath. Not sure yet how to trap this condition.
+**Note:** Currently the VM crashes if you provide a bad Java classpath. Not sure yet how to trap this condition.
