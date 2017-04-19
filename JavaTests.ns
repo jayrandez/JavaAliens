@@ -157,7 +157,7 @@ class JavaFFIStartVMTest mainClass: mainClass classpath: classpath = (|
 public run = (
 	| runtime |
 	runtime:: java Runtime classpath: classpath.
-	runtime runApplication: 'JavaGraphics' args: {'Started from Newspeak.'. 'boo'}.
+	runtime runApplication: 'JavaGraphics' args: {'Java App Started By Newspeak'}.
 )
 ) : (
 )

@@ -45,7 +45,6 @@ public of: elementClass values: values = (
 	| arrayObject |
 	arrayObject:: self of: elementClass size: (values size).
 	arrayObject setElements: values.
-	arrayObject inspect.
 	^arrayObject.
 )
 )
@@ -60,7 +59,7 @@ private class Translator = (
 private returnSignature: methodSignature = (
 	^(methodSignature subStrings: ')') at: 2
 )
-public translateStaticMethodCall: staticMethodName sig: sig args: args = (
+public translateStaticMethodCall: staticMethodName sig: sig = (
 	| methodID returnSig |
 	methodID:: env GetStaticMethodID: jclass name: (cstring: staticMethodName) sig: (cstring: sig).
 	returnSig:: returnSignature: sig.
@@ -80,23 +79,23 @@ public call: staticMethodName arg: arg = (
 	^call: staticMethodName args: (List with: arg).
 )
 public call: staticMethodName args: args = (
-	| invokation nativeArgs |
+	| invocation nativeArgs |
 	nativeArgs:: coerce: args.
-	invokation:: invokationForCall: staticMethodName args: nativeArgs.
-	^invokation isNil
+	invocation:: translateCall: staticMethodName args: nativeArgs.
+	^invocation isNil
 		ifTrue: [super doesNotUnderstand]
-		ifFalse: [invokation value: nativeArgs]
+		ifFalse: [invocation value: nativeArgs]
 )
 public call: staticMethodName sig: sig arg: arg = (
 	^call: staticMethodName sig: sig args: (List with: arg)
 )
 public call: staticMethodName sig: sig args: args = (
-	| invokation nativeArgs |
+	| invocation nativeArgs |
 	nativeArgs:: coerce: args.
-	invokation:: invokationForCall: staticMethodName sig: sig args: nativeArgs.
-	^invokation isNil
+	invocation:: translateCall: staticMethodName sig: sig.
+	^invocation isNil
 		ifTrue: [super doesNotUnderstand]
-		ifFalse: [invokation value: nativeArgs]
+		ifFalse: [invocation value: nativeArgs]
 )
 public doesNotUnderstand: message = (
 	(*| invokation |
@@ -109,12 +108,6 @@ public doesNotUnderstand: message = (
 public get: fieldName = (
 	
 )
-public invokationForCall: staticMethodName args: args = (
-	^translator translateStaticMethodCall: staticMethodName args: args
-)
-public invokationForCall: staticMethodName sig: sig args: args = (
-	^translator translateStaticMethodCall: staticMethodName sig: sig args: args
-)
 invokeCallStaticBooleanMethod: methodID args: args <Collection> = (
 	
 )
@@ -123,6 +116,18 @@ invokeCallStaticVoidMethod: methodID args: args <Collection> = (
 )
 public new: arg = (
 	
+)
+public translateCall: staticMethodName args: args = (
+	^translator translateStaticMethodCall: staticMethodName args: args.
+)
+public translateCall: staticMethodName argsTypes: argTypes = (
+	^translator translateStaticMethodCall: staticMethodName argTypes: argTypes.
+)
+public translateCall: staticMethodName numArgs: numArgs = (
+	^translator translateStaticMethodCall: staticMethodName numArgs: numArgs.
+)
+public translateCall: staticMethodName sig: sig = (
+	^translator translateStaticMethodCall: staticMethodName sig: sig.
 )
 ) : (
 )
