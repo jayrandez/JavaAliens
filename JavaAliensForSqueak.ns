@@ -5,9 +5,36 @@ class JavaAliensForSqueak usingPlatform: platform usingJNILibrary: jni = (
 	Alien = platform aliens Alien.
 	List = platform collections List.
 	jni = jni.
-	sharedEnv
+	private theRuntime
+	private theJavaAliens
 |) (
-public class Array jarray: jarray = (
+private class AlienHelpers = (
+(* Mainly Pointer Alien manipulation. Ideally this will go away. *)||) (
+) : (
+public coerce: argList <List> = (
+	^argList collect: [:arg | arg asAlien]
+)
+public cstring: string = (
+	^Alien forPointer: (string asAlien address).
+)
+public isNullPtr: pointerAlien = (
+	^pointerAlien address = 0
+)
+public nullPtr = (
+	^Alien forPointer: 0.
+)
+public safePtr: pointerAlien = (
+	^(isNullPtr: pointerAlien) ifTrue: [nil] ifFalse: [pointerAlien]
+)
+)
+private class JavaAliens usingJNIEnv: env = (
+(* All JavaAlien instances have access to a JNIEnv library through this module. *)|
+	env = env.
+|) (
+class JavaAlien on: anAlien = Struct on: anAlien (| env |) (
+) : (
+)
+public class JavaArray jarray: jarray = (
 (* Encapsulates a jarray(jobject) pointer and invokes jarray-oriented api calls. *)|
 	jarray = jarray.
 |) (
@@ -38,8 +65,8 @@ public emptyOf: elementClass = (
 )
 public of: elementClass size: size = (
 	| jarray |
-	jarray:: env NewObjectArray: size elementClass: (elementClass asAlien) initialElement: nullPtr.
-	^(jarray address = 0) ifFalse: [Array jarray: jarray] ifTrue: [couldNotCreateArray. nil]
+	jarray:: env NewObjectArray: size elementClass: (elementClass asAlien) initialElement: help nullPtr.
+	^(jarray address = 0) ifFalse: [JavaArray jarray: jarray] ifTrue: [couldNotCreateArray. nil]
 )
 public of: elementClass values: values = (
 	| arrayObject |
@@ -48,7 +75,7 @@ public of: elementClass values: values = (
 	^arrayObject.
 )
 )
-public class Class jclass: jclass = (
+public class JavaClass jclass: jclass = (
 (*Encapsulates a jclass pointer and invokes jclass-oriented api calls, notably static method api calls.*)|
 	jclass = jclass.
 	translator = Translator new.
@@ -61,7 +88,7 @@ private returnSignature: methodSignature = (
 )
 public translateStaticMethodCall: staticMethodName sig: sig = (
 	| methodID returnSig |
-	methodID:: env GetStaticMethodID: jclass name: (cstring: staticMethodName) sig: (cstring: sig).
+	methodID:: env GetStaticMethodID: jclass name: (help cstring: staticMethodName) sig: (help cstring: sig).
 	returnSig:: returnSignature: sig.
 	
 	returnSig = 'V' ifTrue: [^[ :finalArgs |
@@ -91,7 +118,7 @@ public call: staticMethodName sig: sig arg: arg = (
 )
 public call: staticMethodName sig: sig args: args = (
 	| invocation nativeArgs |
-	nativeArgs:: coerce: args.
+	nativeArgs:: help coerce: args.
 	invocation:: translateCall: staticMethodName sig: sig.
 	^invocation isNil
 		ifTrue: [super doesNotUnderstand]
@@ -131,16 +158,34 @@ public translateCall: staticMethodName sig: sig = (
 )
 ) : (
 )
-public class Runtime classpath: classpath = (
+public class JavaString jstring: jstring = (|
+	jstring = jstring.
+|) (
+public asAlien = (
+	^jstring
+)
+public stringValue = (
+	| cstring |
+	cstring:: env GetStringUTFChars: jstring isCopy: nullPtr.
+	^cstring strcpy.
+)
+) : (
+public from: nsString = (
+	| jstring |
+	jstring:: (env NewStringUTF: (help cstring: nsString)).
+	^(jstring address = 0)
+		ifTrue: [CouldNotCreateString. nil.]
+		ifFalse: [JavaString jstring: jstring.]
+)
+)
+) : (
+)
+private class Runtime classpath: classpath = (
 (* Encapsulates JVM and access to the classpath. Holds jvm and env pointers required for all interactions with Java. *)|
-	private vmInst = VMInstance classpath: classpath.
-|(setSharedEnv: env)) (
-private class VMInstance classpath: classpath = (
-(* Instantiate VM Instance using classpath, or load the existing if already running. *)|
-	public jvm
+	public jvm	
 	public env
-	running
-	preexisting
+	public running
+	public preexisting 
 |init: classpath) (
 private createVM: classpath = (
 	| options initArgs jvmPtrBuffer envPtrBuffer result success |
@@ -175,6 +220,13 @@ private derefPtrPtr: pointerPointerAlien = (
 private destroyVM = (
 	^jvm DestroyJavaVM
 )
+public getClass: name = (
+	| jclass |
+	jclass:: env FindClass: (name asAlien address).
+	^(help isNullPtr: jclass)
+		ifTrue: [nil]
+		ifFalse: [JavaClass jclass: jclass].
+)
 private init: classpath = (
 	loadExistingVM ifTrue: [
 		preexisting:: true. 
@@ -188,9 +240,6 @@ private init: classpath = (
 			couldNotStartVM.
 		]
 	]
-)
-public isRunning = (
-	^running
 )
 private loadEnvFromVM: jvmInst = (
 	| envPtrBuffer result |
@@ -232,90 +281,69 @@ private recreateVM = (
 
 	^createVM
 )
-public wasAlreadyRunning = (
-	^preexisting
-)
 ) : (
 )
-public env = (
-	^vmInst env
+public JavaArray = (
+	^javaAliens JavaArray
 )
-public getClass: name = (
-	| jclass |
-	jclass:: env FindClass: (name asAlien address).
-	^(isNullPtr: jclass)
-		ifTrue: [nil]
-		ifFalse: [Class jclass: jclass].
+public JavaClass = (
+	^javaAliens JavaClass
 )
-public isRunning = (
-	^vmInst isRunning
+public JavaString = (
+	^javaAliens JavaString
+)
+private defaultClasspath = (
+	^'.'
+)
+protected help = (
+	^AlienHelpers
+)
+private javaAliens = (
+	theJavaAliens isNil ifTrue: [loadRuntime: defaultClasspath].
+	^theJavaAliens
+)
+public loadClasspath: classpath = (
+	^loadClasspath: classpath ifAlreadyLoaded: [self]
+)
+public loadClasspath: classpath ifAlreadyLoaded: exec = (
+	theRuntime isNil ifTrue: [
+		loadRuntime: classpath.
+		theRuntime preexisting ifTrue: [
+			^exec value
+		].
+	] ifFalse: [
+		^exec value.
+	].
+)
+private loadRuntime: classpath = (
+	| aRuntime |
+	aRuntime:: Runtime classpath: classpath.
+	aRuntime running ifFalse: [couldNotLoadRuntime].
+
+	theRuntime:: aRuntime.
+	theJavaAliens:: JavaAliens usingJNIEnv: (theRuntime env).
 )
 public runApplication: mainClassName = (
 	| mainClass stringClass |
 	(* For now this is passing an empty String array *)
-	stringClass:: getClass: 'java/lang/String'.
+	stringClass:: runtime getClass: 'java/lang/String'.
 	^runApplication: mainClassName argsArray: (Array emptyOf: stringClass)
 )
 public runApplication: mainClassName  args: args <Collection> = (
 	| stringClass argStringObjects |
 	(* For now this is passing an empty String array *)
-	stringClass:: getClass: 'java/lang/String'.
-	argStringObjects:: args collect: [:eachArg | String from: eachArg].
-	^runApplication: mainClassName argsArray: (Array of: stringClass values: argStringObjects)
+	stringClass:: runtime getClass: 'java/lang/String'.
+	argStringObjects:: args collect: [:eachArg | JavaString from: eachArg].
+	^runApplication: mainClassName argsArray: (JavaArray of: stringClass values: argStringObjects)
 )
 private runApplication: mainClassName argsArray: argsArray = (
 	| mainClass |
-	mainClass:: getClass: mainClassName.
+	mainClass:: runtime getClass: mainClassName.
 	mainClass call: 'main' sig: '([Ljava/lang/String;)V' arg: argsArray.
 )
-public wasAlreadyRunning = (
-	(* 	Currently the classpath is final once the first Runtime has been created.
-		Reloading java classes requires a fresh NSVM process.	*)
-
-	^vmInst wasAlreadyRunning
-)
-) : (
-)
-public class String jstring: jstring = (|
-	jstring = jstring.
-|) (
-public asAlien = (
-	^jstring
-)
-public stringValue = (
-	| cstring |
-	cstring:: env GetStringUTFChars: jstring isCopy: nullPtr.
-	^cstring strcpy.
-)
-) : (
-public from: nsString = (
-	| jstring |
-	jstring:: (env NewStringUTF: (cstring: nsString)).
-	^(jstring address = 0)
-		ifTrue: [CouldNotCreateString. nil.]
-		ifFalse: [String jstring: jstring.]
-)
-)
-coerce: argList <List> = (
-	^argList collect: [:arg | arg asAlien]
-)
-cstring: string = (
-	^Alien forPointer: (string asAlien address).
-)
-env = (
-	^sharedEnv
-)
-isNullPtr: pointerAlien = (
-	^pointerAlien address = 0
-)
-nullPtr = (
-	^Alien forPointer: 0.
-)
-safePtr: pointerAlien = (
-	^(isNullPtr: pointerAlien) ifTrue: [nil] ifFalse: [pointerAlien]
-)
-setSharedEnv: aJNIEnv = (
-	sharedEnv:: aJNIEnv
+private runtime = (
+	theRuntime isNil ifTrue: [loadRuntime: defaultClasspath].
+	^theRuntime.
 )
 ) : (
 )

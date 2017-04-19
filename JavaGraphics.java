@@ -158,6 +158,8 @@ public class JavaGraphics extends JFrame
 	}
 	
 	public static void main(String[] args) {
+		System.out.println("\n\nJAVA RUNNING\n\n");
+		System.out.println("" + args + "\n\n");
 		String title = (args.length > 0) ? (args[0]) : ("Default Title");
 		if(title == null)
 			title = "null";

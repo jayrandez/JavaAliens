@@ -146,6 +146,7 @@ runMainClass = (
 	argArray isNil ifTrue: [^false].
 
 	env CallStaticVoidMethod: javaGraphicsClass methodID: javaGraphicsMain args: argArray.
+	
 	^true
 )
 ) : (
@@ -155,9 +156,8 @@ class JavaFFIStartVMTest mainClass: mainClass classpath: classpath = (|
 	classpath = classpath.
 |) (
 public run = (
-	| runtime |
-	runtime:: java Runtime classpath: classpath.
-	runtime runApplication: 'JavaGraphics' args: {'Java App Started By Newspeak'}.
+	java loadClasspath: classpath.
+	java runApplication: mainClass args: {'Java App Started By Newspeak'}.
 )
 ) : (
 )
