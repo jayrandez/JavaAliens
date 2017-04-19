@@ -78,9 +78,7 @@ public CallStaticObjectMethod: clazz methodID: methodID = (
 
 		Programmers should place all arguments that are to be passed to the method immediately following the methodID argument. The CallStatic<type>Method routine accepts these arguments and passes them to the Java method that the programmer wishes to invoke.	*)
 
-	| result = Alien new: 4. |
-	api CallStaticObjectMethod primFFICallResult: result with: env with: clazz with: methodID.
-	^Alien forPointer: (result unsignedLongAt: 1).
+	^pointerResult: [:result | api CallStaticObjectMethod primFFICallResult: result with: env with: clazz with: methodID].
 )
 public CallStaticObjectMethod: clazz methodID: methodID with: arg1= (
 	(* 	jobject CallStaticObjectMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
@@ -91,9 +89,7 @@ public CallStaticObjectMethod: clazz methodID: methodID with: arg1= (
 
 		Programmers should place all arguments that are to be passed to the method immediately following the methodID argument. The CallStatic<type>Method routine accepts these arguments and passes them to the Java method that the programmer wishes to invoke.	*)
 
-	| result = Alien new: 4. |
-	api CallStaticObjectMethod primFFICallResult: result with: env with: clazz with: methodID with: arg1.
-	^Alien forPointer: (result unsignedLongAt: 1).
+	^pointerResult: [:result | api CallStaticObjectMethod primFFICallResult: result with: env with: clazz with: methodID with: arg1].
 )
 public CallStaticObjectMethod: clazz methodID: methodID withArguments: varArgs = (
 	(* 	jobject CallStaticObjectMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
@@ -102,11 +98,9 @@ public CallStaticObjectMethod: clazz methodID: methodID withArguments: varArgs =
 
 		Programmers should place all arguments that are to be passed to the method immediately following the methodID argument. The CallStatic<type>Method routine accepts these arguments and passes them to the Java method that the programmer wishes to invoke.	*)
 
-	| result arguments |
-	result:: Alien new: 4.
+	| arguments |
 	arguments:: {env. clazz. methodID}, varArgs.
-	api CallStaticObjectMethod primFFICallResult: result withArguments: arguments.
-	^Alien forPointer: (result unsignedLongAt: 1).
+	^pointerResult: [:result | api CallStaticObjectMethod primFFICallResult: result withArguments: arguments].
 )
 public CallStaticObjectMethodA: clazz methodID: methodID args: args= (
 	(* 	jobject CallStaticObjectMethodA(JNIEnv *env, jclass clazz,
@@ -118,9 +112,7 @@ jmethodID methodID, jvalue *args);
 
 		Programmers should place all arguments to the method in an args array of jvalues that immediately follows the methodID argument. The CallStaticMethodA routine accepts the arguments in this array, and, in turn, passes them to the Java method that the programmer wishes to invoke.	*)
 
-	| result = Alien new: 4.|
-	api CallStaticObjectMethodA primFFICallResult: result with: env with: clazz with: methodID with: args.
-	^Alien forPointer: (result unsignedLongAt: 1).
+	^pointerResult: [:result | api CallStaticObjectMethodA primFFICallResult: result with: env with: clazz with: methodID with: args].
 )
 public CallStaticVoidMethod: clazz methodID: methodID = (
 	(*	void CallStaticVoidMethod(JNIEnv *env, jclass clazz,
@@ -132,7 +124,7 @@ public CallStaticVoidMethod: clazz methodID: methodID = (
 
 		Programmers should place all arguments that are to be passed to the method immediately following the methodID argument. The CallStatic<type>Method routine accepts these arguments and passes them to the Java method that the programmer wishes to invoke.	*)
 
-	api CallStaticVoidMethod primFFICallResult: nil with: env with: clazz with: methodID
+	^voidResult: [:result | api CallStaticVoidMethod primFFICallResult: result with: env with: clazz with: methodID].
 )
 public CallStaticVoidMethod: clazz methodID: methodID with: arg1 = (
 	(*	void CallStaticVoidMethod(JNIEnv *env, jclass clazz,
@@ -142,7 +134,7 @@ public CallStaticVoidMethod: clazz methodID: methodID with: arg1 = (
 
 		Programmers should place all arguments that are to be passed to the method immediately following the methodID argument. The CallStatic<type>Method routine accepts these arguments and passes them to the Java method that the programmer wishes to invoke.	*)
 
-	api CallStaticVoidMethod primFFICallResult: nil with: env with: clazz with: methodID with: arg1
+	^voidResult: [:result | api CallStaticVoidMethod primFFICallResult: result with: env with: clazz with: methodID with: arg1].
 )
 public CallStaticVoidMethod: clazz methodID: methodID withArguments: varArgs = (
 	(*	void CallStaticVoidMethod(JNIEnv *env, jclass clazz,
@@ -154,7 +146,7 @@ public CallStaticVoidMethod: clazz methodID: methodID withArguments: varArgs = (
 	
 	| arguments |
 	arguments:: {env. clazz. methodID}, varArgs.
-	api CallStaticVoidMethod primFFICallResult: nil withArguments: arguments.
+	^voidResult: [:result | api CallStaticVoidMethod primFFICallResult: result withArguments: arguments].
 )
 public CallStaticVoidMethodA: clazz methodID: methodID  args: args = (
 	(*	void CallStaticVoidMethodA(JNIEnv *env, jclass clazz,
@@ -164,7 +156,7 @@ public CallStaticVoidMethodA: clazz methodID: methodID  args: args = (
 
 		Programmers should place all arguments to the method in an args array of jvalues that immediately follows the methodID argument. The CallStaticMethodA routine accepts the arguments in this array, and, in turn, passes them to the Java method that the programmer wishes to invoke.	*)
 
-	api CallStaticVoidMethodA primFFICallResult: nil with: env with: clazz with: methodID with: args.
+	^voidResult: [:result | api CallStaticVoidMethodA primFFICallResult: result with: env with: clazz with: methodID with: args].
 )
 public FindClass: name  = (
 	(*	jclass FindClass(JNIEnv *env, const char *name);
@@ -183,18 +175,14 @@ public FindClass: name  = (
 
 		"[Ljava/lang/Object;"		*)
 
-	| result = Alien new: 4. |
-	api FindClass primFFICallResult: result with: env with: name.
-	^Alien forPointer: (result unsignedLongAt: 1)
+	^pointerResult: [:result | api FindClass primFFICallResult: result with: env with: name].
 )
 public GetObjectArrayElement: array index: index = (
 	(*	jobject GetObjectArrayElement(JNIEnv *env, jobjectArray array, jsize index);
 
 		Returns an element of an Object array.	*)
 
-	| result = Alien new: 4. |
-	api GetObjectArrayElement primFFICallResult: result with: env with: array with: index.
-	^Alien forPointer: (result unsignedLongAt: 1).
+	^pointerResult: [:result | api GetObjectArrayElement primFFICallResult: result with: env with: array with: index].
 )
 public GetStaticMethodID: clazz name: name sig: sig = (
 	(*	jmethodID GetStaticMethodID(JNIEnv *env, jclass clazz,
@@ -204,9 +192,7 @@ public GetStaticMethodID: clazz name: name sig: sig = (
 
 		GetStaticMethodID() causes an uninitialized class to be initialized.	*)
 
-	| result = Alien new: 4. |
-	api GetStaticMethodID primFFICallResult: result with: env with: clazz with: name with: sig.
-	^Alien forPointer: (result unsignedLongAt: 1).
+	^pointerResult: [:result | api GetStaticMethodID primFFICallResult: result with: env with: clazz with: name with: sig].
 )
 public GetStringUTFChars: string isCopy: isCopy = (
 	(*	const char * GetStringUTFChars(JNIEnv *env, jstring string,
@@ -215,10 +201,8 @@ public GetStringUTFChars: string isCopy: isCopy = (
 		Returns a pointer to an array of bytes representing the string in modified UTF-8 encoding. This array is valid until it is released by 			ReleaseStringUTFChars().
 
 		If isCopy is not NULL, then *isCopy is set to JNI_TRUE if a copy is made; or it is set to JNI_FALSE if no copy is made.	*)
-	
-	| result = Alien new: 4. |
-	api GetStringUTFChars primFFICallResult: result with: env with: string with: isCopy.
-	^Alien forPointer: (result unsignedLongAt: 1).
+
+	^pointerResult: [:result |api GetStringUTFChars primFFICallResult: result with: env with: string with: isCopy].
 )
 public NewObjectArray: length elementClass: elementClass initialElement: initialElement = (
 	(*	jobjectArray NewObjectArray(JNIEnv *env, jsize length,
@@ -226,27 +210,31 @@ public NewObjectArray: length elementClass: elementClass initialElement: initial
 
 		Constructs a new array holding objects in class elementClass. All elements are initially set to initialElement.	*)
 
-	| result = Alien new: 4. |
-	api NewObjectArray
-		primFFICallResult: result
-		with: env with: length with: elementClass with: initialElement.
-	^Alien forPointer: (result unsignedLongAt: 1).
+	^pointerResult: [:result | api NewObjectArray primFFICallResult: result
+		with: env with: length with: elementClass with: initialElement].
 )
 public NewStringUTF: bytes = (
 	(*	jstring NewStringUTF(JNIEnv *env, const char *bytes);
 
 		Constructs a new java.lang.String object from an array of characters in modified UTF-8 encoding.	*)
 
-	| result = Alien new: 4. |
-	api NewStringUTF primFFICallResult: result with: env with: bytes.
-	^Alien forPointer: (result unsignedLongAt: 1).
+	^pointerResult: [:result | api NewStringUTF primFFICallResult: result with: env with: bytes].
 )
 public SetObjectArrayElement: array index: index value: value = (
 	(*	void SetObjectArrayElement(JNIEnv *env, jobjectArray array,
 		jsize index, jobject value);
 
 		Sets an element of an Object array.	*)
-	api SetObjectArrayElement primFFICallResult: nil with: env with: array with: index with: value
+
+	^voidResult: [:result | api SetObjectArrayElement primFFICallResult: result with: env with: array with: index with: value].
+)
+pointerResult: primFFIBlock = (
+	| result = Alien new: 4. |
+	primFFIBlock value: result.
+	^Alien forPointer: (result unsignedLongAt: 1).
+)
+voidResult: primFFIBlock = (
+	primFFIBlock value: nil.
 )
 ) : (
 )
