@@ -86,13 +86,17 @@ public CallStaticVoidMethod: clazz methodID: methodID  args: args = (
 
 	api CallStaticVoidMethodA primFFICallResult: nil with: env with: clazz with: methodID with: args.
 )
-public CallStaticVoidMethod: clazz methodID: methodID with: arg1 = (
+public CallStaticVoidMethod: clazz methodID: methodID varArgs: varArgs = (
 	(*	void CallStaticVoidMethod(JNIEnv *env, jclass clazz,
 		jmethodID methodID, ...);
 
-		Programmers should place all arguments that are to be passed to the method immediately following the methodID argument. The CallStatic<type>Method routine accepts these arguments and passes them to the Java method that the programmer wishes to invoke.	*)
+		This family of operations invokes a static method on a Java object, according to the specified method ID. The methodID argument must be obtained by calling GetStaticMethodID().
 
-	api CallStaticVoidMethod primFFICallResult: nil with: env with: clazz with: methodID with: arg1
+		The method ID must be derived from clazz, not from one of its superclasses.	*)
+	
+	| arguments |
+	arguments:: {env. clazz. methodID}, varArgs.
+	api CallStaticVoidMethod primFFICallResult: nil withArguments: arguments.
 )
 public FindClass: name  = (
 	(*	jclass FindClass(JNIEnv *env, const char *name);

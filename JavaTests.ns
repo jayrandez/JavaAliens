@@ -1,11 +1,13 @@
 Newspeak3
 'Java'
 class JavaTests packageUsing: manifest = (|
-	manifest = manifest.
-	Alien
+	private JNILibrary = manifest JNILibrary.
+	private JavaFFI = manifest JavaFFI.
+	List
 	jni
+	java
 |) (
-class VMInstanceTest mainClass: mainClass classPath: classPath = (
+class JNIStartVMTest mainClass: mainClass classPath: classPath = (
 (* Instantiate VM Instance and run mainClass in classPath. *)|
 	mainClass = mainClass.
 	classPath = classPath.
@@ -147,14 +149,30 @@ runMainClass = (
 )
 ) : (
 )
+class JavaFFIStartVMTest mainClass: mainClass classpath: classpath = (|
+	mainClass = mainClass.
+	classpath = classpath.
+|) (
+public run = (
+	| runtime |
+	runtime:: java Runtime classpath: classpath.
+	runtime runApplication: 'JavaGraphics' args: (List with: 'Started from Newspeak.').
+)
+) : (
+)
 public main: platform args: args = (
-	jni:: manifest JNILibrary usingPlatform: platform.
-	Alien:: platform aliens Alien.
+	jni:: JNILibrary usingPlatform: platform.
+	java:: JavaFFI usingPlatform: platform usingJNILibrary: jni.
+
+	List:: platform collections List.
 
 	runTests
 )
 runTests = (
-	(VMInstanceTest mainClass: 'JavaGraphics' classPath: '.\bin') run.
+	| classpath |
+	classpath:: '.\bin'.
+	(*(JNIStartVMTest mainClass: 'JavaGraphics' classPath: classpath) run.*)
+	(JavaFFIStartVMTest mainClass: 'JavaGraphics' classpath: classpath) run.
 )
 ) : (
 )

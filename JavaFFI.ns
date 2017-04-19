@@ -1,0 +1,252 @@
+Newspeak3
+'Java'
+class JavaFFI usingPlatform: platform usingJNILibrary: jni = (
+(* Java FFI built using JNI and Newspeak Aliens FFI. *)|
+	Alien = platform aliens Alien.
+	List = platform collections List.
+	jni = jni.
+|) (
+class Array jarray: jarray env: env = (
+(* Encapsulates a jarray(jobject) pointer and invokes jarray-oriented api calls. *)|
+	jarray = jarray.
+	env = env.
+|) (
+public asAlien = (
+	^jarray
+)
+) : (
+public emptyOf: elementClass env: env = (
+	| jarray |
+	jarray:: env NewObjectArray: 0 elementClass: (elementClass asAlien) initialElement: nullPtr.
+	^(jarray address = 0) ifFalse: [Array jarray: jarray env: env] ifTrue: [couldNotCreateArray. nil]
+)
+)
+class Class jclass: jclass env: env = (
+(*Encapsulates a jclass pointer and invokes jclass-oriented api calls, notably static method api calls.*)|
+	jclass = jclass.
+	env = env.
+	translator = Translator new.
+|) (
+private class Translator = (
+(* Attempts to relay messages through method invokation. *)|
+|) (
+private returnSignature: methodSignature = (
+	^(methodSignature subStrings: ')') at: 2
+)
+public translateStaticMethodCall: staticMethodName sig: sig args: args = (
+	| methodID returnSig |
+	methodID:: env GetStaticMethodID: jclass name: (cstring: staticMethodName) sig: (cstring: sig).
+	returnSig:: returnSignature: sig.
+	
+	returnSig = 'V' ifTrue: [^[ :finalArgs |
+		invokeCallStaticVoidMethod: methodID args: finalArgs.
+	]].
+
+	^nil
+)
+) : (
+)
+public asAlien = (
+	^jclass.
+)
+public call: staticMethodName arg: arg = (
+	^call: staticMethodName args: (List with: arg).
+)
+public call: staticMethodName args: args = (
+	| invokation nativeArgs |
+	nativeArgs:: coerce: args.
+	invokation:: invokationForCall: staticMethodName args: nativeArgs.
+	^invokation isNil
+		ifTrue: [super doesNotUnderstand]
+		ifFalse: [invokation value: nativeArgs]
+)
+public call: staticMethodName sig: sig arg: arg = (
+	^call: staticMethodName sig: sig args: (List with: arg)
+)
+public call: staticMethodName sig: sig args: args = (
+	| invokation nativeArgs |
+	nativeArgs:: coerce: args.
+	invokation:: invokationForCall: staticMethodName sig: sig args: nativeArgs.
+	^invokation isNil
+		ifTrue: [super doesNotUnderstand]
+		ifFalse: [invokation value: nativeArgs]
+)
+public doesNotUnderstand: message = (
+	(*| invokation |
+	invokation:: translator translateMessage: message.
+	^invokation isNil
+		ifTrue: [super doesNotUnderstand: message]
+		ifFalse: [invokation value]*)
+	^ super doesNotUnderstand: message
+)
+public get: fieldName = (
+	
+)
+public invokationForCall: staticMethodName args: args = (
+	^translator translateStaticMethodCall: staticMethodName args: args
+)
+public invokationForCall: staticMethodName sig: sig args: args = (
+	^translator translateStaticMethodCall: staticMethodName sig: sig args: args
+)
+invokeCallStaticBooleanMethod: methodID args: args <Collection> = (
+	
+)
+invokeCallStaticVoidMethod: methodID args: args <Collection> = (
+	env CallStaticVoidMethod: jclass methodID: methodID varArgs: args 
+)
+public new: arg = (
+	
+)
+) : (
+)
+public class Runtime classpath: classpath = (
+(* Encapsulates JVM and access to the classpath. Holds jvm and env pointers required for all interactions with Java. *)|
+	private vmInst = VMInstance classpath: classpath.
+|) (
+private class VMInstance classpath: classpath = (
+(* Instantiate VM Instance using classpath, or load the existing if already running. *)|
+	public jvm
+	public env
+	running
+	preexisting
+|init: classpath) (
+private createVM: classpath = (
+	| options initArgs jvmPtrBuffer envPtrBuffer result success |
+
+	options:: jni JavaVMOption newC.
+	options optionString: (('-Djava.class.path=', classpath) asAlien address).
+	
+	initArgs:: jni JavaVMInitArgs newC.
+	initArgs version: (jni VERSION_1_2).
+	initArgs nOptions: 1.
+	initArgs options: (options address).
+	initArgs ignoreUnrecognized = (jni FALSE).
+
+	(* 	envPtr is equivalent to JNIEnv* env;
+		*env (i.e. the data pointed to by envPtr is itself the address of the JNINativeInterface struct	*)
+	jvmPtrBuffer:: Alien newC: 4.
+	envPtrBuffer:: Alien newC: 4.
+
+	result:: jni CreateJavaVM: (jvmPtrBuffer address) p_env: (envPtrBuffer address) vm_args: (initArgs address).
+
+	result = (jni OK)
+	ifTrue: [
+		jvm:: jni JavaVM withVmPtr: (derefPtrPtr: jvmPtrBuffer).
+		env:: jni JNIEnv withEnvPtr: (derefPtrPtr: envPtrBuffer).
+	].
+
+	^result = (jni OK)
+)
+private derefPtrPtr: pointerPointerAlien = (
+	^jni derefPtrPtr: pointerPointerAlien
+)
+private destroyVM = (
+	^jvm DestroyJavaVM
+)
+private init: classpath = (
+	loadExistingVM ifTrue: [
+		preexisting:: true. 
+		running:: true
+	] ifFalse: [
+		preexisting:: false.
+		(createVM: classpath) ifTrue: [
+			running:: true
+		] ifFalse: [
+			running:: false.
+			couldNotStartVM.
+		]
+	]
+)
+public isRunning = (
+	^running
+)
+private loadEnvFromVM: jvmInst = (
+	| envPtrBuffer result |
+	envPtrBuffer:: Alien newC: 4.
+	result:: Alien new: 4.
+
+	result:: jvmInst GetEnv: (envPtrBuffer address) version: (jni VERSION_1_2).
+	result = (jni OK) ifTrue: [env:: jni JNIEnv withEnvPtr: (derefPtrPtr: envPtrBuffer)].
+	^result
+)
+private loadExistingVM = (
+	| jvmPtrBuffer jvmInst nVMsBuffer numVMs result |
+	jvmPtrBuffer:: Alien newC: 4.
+	nVMsBuffer:: Alien newC: 4.
+	
+	result:: jni GetCreatedJavaVMs: (jvmPtrBuffer address) bufLen: 1 nVMs: (nVMsBuffer address).
+	result = (jni OK) ifFalse: [^false].
+
+	numVMs:: nVMsBuffer unsignedLongAt: 1.
+	numVMs = 1 ifFalse: [^false]. (* Would always be 0 or 1 in modern JNI *)
+
+	jvmInst:: jni JavaVM withVmPtr: (derefPtrPtr: jvmPtrBuffer).
+	result:: loadEnvFromVM: jvmInst.
+	result = (jni OK) ifTrue: [jvm:: jvmInst].
+	
+	^result = (jni OK)
+)
+private recreateVM = (
+	(* 	THIS MAY NEVER WORK
+		JDK-4712793 : JNI : Failure in JNI_CreateJavaVM() after calling DestroyJavaVM()
+		http://bugs.java.com/bugdatabase/view_bug.do?bug_id=4712793	*)
+	| result |
+
+	result:: loadExistingVM.
+	result = (jni OK) ifFalse: [^false].
+
+	result:: destroyVM.
+	result = (jni OK) ifFalse: [^false].
+
+	^createVM
+)
+public wasAlreadyRunning = (
+	^preexisting
+)
+) : (
+)
+private env = (
+	^vmInst env
+)
+public getClass: name = (
+	| jclass |
+	jclass:: env FindClass: (name asAlien address).
+	^(isNullPtr: jclass)
+		ifTrue: [nil]
+		ifFalse: [Class jclass: jclass env: env].
+)
+public isRunning = (
+	^vmInst isRunning
+)
+public runApplication: mainClassName  args: args <Collection> = (
+	| mainClass stringClass |
+	(* For now this is passing an empty String array *)
+	stringClass:: getClass: 'java/lang/String'.
+	mainClass:: getClass: mainClassName.
+	mainClass call: 'main' sig: '([Ljava/lang/String;)V' arg: (Array emptyOf: stringClass env: env).
+)
+public wasAlreadyRunning = (
+	(* 	Currently the classpath is final once the first Runtime has been created.
+		Reloading java classes requires a fresh NSVM process.	*)
+
+	^vmInst wasAlreadyRunning
+)
+) : (
+)
+coerce: argList <List> = (
+	^argList collect: [:arg | arg asAlien]
+)
+cstring: string = (
+	^Alien forPointer: (string asAlien address).
+)
+isNullPtr: pointerAlien = (
+	^pointerAlien address = 0
+)
+nullPtr = (
+	^Alien forPointer: 0.
+)
+safePtr: pointerAlien = (
+	^(isNullPtr: pointerAlien) ifTrue: [nil] ifFalse: [pointerAlien]
+)
+) : (
+)
