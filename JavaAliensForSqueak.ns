@@ -78,18 +78,58 @@ public of: elementClass values: values = (
 public class JavaClass jclass: jclass = (
 (*Encapsulates a jclass pointer and invokes jclass-oriented api calls, notably static method api calls.*)|
 	jclass = jclass.
-	translator = Translator new.
+	callTranslator = callTranslatorClass new.
 |) (
-private class Translator = (
+public class StaticCallTranslator = (
 (* Attempts to relay messages through method invokation. *)|
 |) (
 private dontPackage = (
 	^[:input | input]
 )
+public method: staticMethodName = (
+	^method: staticMethodName args: (List new).
+)
+public method: staticMethodName arg: arg = (
+	^method: staticMethodName args: (List with: arg).
+)
+public method: staticMethodName args: args = (
+	| invocation nativeArgs |
+	nativeArgs:: help coerce: args.
+	invocation:: translateMethod: staticMethodName args: nativeArgs.
+	^invocation isNil
+		ifTrue: [super doesNotUnderstand]
+		ifFalse: [invocation value: nativeArgs]
+)
+public method: staticMethodName sig: sig = (
+	^method: staticMethodName sig: sig args: (List new).
+)
+public method: staticMethodName sig: sig arg: arg = (
+	^method: staticMethodName sig: sig args: (List with: arg)
+)
+public method: staticMethodName sig: sig args: args = (
+	| invocation nativeArgs |
+	nativeArgs:: help coerce: args.
+	invocation:: translateMethod: staticMethodName sig: sig.
+	^invocation isNil
+		ifTrue: [super doesNotUnderstand]
+		ifFalse: [invocation value: nativeArgs]
+)
 private returnSignature: methodSignature = (
 	^(methodSignature subStrings: ')') at: 2
 )
-public translateStaticMethodCall: staticMethodName sig: sig = (
+public translateMethod: staticMethodName args: args = (
+	^translateStaticMethodCall: staticMethodName args: args.
+)
+public translateMethod: staticMethodName argsTypes: argTypes = (
+	^translateStaticMethodCall: staticMethodName argTypes: argTypes.
+)
+public translateMethod: staticMethodName numArgs: numArgs = (
+	^translateStaticMethodCall: staticMethodName numArgs: numArgs.
+)
+public translateMethod: staticMethodName sig: sig = (
+	^translateStaticMethodCall: staticMethodName sig: sig.
+)
+private translateStaticMethodCall: staticMethodName sig: sig = (
 	| methodID returnSig |
 	methodID:: env GetStaticMethodID: jclass name: (help cstring: staticMethodName) sig: (help cstring: sig).
 	(help isNullPtr: methodID) ifTrue: [^StaticMethodNotFound].
@@ -118,62 +158,14 @@ public translateStaticMethodCall: staticMethodName sig: sig = (
 public asAlien = (
 	^jclass.
 )
-public call: staticMethodName = (
-	^call: staticMethodName args: (List new).
+public call = (
+	^callTranslator
 )
-public call: staticMethodName arg: arg = (
-	^call: staticMethodName args: (List with: arg).
-)
-public call: staticMethodName args: args = (
-	| invocation nativeArgs |
-	nativeArgs:: coerce: args.
-	invocation:: translateCall: staticMethodName args: nativeArgs.
-	^invocation isNil
-		ifTrue: [super doesNotUnderstand]
-		ifFalse: [invocation value: nativeArgs]
-)
-public call: staticMethodName sig: sig = (
-	^call: staticMethodName sig: sig args: (List new).
-)
-public call: staticMethodName sig: sig arg: arg = (
-	^call: staticMethodName sig: sig args: (List with: arg)
-)
-public call: staticMethodName sig: sig args: args = (
-	| invocation nativeArgs |
-	nativeArgs:: help coerce: args.
-	invocation:: translateCall: staticMethodName sig: sig.
-	^invocation isNil
-		ifTrue: [super doesNotUnderstand]
-		ifFalse: [invocation value: nativeArgs]
-)
-public doesNotUnderstand: message = (
-	(*| invokation |
-	invokation:: translator translateMessage: message.
-	^invokation isNil
-		ifTrue: [super doesNotUnderstand: message]
-		ifFalse: [invokation value]*)
-	^ super doesNotUnderstand: message
-)
-public get: fieldName = (
-	
+protected callTranslatorClass = (
+	^StaticCallTranslator
 )
 invokeCallStaticTypeMethod: returnType methodID: methodID args: args <Collection> = (
 	^env CallStaticTypeMethod: returnType clazz: jclass methodID: methodID withArguments: args.
-)
-public new: arg = (
-	
-)
-public translateCall: staticMethodName args: args = (
-	^translator translateStaticMethodCall: staticMethodName args: args.
-)
-public translateCall: staticMethodName argsTypes: argTypes = (
-	^translator translateStaticMethodCall: staticMethodName argTypes: argTypes.
-)
-public translateCall: staticMethodName numArgs: numArgs = (
-	^translator translateStaticMethodCall: staticMethodName numArgs: numArgs.
-)
-public translateCall: staticMethodName sig: sig = (
-	^translator translateStaticMethodCall: staticMethodName sig: sig.
 )
 ) : (
 public find: name = (
@@ -368,7 +360,7 @@ public runApplication: mainClassName  args: args <Collection> = (
 private runApplication: mainClassName argsArray: argsArray = (
 	| mainClass |
 	mainClass:: runtime getClass: mainClassName.
-	mainClass call: 'main' sig: '([Ljava/lang/String;)V' arg: argsArray.
+	mainClass call method: 'main' sig: '([Ljava/lang/String;)V' arg: argsArray.
 )
 private runtime = (
 	theRuntime isNil ifTrue: [loadRuntime: defaultClasspath].

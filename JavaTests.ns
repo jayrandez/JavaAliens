@@ -182,7 +182,7 @@ runMainClass = (
 	(* Through CallStaticVoidMethod method, which accepts a variable number of jvalue arguments... *)
 	
 	(* Here just sending one argument *)
-	env CallStaticVoidMethod: javaGraphicsClass methodID: javaGraphicsMain with: objectArrayArg.
+	env CallStaticTypeMethod: (env returnTypes void) clazz: javaGraphicsClass methodID: javaGraphicsMain with: objectArrayArg.
 	
 	(* Here sending variable number of arguments *)
 	(*env CallStaticVoidMethod: javaGraphicsClass methodID: javaGraphicsMain withArguments: {objectArrayArg}.*)
@@ -198,8 +198,8 @@ public run = (
 	java loadClasspath: classpath.
 
 	javaClass:: java JavaClass find: 'JavaGraphics'.
-	javaObject:: javaClass call: 'builder' sig: '()LJavaGraphics;'.
-	javaBoolean:: javaClass call: 'getBooleanValue' sig: '()Z'.
+	javaObject:: javaClass call method: 'builder' sig: '()LJavaGraphics;'.
+	javaBoolean:: javaClass call method: 'getBooleanValue' sig: '()Z'.
 
 	javaObject inspect.
 	javaBoolean inspect.
