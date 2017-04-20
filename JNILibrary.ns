@@ -71,57 +71,170 @@ public class JNIEnv withEnvPtr: envPointerAlien = (
 	api = struct JNINativeInterface on: (Alien forPointer: (envPointerAlien unsignedLongAt: 1)).
 	theCallStatic = CallStatic new.
 |) (
-public class CallStatic = (
-(*	This family of operations invokes a static method on a Java object, according to the specified method ID. The methodID argument must be obtained by calling GetStaticMethodID().
-
-	The method ID must be derived from clazz, not from one of its superclasses.	*)|
+public class ReturnType packager: packager = (|
+	packager = packager.
 |) (
-private CallStaticTypeMethod: clazz methodID: methodID = (
-	(* 	NativeType CallStaticTypeMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
-
-		Programmers should place all arguments that are to be passed to the method immediately following the methodID argument. The CallStaticTypeMethod routine accepts these arguments and passes them to the Java method that the programmer wishes to invoke.	*)
-
-	^returnTypeResult: [:result | (api CallStaticTypeMethod) primFFICallResult: result with: env with: clazz with: methodID].
+public class BooleanReturnType packager: packager = ReturnType packager: packager (||) (
+public result: primFFIBlock = (
+	| result |
+	result:: byteResult: primFFIBlock.
+	^packager value: result.
 )
-private CallStaticTypeMethod: clazz methodID: methodID with: arg1= (
-	(* 	NativeType CallStaticTypeMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
-
-		Programmers should place all arguments that are to be passed to the method immediately following the methodID argument. The CallStaticTypeMethod routine accepts these arguments and passes them to the Java method that the programmer wishes to invoke.	*)
-
-	^returnTypeResult: [:result | (api CallStaticTypeMethod) primFFICallResult: result with: env with: clazz with: methodID with: arg1].
-)
-private CallStaticTypeMethod: clazz methodID: methodID withArguments: varArgs = (
-		(* 	NativeType CallStaticTypeMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
-
-		Programmers should place all arguments that are to be passed to the method immediately following the methodID argument. The CallStaticTypeMethod routine accepts these arguments and passes them to the Java method that the programmer wishes to invoke.	*)
-
-	| arguments |
-	arguments:: {env. clazz. methodID}, varArgs.
-	^returnTypeResult: [:result | (api CallStaticTypeMethod) primFFICallResult: result withArguments: arguments].
-)
-private CallStaticTypeMethodA: clazz methodID: methodID args: args= (
-	(* 	NativeType CallStaticTypeMethodA(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args);
-
-		Programmers should place all arguments to the method in an args array of jvalues that immediately follows the methodID argument. The CallStaticTypeMethodA routine accepts the arguments in this array, and, in turn, passes them to the Java method that the programmer wishes to invoke.	*)
-
-	^returnTypeResult: [:result | (api CallStaticTypeMethodA) primFFICallResult: result with: env with: clazz with: methodID with: args].
+public tablePosition = (
+	^2
 )
 ) : (
-public inflationSpecFrom = (
-	^{'private'. 'returnTypeResult'. 'NativeType'. 'CallStaticTypeMethod'.}.
 )
-public inflationSpecTo = (
-	^{	{'public'. 'voidResult'. 'void'. 'CallStaticVoidMethod'}.
-		{'public'. 'pointerResult'. 'jobject'. 'CallStaticObjectMethod'}.
-		{'public'. 'byteResult'. 'jboolean'. 'CallStaticBooleanMethod'}.
-		{'public'. 'byteResult'. 'jbyte'. 'CallStaticByteMethod'}.
-		{'public'. 'shortResult'. 'jchar'. 'CallStaticCharMethod'}.
-		{'public'. 'shortResult'. 'jshort'. 'CallStaticShortMethod'}.
-		{'public'. 'longResult'. 'jint'. 'CallStaticIntMethod'}.
-		{'public'. 'wordResult'. 'jlong'. 'CallStaticLongMethod'}.
-		{'public'. 'longResult'. 'jfloat'. 'CallStaticFloatMethod'}.
-		{'public'. 'wordResult'. 'jdouble'. 'CallStaticDoubleMethod'}.	}.
+public class ByteReturnType packager: packager = ReturnType packager: packager (||) (
+public result: primFFIBlock = (
+	| result |
+	result:: byteResult: primFFIBlock.
+	^packager value: result.
 )
+public tablePosition = (
+	^3
+)
+) : (
+)
+public class CharReturnType packager: packager = ReturnType packager: packager (||) (
+public result: primFFIBlock = (
+	| result |
+	result:: shortResult: primFFIBlock.
+	^packager value: result.
+)
+public tablePosition = (
+	^4
+)
+) : (
+)
+public class DoubleReturnType packager: packager = ReturnType packager: packager (||) (
+public result: primFFIBlock = (
+	| result |
+	result:: doubleResult: primFFIBlock.
+	^packager value: result.
+)
+public tablePosition = (
+	^9
+)
+) : (
+)
+public class FloatReturnType packager: packager = ReturnType packager: packager (||) (
+public result: primFFIBlock = (
+	| result |
+	result:: floatResult: primFFIBlock.
+	^packager value: result.
+)
+public tablePosition = (
+	^8
+)
+) : (
+)
+public class IntReturnType packager: packager = ReturnType packager: packager (||) (
+public result: primFFIBlock = (
+	| result |
+	result:: longResult: primFFIBlock.
+	^packager value: result.
+)
+public tablePosition = (
+	^6
+)
+) : (
+)
+public class LongReturnType packager: packager = ReturnType packager: packager (||) (
+public result: primFFIBlock = (
+	| result |
+	result:: wordResult: primFFIBlock.
+	^packager value: result.
+)
+public tablePosition = (
+	^7
+)
+) : (
+)
+public class ObjectReturnType packager: packager = ReturnType packager: packager (||) (
+public result: primFFIBlock = (
+	| result |
+	result:: pointerResult: primFFIBlock.
+	^packager value: result.
+)
+public tablePosition = (
+	^1.
+)
+) : (
+)
+public class ShortReturnType packager: packager = ReturnType packager: packager (||) (
+public result: primFFIBlock = (
+	| result |
+	result:: shortResult: primFFIBlock.
+	^packager value: result.
+)
+public tablePosition = (
+	^5
+)
+) : (
+)
+public class VoidReturnType packager: packager = ReturnType packager: packager (||) (
+public result: primFFIBlock = (
+	| result |
+	result:: voidResult: primFFIBlock.
+	^packager value: result.
+)
+public tablePosition = (
+	^10
+)
+) : (
+)
+public result: primFFIBlock = (
+	subclassResponsibility
+)
+public tablePosition  = (
+	subclassResponsibility
+)
+) : (
+public jboolean = (
+	^self BooleanReturnType
+)
+public jbyte = (
+	^self ByteReturnType
+)
+public jchar = (
+	^self CharReturnType
+)
+public jdouble = (
+	^self DoubleReturnType
+)
+public jfloat = (
+	^self FloatReturnType
+)
+public jint = (
+	^self IntReturnType
+)
+public jlong = (
+	^self LongReturnType
+)
+public jobject = (
+	^self ObjectReturnType
+)
+public jshort = (
+	^self ShortReturnType
+)
+public void = (
+	^self VoidReturnType
+)
+)
+public CallStaticTypeMethod: returnType clazz: clazz methodID: methodID withArguments: varArgs = (
+	(*	NativeType CallStatic<type>Method(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
+
+		This family of operations invokes a static method on a Java object, according to the specified method ID. The methodID argument must be obtained by calling GetStaticMethodID().
+
+		The method ID must be derived from clazz, not from one of its superclasses.	*)
+
+	| apiCall arguments |
+
+	apiCall:: api CallStaticTypeMethod: returnType.
+	arguments:: {env. clazz. methodID}, varArgs.
+
+	^returnType result: [:result | apiCall primFFICallResult: result withArguments: arguments].
 )
 public FindClass: name  = (
 	(*	jclass FindClass(JNIEnv *env, const char *name);
@@ -198,8 +311,20 @@ private byteResult: primFFIBlock = (
 	primFFIBlock value: result.
 	^result.
 )
-public callStatic = (
-	^theCallStatic
+private doubleResult: primFFIBlock = (
+	| result = Alien new: 8. |
+	primFFIBlock value: result.
+	^result.
+)
+private floatResult: primFFIBlock = (
+	| result = Alien new: 4. |
+	primFFIBlock value: result.
+	^result.
+)
+private longResult: primFFIBlock = (
+	| result = Alien new: 4. |
+	primFFIBlock value: result.
+	^result.
 )
 private pointerResult: primFFIBlock = (
 	| result = Alien new: 4. |
@@ -213,6 +338,11 @@ private shortResult: primFFIBlock = (
 )
 private voidResult: primFFIBlock = (
 	primFFIBlock value: nil.
+)
+private wordResult: primFFIBlock = (
+	| result = Alien new: 8. |
+	primFFIBlock value: result.
+	^result.
 )
 ) : (
 )
@@ -267,88 +397,33 @@ private methodIndex: index = (
 ) : (
 )
 public class JNINativeInterface on: anAlien = Struct on: anAlien (||) (
-public CallStaticBooleanMethod = (
-	^methodIndex: 117
-)
-public CallStaticBooleanMethodA = (
-	^methodIndex: 119
-)
-public CallStaticByteMethod = (
-	^methodIndex: 120
-)
-public CallStaticByteMethodA = (
-	^methodIndex: 122
-)
-public CallStaticCharMethod = (
-	^methodIndex: 123
-)
-public CallStaticCharMethodA = (
-	^methodIndex: 125
-)
-public CallStaticDoubleMethod = (
-	^methodIndex: 138
-)
-public CallStaticDoubleMethodA = (
-	^methodIndex: 140
-)
-public CallStaticFloatMethod = (
-	^methodIndex: 135
-)
-public CallStaticFloatMethodA = (
-	^methodIndex: 137
-)
-public CallStaticIntMethod = (
-	^methodIndex: 129
-)
-public CallStaticIntMethodA = (
-	^methodIndex: 131
-)
-public CallStaticLongMethod = (
-	^methodIndex: 132
-)
-public CallStaticLongMethodA = (
-	^methodIndex: 134
-)
-public CallStaticObjectMethod = (
-	^methodIndex: 114
-)
-public CallStaticObjectMethodA = (
-	^methodIndex: 116
-)
-public CallStaticShortMethod = (
-	^methodIndex: 126
-)
-public CallStaticShortMethodA = (
-	^methodIndex: 128
-)
-public CallStaticVoidMethod = (
-	^methodIndex: 141
-)
-public CallStaticVoidMethodA = (
-	^methodIndex: 143
+public CallStaticTypeMethod: returnType = (
+	| index step = 3. |
+	index:: 141 + (((returnType tablePosition) - 1) * step).
+	^methodAtIndex: index.
 )
 public FindClass = (
-	^methodIndex: 6
+	^methodAtIndex: 6
 )
 public GetObjectArrayElement = (
-	^methodIndex: 173
+	^methodAtIndex: 173
 )
 public GetStaticMethodID = (
-	^methodIndex: 113
+	^methodAtIndex: 113
 )
 public GetStringUTFChars = (
-	^methodIndex: 169
+	^methodAtIndex: 169
 )
 public NewObjectArray = (
-	^methodIndex: 172
+	^methodAtIndex: 172
 )
 public NewStringUTF = (
-	^methodIndex: 167
+	^methodAtIndex: 167
 )
 public SetObjectArrayElement = (
-	^methodIndex: 174
+	^methodAtIndex: 174
 )
-private methodIndex: index = (
+public methodAtIndex: index = (
 	| location = ((index * 4) + 1).|
 	^Alien forPointer: (data unsignedLongAt: location)
 )

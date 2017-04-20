@@ -83,6 +83,9 @@ public class JavaClass jclass: jclass = (
 private class Translator = (
 (* Attempts to relay messages through method invokation. *)|
 |) (
+private dontPackage = (
+	^[:input | input]
+)
 private returnSignature: methodSignature = (
 	^(methodSignature subStrings: ')') at: 2
 )
@@ -96,13 +99,16 @@ public translateStaticMethodCall: staticMethodName sig: sig = (
 	returnSig:: returnSignature: sig.
 
 	returnSig = 'V' ifTrue: [^[ :finalArgs |
-		invokeCallStaticVoidMethod: methodID args: finalArgs.
-	]].
-	returnSig = 'Z' ifTrue: [^[ :finalArgs |
-		invokeCallStaticBooleanMethod: methodID args: finalArgs.
+		invokeCallStaticTypeMethod: (env ReturnType void packager: dontPackage) methodID: methodID args: finalArgs.
 	]].
 	(returnSig at: 1) = "L" ifTrue: [^[ :finalArgs |
-		invokeCallStaticObjectMethod: methodID args: finalArgs.
+		invokeCallStaticTypeMethod: (env ReturnType jobject packager: dontPackage) methodID: methodID args: finalArgs.
+	]].
+	returnSig = 'Z' ifTrue: [^[ :finalArgs |
+		invokeCallStaticTypeMethod: (env ReturnType jboolean packager: dontPackage) methodID: methodID args: finalArgs.
+	]].
+	returnSig = 'I' ifTrue: [^[ :finalArgs |
+		invokeCallStaticTypeMethod: (env ReturnType jint packager: dontPackage) methodID: methodID args: finalArgs.
 	]].
 
 	^nil
@@ -151,18 +157,8 @@ public doesNotUnderstand: message = (
 public get: fieldName = (
 	
 )
-invokeCallStaticBooleanMethod: methodID args: args <Collection> = (
-	| result |
-	result:: env callStatic CallStaticBooleanMethod: jclass methodID: methodID withArguments: args.
-	^result.
-)
-invokeCallStaticObjectMethod: methodID args: args <Collection> = (
-	| result |
-	result:: env callStatic CallStaticObjectMethod: jclass methodID: methodID withArguments: args.
-	^result.
-)
-invokeCallStaticVoidMethod: methodID args: args <Collection> = (
-	env callStatic CallStaticVoidMethod: jclass methodID: methodID withArguments: args.
+invokeCallStaticTypeMethod: returnType methodID: methodID args: args <Collection> = (
+	^env CallStaticTypeMethod: returnType class: jclass methodID: methodID withArguments: args.
 )
 public new: arg = (
 	
