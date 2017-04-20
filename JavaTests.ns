@@ -237,7 +237,7 @@ runTests = (
 	| tests classpath |
 	classpath:: '.\bin'.
 	(*tests:: allTests.*)
-	tests:: {JNILibraryInflate. JavaAliensRunApplication. }.
+	tests:: {JavaAliensCallStaticMethods.}.
 	tests do: [:eachTest | eachTest classpath: classpath].
 )
 ) : (

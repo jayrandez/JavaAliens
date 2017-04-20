@@ -99,16 +99,16 @@ public translateStaticMethodCall: staticMethodName sig: sig = (
 	returnSig:: returnSignature: sig.
 
 	returnSig = 'V' ifTrue: [^[ :finalArgs |
-		invokeCallStaticTypeMethod: (env ReturnType void packager: dontPackage) methodID: methodID args: finalArgs.
+		invokeCallStaticTypeMethod: (env returnType void packager: dontPackage) methodID: methodID args: finalArgs.
 	]].
 	(returnSig at: 1) = "L" ifTrue: [^[ :finalArgs |
-		invokeCallStaticTypeMethod: (env ReturnType jobject packager: dontPackage) methodID: methodID args: finalArgs.
+		invokeCallStaticTypeMethod: (env returnType jobject packager: dontPackage) methodID: methodID args: finalArgs.
 	]].
 	returnSig = 'Z' ifTrue: [^[ :finalArgs |
-		invokeCallStaticTypeMethod: (env ReturnType jboolean packager: dontPackage) methodID: methodID args: finalArgs.
+		invokeCallStaticTypeMethod: (env returnType jboolean packager: dontPackage) methodID: methodID args: finalArgs.
 	]].
 	returnSig = 'I' ifTrue: [^[ :finalArgs |
-		invokeCallStaticTypeMethod: (env ReturnType jint packager: dontPackage) methodID: methodID args: finalArgs.
+		invokeCallStaticTypeMethod: (env returnType jint packager: dontPackage) methodID: methodID args: finalArgs.
 	]].
 
 	^nil
@@ -158,7 +158,7 @@ public get: fieldName = (
 	
 )
 invokeCallStaticTypeMethod: returnType methodID: methodID args: args <Collection> = (
-	^env CallStaticTypeMethod: returnType class: jclass methodID: methodID withArguments: args.
+	^env CallStaticTypeMethod: returnType clazz: jclass methodID: methodID withArguments: args.
 )
 public new: arg = (
 	

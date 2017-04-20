@@ -69,10 +69,9 @@ public class JNIEnv withEnvPtr: envPointerAlien = (
 (* Encapsulates standard env methods. Function pointers provided by struct JNINativeInterface. *)|
 	env = envPointerAlien.
 	api = struct JNINativeInterface on: (Alien forPointer: (envPointerAlien unsignedLongAt: 1)).
-	theCallStatic = CallStatic new.
+	private theReturnTypes = ReturnTypes new.
 |) (
-public class ReturnType packager: packager = (|
-	packager = packager.
+private class ReturnTypes = (|
 |) (
 public class BooleanReturnType packager: packager = ReturnType packager: packager (||) (
 public result: primFFIBlock = (
@@ -162,6 +161,17 @@ public tablePosition = (
 )
 ) : (
 )
+private class ReturnType packager: packager = (|
+	packager = packager.
+|) (
+public result: primFFIBlock = (
+	subclassResponsibility
+)
+public tablePosition  = (
+	subclassResponsibility
+)
+) : (
+)
 public class ShortReturnType packager: packager = ReturnType packager: packager (||) (
 public result: primFFIBlock = (
 	| result |
@@ -184,13 +194,6 @@ public tablePosition = (
 )
 ) : (
 )
-public result: primFFIBlock = (
-	subclassResponsibility
-)
-public tablePosition  = (
-	subclassResponsibility
-)
-) : (
 public jboolean = (
 	^self BooleanReturnType
 )
@@ -221,6 +224,7 @@ public jshort = (
 public void = (
 	^self VoidReturnType
 )
+) : (
 )
 public CallStaticTypeMethod: returnType clazz: clazz methodID: methodID withArguments: varArgs = (
 	(*	NativeType CallStatic<type>Method(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
@@ -331,6 +335,9 @@ private pointerResult: primFFIBlock = (
 	primFFIBlock value: result.
 	^Alien forPointer: (result unsignedLongAt: 1).
 )
+public returnType = (
+	^theReturnTypes
+)
 private shortResult: primFFIBlock = (
 	| result = Alien new: 2. |
 	primFFIBlock value: result.
@@ -399,7 +406,7 @@ private methodIndex: index = (
 public class JNINativeInterface on: anAlien = Struct on: anAlien (||) (
 public CallStaticTypeMethod: returnType = (
 	| index step = 3. |
-	index:: 141 + (((returnType tablePosition) - 1) * step).
+	index:: 114 + (((returnType tablePosition) - 1) * step).
 	^methodAtIndex: index.
 )
 public FindClass = (
