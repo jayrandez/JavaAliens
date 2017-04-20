@@ -3,6 +3,7 @@ Newspeak3
 class JNILibrary usingPlatform: platform = (
 (*Bindings for Java Native Interface via Aliens FFI *)|
 	Alien = platform aliens Alien.
+	Map = platform collections Map.
 	private definitions = Definitions new.
 	private structures = Structures new.
 |) (
@@ -69,6 +70,78 @@ public class JNIEnv withEnvPtr: envPointerAlien = (
 	env = envPointerAlien.
 	api = struct JNINativeInterface on: (Alien forPointer: (envPointerAlien unsignedLongAt: 1)).
 |) (
+public class CallStatic = (
+(*	This family of operations invokes a static method on a Java object, according to the specified method ID. The methodID argument must be obtained by calling GetStaticMethodID().
+
+	The method ID must be derived from clazz, not from one of its superclasses.	*)|
+|) (
+private CallStaticTypeMethod: clazz methodID: methodID = (
+	(* 	NativeType CallStaticTypeMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
+
+		Programmers should place all arguments that are to be passed to the method immediately following the methodID argument. The CallStaticTypeMethod routine accepts these arguments and passes them to the Java method that the programmer wishes to invoke.	*)
+
+	^returnTypeResult: [:result | (api CallStaticTypeMethod) primFFICallResult: result with: env with: clazz with: methodID].
+)
+private CallStaticTypeMethod: clazz methodID: methodID with: arg1= (
+	(* 	NativeType CallStaticTypeMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
+
+		Programmers should place all arguments that are to be passed to the method immediately following the methodID argument. The CallStaticTypeMethod routine accepts these arguments and passes them to the Java method that the programmer wishes to invoke.	*)
+
+	^returnTypeResult: [:result | (api CallStaticTypeMethod) primFFICallResult: result with: env with: clazz with: methodID with: arg1].
+)
+private CallStaticTypeMethod: clazz methodID: methodID withArguments: varArgs = (
+		(* 	NativeType CallStaticTypeMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
+
+		Programmers should place all arguments that are to be passed to the method immediately following the methodID argument. The CallStaticTypeMethod routine accepts these arguments and passes them to the Java method that the programmer wishes to invoke.	*)
+
+	| arguments |
+	arguments:: {env. clazz. methodID}, varArgs.
+	^returnTypeResult: [:result | (api CallStaticTypeMethod) primFFICallResult: result withArguments: arguments].
+)
+private CallStaticTypeMethodA: clazz methodID: methodID args: args= (
+	(* 	NativeType CallStaticTypeMethodA(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args);
+
+		Programmers should place all arguments to the method in an args array of jvalues that immediately follows the methodID argument. The CallStaticTypeMethodA routine accepts the arguments in this array, and, in turn, passes them to the Java method that the programmer wishes to invoke.	*)
+
+	^returnTypeResult: [:result | (api CallStaticTypeMethodA) primFFICallResult: result with: env with: clazz with: methodID with: args].
+)
+) : (
+public clean: instance = (
+	| publicMethods |
+	publicMethods:: getPublicMethods: instance.
+	publicMethods do: [:eachMethod | deleteMethod: eachMethod].
+)
+private deleteMethod: method = (
+	
+)
+public generate = (
+	| instance regexFrom regexTo privateMethods |
+	regexFrom:: {'private', 'returnTypeResult'. 'NativeType'. 'CallStaticTypeMethod'.}.
+	regexTo:: {
+		{'public'. 'pointerResult', 'jobject'. 'CallStaticObjectMethod'}.
+		{'public'. 'byteResult'. 'jboolean'. 'CallStaticBooleanMethod'}.
+		{'public'. 'byteResult'. 'jbyte'. 'CallStaticByteMethod'}.
+		{'public'. 'shortResult'. 'jchar'. 'CallStaticCharMethod'}.
+		{'public'. 'shortResult'. 'jshort'. 'CallStaticShortMethod'}.
+		{'public'. 'longResult'. 'jint'. 'CallStaticIntMethod'}.
+		{'public'. 'wordResult'. 'jlong'. 'CallStaticLongMethod'}.
+		{'public'. 'longResult'. 'jfloat'. 'CallStaticFloatMethod'}.
+		{'public'. 'wordResult'. 'jdouble'. 'CallStaticDoubleMethod'}.
+	}.
+	instance:: self new.
+	privateMethods:: getPrivateMethods: instance.
+	privateMethods do: [:eachMethod | generateMethodsFrom: eachMethod instance: instance regexFrom: regexFrom regexTo: regexTo].
+)
+private generateMethodsFrom: sourceMethod instance: instance regexFrom: from regexTo: to = (
+	
+)
+private getPrivateMethods: instance = (
+	^{}
+)
+private getPublicMethods: instance = (
+	^{}
+)
+)
 public CallStaticBooleanMethod: clazz methodID: methodID = (
 	(* 	jboolean CallStaticBooleanMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
 
