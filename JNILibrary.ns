@@ -96,6 +96,60 @@ public CallStaticBooleanMethodA: clazz methodID: methodID args: args= (
 
 	^byteResult: (CallStaticTypeMethodA: (api CallStaticBooleanMethodA) clazz: clazz methodID: methodID args: args).
 )
+public CallStaticByteMethod: clazz methodID: methodID = (
+	(* 	jbyte CallStaticByteMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
+
+		See documentation for CallStaticTypeMethod.	*)
+	^byteResult: (CallStaticTypeMethod: (api CallStaticByteMethod) clazz: clazz methodID: methodID).
+)
+public CallStaticByteMethod: clazz methodID: methodID with: arg1= (
+	(* 	jbyte CallStaticByteMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
+
+		See documentation for CallStaticTypeMethod.	*)
+
+	^byteResult: (CallStaticTypeMethod: (api CallStaticByteMethod) clazz: clazz methodID: methodID with: arg1).
+)
+public CallStaticByteMethod: clazz methodID: methodID withArguments: varArgs = (
+	(* 	jbyte CallStaticByteMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
+
+		See documentation for CallStaticTypeMethod.	*)
+
+	^byteResult: (CallStaticTypeMethod: (api CallStaticByteMethod) clazz: clazz methodID: methodID withArguments: varArgs).
+)
+public CallStaticByteMethodA: clazz methodID: methodID args: args= (
+	(* 	jbyte CallStaticByteMethodA(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args);
+
+		See documentation for CallStaticTypeMethodA.	*)
+
+	^byteResult: (CallStaticTypeMethodA: (api CallStaticByteMethodA) clazz: clazz methodID: methodID args: args).
+)
+public CallStaticCharMethod: clazz methodID: methodID = (
+	(* 	jchar CallStaticCharMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
+
+		See documentation for CallStaticTypeMethod.	*)
+	^shortResult: (CallStaticTypeMethod: (api CallStaticCharMethod) clazz: clazz methodID: methodID).
+)
+public CallStaticCharMethod: clazz methodID: methodID with: arg1= (
+	(* 	jchar CallStaticCharMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
+
+		See documentation for CallStaticTypeMethod.	*)
+
+	^shortResult: (CallStaticTypeMethod: (api CallStaticCharMethod) clazz: clazz methodID: methodID with: arg1).
+)
+public CallStaticCharMethod: clazz methodID: methodID withArguments: varArgs = (
+	(* 	jchar CallStaticCharMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
+
+		See documentation for CallStaticTypeMethod.	*)
+
+	^shortResult: (CallStaticTypeMethod: (api CallStaticCharMethod) clazz: clazz methodID: methodID withArguments: varArgs).
+)
+public CallStaticCharMethodA: clazz methodID: methodID args: args= (
+	(* 	jchar CallStaticCharMethodA(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args);
+
+		See documentation for CallStaticTypeMethodA.	*)
+
+	^shortResult: (CallStaticTypeMethodA: (api CallStaticCharMethodA) clazz: clazz methodID: methodID args: args).
+)
 public CallStaticObjectMethod: clazz methodID: methodID = (
 	(* 	jobject CallStaticObjectMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
 
@@ -122,6 +176,33 @@ public CallStaticObjectMethodA: clazz methodID: methodID args: args= (
 		See documentation for CallStaticTypeMethodA.	*)
 
 	^pointerResult: (CallStaticTypeMethodA: (api CallStaticObjectMethodA) clazz: clazz methodID: methodID args: args).
+)
+public CallStaticShortMethod: clazz methodID: methodID = (
+	(* 	jshort CallStaticShortMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
+
+		See documentation for CallStaticTypeMethod.	*)
+	^shortResult: (CallStaticTypeMethod: (api CallStaticShortMethod) clazz: clazz methodID: methodID).
+)
+public CallStaticShortMethod: clazz methodID: methodID with: arg1= (
+	(* 	jshort CallStaticShortMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
+
+		See documentation for CallStaticTypeMethod.	*)
+
+	^shortResult: (CallStaticTypeMethod: (api CallStaticShortMethod) clazz: clazz methodID: methodID with: arg1).
+)
+public CallStaticShortMethod: clazz methodID: methodID withArguments: varArgs = (
+	(* 	jshort CallStaticShortMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
+
+		See documentation for CallStaticTypeMethod.	*)
+
+	^shortResult: (CallStaticTypeMethod: (api CallStaticShortMethod) clazz: clazz methodID: methodID withArguments: varArgs).
+)
+public CallStaticShortMethodA: clazz methodID: methodID args: args= (
+	(* 	jshort CallStaticShortMethodA(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args);
+
+		See documentation for CallStaticTypeMethodA.	*)
+
+	^shortResult: (CallStaticTypeMethodA: (api CallStaticCharMethodA) clazz: clazz methodID: methodID args: args).
 )
 private CallStaticTypeMethod: apiMethod clazz: clazz methodID: methodID = (
 	(* 	NativeType CallStatic<type>Method(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
@@ -276,6 +357,11 @@ private pointerResult: primFFIBlock = (
 	| result = Alien new: 4. |
 	primFFIBlock value: result.
 	^Alien forPointer: (result unsignedLongAt: 1).
+)
+private shortResult: primFFIBlock = (
+	| result = Alien new: 2. |
+	primFFIBlock value: result.
+	^result.
 )
 private voidResult: primFFIBlock = (
 	primFFIBlock value: nil.
