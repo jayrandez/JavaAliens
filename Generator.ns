@@ -10,6 +10,14 @@ private methods
 builderFor: aClass = (
 	^(ObjectMirror reflecting: aClass) getClass mixin declaration asBuilder.
 )
+public deflate: inflatableClass = (
+	builder:: builderFor: inflatableClass.
+	methods:: builder instanceSide methods.
+	
+	publicMethods do: [:eachPublicMethod | methods removeMirrorNamed: (eachPublicMethod name)].
+
+	install.
+)
 public inflate: inflatableClass = (
 	| from to |
 	builder:: builderFor: inflatableClass.
@@ -17,20 +25,15 @@ public inflate: inflatableClass = (
 	
 	from:: inflatableClass inflationSpecFrom.
 	to:: inflatableClass inflationSpecTo.
-	
-	Transcript clear.
-	
-	to do: [:eachTo | 
-		inflateMethodsFrom: from to: eachTo.
-	].
+	to do: [:eachTo | inflateMethodsFrom: from to: eachTo].
 
-	(* install *)
+	install.
 )
 inflateMethodsFrom: from to: to= (
 	| replaced |
 	privateMethods do: [:eachPrivateMethod |
 		replaced:: replacedSource: (eachPrivateMethod source) from: from to: to.
-		(*replaced inspect.*)
+		methods addFromSource: replaced.
 	].
 )
 install = (
@@ -49,7 +52,6 @@ replacedSource: source from: from to: to = (
 	[i <= (from size)] whileTrue: [
 		rx:: from at: i.
 		repl:: to at: i.
-		Transcript show: 'Replacing ', rx, ' with ', repl; cr.
 		replacedSource:: regex string: replacedSource copyWithRegex: rx matchesReplacedWith: repl.
 		i:: (i + 1).
 	].

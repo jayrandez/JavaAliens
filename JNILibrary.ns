@@ -69,6 +69,7 @@ public class JNIEnv withEnvPtr: envPointerAlien = (
 (* Encapsulates standard env methods. Function pointers provided by struct JNINativeInterface. *)|
 	env = envPointerAlien.
 	api = struct JNINativeInterface on: (Alien forPointer: (envPointerAlien unsignedLongAt: 1)).
+	theCallStatic = CallStatic new.
 |) (
 public class CallStatic = (
 (*	This family of operations invokes a static method on a Java object, according to the specified method ID. The methodID argument must be obtained by calling GetStaticMethodID().
@@ -106,59 +107,6 @@ private CallStaticTypeMethodA: clazz methodID: methodID args: args= (
 	^returnTypeResult: [:result | (api CallStaticTypeMethodA) primFFICallResult: result with: env with: clazz with: methodID with: args].
 )
 ) : (
-public clean = (
-	| builder methods publicMethods |
-	builder:: getBuilder.
-	methods:: getMethods: builder.
-	publicMethods:: getPublicMethods: builder.
-	publicMethods do: [:eachPublicMethod | methods removeMirrorNamed: (eachPublicMethod name)].
-	builder install.
-)
-private deleteMethod: method = (
-	
-)
-public generate = (
-	| regexFrom regexTo |
-	regexFrom:: {'private', 'returnTypeResult'. 'NativeType'. 'CallStaticTypeMethod'.}.
-	regexTo:: {
-		{'public'. 'pointerResult'. 'jobject'. 'CallStaticObjectMethod'}.
-		{'public'. 'byteResult'. 'jboolean'. 'CallStaticBooleanMethod'}.
-		{'public'. 'byteResult'. 'jbyte'. 'CallStaticByteMethod'}.
-		{'public'. 'shortResult'. 'jchar'. 'CallStaticCharMethod'}.
-		{'public'. 'shortResult'. 'jshort'. 'CallStaticShortMethod'}.
-		{'public'. 'longResult'. 'jint'. 'CallStaticIntMethod'}.
-		{'public'. 'wordResult'. 'jlong'. 'CallStaticLongMethod'}.
-		{'public'. 'longResult'. 'jfloat'. 'CallStaticFloatMethod'}.
-		{'public'. 'wordResult'. 'jdouble'. 'CallStaticDoubleMethod'}.
-	}.
-	generateMethodsFrom: regexFrom to: regexTo.
-)
-private generateMethodFrom: sourceMethod builder: builder regexFrom: from regexTo: to = (
-	{sourceMethod. from. to.} inspect.
-)
-private generateMethodsFrom: regexFrom to: regexTo = (
-	| builder methods privateMethods |
-	builder:: getBuilder.
-	methods:: getMethods: builder.
-	privateMethods:: getPrivateMethods: builder.
-	privateMethods do: [:eachPrivateMethod |
-		regexTo do: [:eachRegexTo |
-			generateMethodFrom: eachPrivateMethod builder: builder regexFrom: regexFrom regexTo: eachRegexTo.
-		].
-	].
-)
-private getBuilder = (
-	^(ObjectMirror reflecting: self) getClass mixin declaration asBuilder.
-)
-private getMethods: builder = (
-	^builder instanceSide methods.
-)
-private getPrivateMethods: builder = (
-	^(getMethods: builder) select: [:eachMethod | eachMethod accessModifier = #private]
-)
-private getPublicMethods: builder = (
-	^(getMethods: builder) select: [:eachMethod | eachMethod accessModifier = #public]
-)
 public inflationSpecFrom = (
 	^{'private'. 'returnTypeResult'. 'NativeType'. 'CallStaticTypeMethod'.}.
 )
@@ -173,215 +121,6 @@ public inflationSpecTo = (
 		{'public'. 'longResult'. 'jfloat'. 'CallStaticFloatMethod'}.
 		{'public'. 'wordResult'. 'jdouble'. 'CallStaticDoubleMethod'}.	}.
 )
-)
-public CallStaticBooleanMethod: clazz methodID: methodID = (
-	(* 	jboolean CallStaticBooleanMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
-
-		See documentation for CallStaticTypeMethod.	*)
-	^byteResult: (CallStaticTypeMethod: (api CallStaticBooleanMethod) clazz: clazz methodID: methodID).
-)
-public CallStaticBooleanMethod: clazz methodID: methodID with: arg1= (
-	(* 	jboolean CallStaticBooleanMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
-
-		See documentation for CallStaticTypeMethod.	*)
-
-	^byteResult: (CallStaticTypeMethod: (api CallStaticBooleanMethod) clazz: clazz methodID: methodID with: arg1).
-)
-public CallStaticBooleanMethod: clazz methodID: methodID withArguments: varArgs = (
-	(* 	jboolean CallStaticBooleanMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
-
-		See documentation for CallStaticTypeMethod.	*)
-
-	^byteResult: (CallStaticTypeMethod: (api CallStaticBooleanMethod) clazz: clazz methodID: methodID withArguments: varArgs).
-)
-public CallStaticBooleanMethodA: clazz methodID: methodID args: args= (
-	(* 	jboolean CallStaticBooleanMethodA(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args);
-
-		See documentation for CallStaticTypeMethodA.	*)
-
-	^byteResult: (CallStaticTypeMethodA: (api CallStaticBooleanMethodA) clazz: clazz methodID: methodID args: args).
-)
-public CallStaticByteMethod: clazz methodID: methodID = (
-	(* 	jbyte CallStaticByteMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
-
-		See documentation for CallStaticTypeMethod.	*)
-	^byteResult: (CallStaticTypeMethod: (api CallStaticByteMethod) clazz: clazz methodID: methodID).
-)
-public CallStaticByteMethod: clazz methodID: methodID with: arg1= (
-	(* 	jbyte CallStaticByteMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
-
-		See documentation for CallStaticTypeMethod.	*)
-
-	^byteResult: (CallStaticTypeMethod: (api CallStaticByteMethod) clazz: clazz methodID: methodID with: arg1).
-)
-public CallStaticByteMethod: clazz methodID: methodID withArguments: varArgs = (
-	(* 	jbyte CallStaticByteMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
-
-		See documentation for CallStaticTypeMethod.	*)
-
-	^byteResult: (CallStaticTypeMethod: (api CallStaticByteMethod) clazz: clazz methodID: methodID withArguments: varArgs).
-)
-public CallStaticByteMethodA: clazz methodID: methodID args: args= (
-	(* 	jbyte CallStaticByteMethodA(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args);
-
-		See documentation for CallStaticTypeMethodA.	*)
-
-	^byteResult: (CallStaticTypeMethodA: (api CallStaticByteMethodA) clazz: clazz methodID: methodID args: args).
-)
-public CallStaticCharMethod: clazz methodID: methodID = (
-	(* 	jchar CallStaticCharMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
-
-		See documentation for CallStaticTypeMethod.	*)
-	^shortResult: (CallStaticTypeMethod: (api CallStaticCharMethod) clazz: clazz methodID: methodID).
-)
-public CallStaticCharMethod: clazz methodID: methodID with: arg1= (
-	(* 	jchar CallStaticCharMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
-
-		See documentation for CallStaticTypeMethod.	*)
-
-	^shortResult: (CallStaticTypeMethod: (api CallStaticCharMethod) clazz: clazz methodID: methodID with: arg1).
-)
-public CallStaticCharMethod: clazz methodID: methodID withArguments: varArgs = (
-	(* 	jchar CallStaticCharMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
-
-		See documentation for CallStaticTypeMethod.	*)
-
-	^shortResult: (CallStaticTypeMethod: (api CallStaticCharMethod) clazz: clazz methodID: methodID withArguments: varArgs).
-)
-public CallStaticCharMethodA: clazz methodID: methodID args: args= (
-	(* 	jchar CallStaticCharMethodA(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args);
-
-		See documentation for CallStaticTypeMethodA.	*)
-
-	^shortResult: (CallStaticTypeMethodA: (api CallStaticCharMethodA) clazz: clazz methodID: methodID args: args).
-)
-public CallStaticObjectMethod: clazz methodID: methodID = (
-	(* 	jobject CallStaticObjectMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
-
-		See documentation for CallStaticTypeMethod.	*)
-	^pointerResult: (CallStaticTypeMethod: (api CallStaticObjectMethod) clazz: clazz methodID: methodID).
-)
-public CallStaticObjectMethod: clazz methodID: methodID with: arg1= (
-	(* 	jobject CallStaticObjectMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
-
-		See documentation for CallStaticTypeMethod.	*)
-
-	^pointerResult: (CallStaticTypeMethod: (api CallStaticObjectMethod) clazz: clazz methodID: methodID with: arg1).
-)
-public CallStaticObjectMethod: clazz methodID: methodID withArguments: varArgs = (
-	(* 	jobject CallStaticObjectMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
-
-		See documentation for CallStaticTypeMethod.	*)
-
-	^pointerResult: (CallStaticTypeMethod: (api CallStaticObjectMethod) clazz: clazz methodID: methodID withArguments: varArgs).
-)
-public CallStaticObjectMethodA: clazz methodID: methodID args: args= (
-	(* 	jobject CallStaticObjectMethodA(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args);
-
-		See documentation for CallStaticTypeMethodA.	*)
-
-	^pointerResult: (CallStaticTypeMethodA: (api CallStaticObjectMethodA) clazz: clazz methodID: methodID args: args).
-)
-public CallStaticShortMethod: clazz methodID: methodID = (
-	(* 	jshort CallStaticShortMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
-
-		See documentation for CallStaticTypeMethod.	*)
-	^shortResult: (CallStaticTypeMethod: (api CallStaticShortMethod) clazz: clazz methodID: methodID).
-)
-public CallStaticShortMethod: clazz methodID: methodID with: arg1= (
-	(* 	jshort CallStaticShortMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
-
-		See documentation for CallStaticTypeMethod.	*)
-
-	^shortResult: (CallStaticTypeMethod: (api CallStaticShortMethod) clazz: clazz methodID: methodID with: arg1).
-)
-public CallStaticShortMethod: clazz methodID: methodID withArguments: varArgs = (
-	(* 	jshort CallStaticShortMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
-
-		See documentation for CallStaticTypeMethod.	*)
-
-	^shortResult: (CallStaticTypeMethod: (api CallStaticShortMethod) clazz: clazz methodID: methodID withArguments: varArgs).
-)
-public CallStaticShortMethodA: clazz methodID: methodID args: args= (
-	(* 	jshort CallStaticShortMethodA(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args);
-
-		See documentation for CallStaticTypeMethodA.	*)
-
-	^shortResult: (CallStaticTypeMethodA: (api CallStaticCharMethodA) clazz: clazz methodID: methodID args: args).
-)
-private CallStaticTypeMethod: apiMethod clazz: clazz methodID: methodID = (
-	(* 	NativeType CallStatic<type>Method(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
-
-		This family of operations invokes a static method on a Java object, according to the specified method ID. The methodID argument must be obtained by calling GetStaticMethodID().
-
-		The method ID must be derived from clazz, not from one of its superclasses.
-
-		Programmers should place all arguments that are to be passed to the method immediately following the methodID argument. The CallStatic<type>Method routine accepts these arguments and passes them to the Java method that the programmer wishes to invoke.	*)
-
-	^[:result | apiMethod primFFICallResult: result with: env with: clazz with: methodID].
-)
-private CallStaticTypeMethod: apiMethod clazz: clazz methodID: methodID with: arg1= (
-	(* 	NativeType CallStatic<type>Method(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
-
-		This family of operations invokes a static method on a Java object, according to the specified method ID. The methodID argument must be obtained by calling GetStaticMethodID().
-
-		The method ID must be derived from clazz, not from one of its superclasses.
-
-		Programmers should place all arguments that are to be passed to the method immediately following the methodID argument. The CallStatic<type>Method routine accepts these arguments and passes them to the Java method that the programmer wishes to invoke.	*)
-
-	^[:result | apiMethod primFFICallResult: result with: env with: clazz with: methodID with: arg1].
-)
-private CallStaticTypeMethod: apiMethod clazz: clazz methodID: methodID withArguments: varArgs = (
-		(* 	NativeType CallStatic<type>Method(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
-
-		This family of operations invokes a static method on a Java object, according to the specified method ID. The methodID argument must be obtained by calling GetStaticMethodID().
-
-		The method ID must be derived from clazz, not from one of its superclasses.
-
-		Programmers should place all arguments that are to be passed to the method immediately following the methodID argument. The CallStatic<type>Method routine accepts these arguments and passes them to the Java method that the programmer wishes to invoke.	*)
-
-	| arguments |
-	arguments:: {env. clazz. methodID}, varArgs.
-	^[:result | apiMethod primFFICallResult: result withArguments: arguments].
-)
-private CallStaticTypeMethodA: apiMethodA clazz: clazz methodID: methodID args: args= (
-	(* 	NativeType CallStatic<type>MethodA(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args);
-
-		This family of operations invokes a static method on a Java object, according to the specified method ID. The methodID argument must be obtained by calling GetStaticMethodID().
-
-		The method ID must be derived from clazz, not from one of its superclasses.
-
-		Programmers should place all arguments to the method in an args array of jvalues that immediately follows the methodID argument. The CallStaticMethodA routine accepts the arguments in this array, and, in turn, passes them to the Java method that the programmer wishes to invoke.	*)
-
-	^[:result | apiMethodA primFFICallResult: result with: env with: clazz with: methodID with: args].
-)
-public CallStaticVoidMethod: clazz methodID: methodID = (
-	(*	void CallStaticVoidMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
-
-		See documentation for CallStaticTypeMethod.	*)
-
-	^voidResult: (CallStaticTypeMethod: (api CallStaticVoidMethod) clazz: clazz methodID: methodID)
-)
-public CallStaticVoidMethod: clazz methodID: methodID with: arg1 = (
-	(*	void CallStaticVoidMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
-
-		See documentation for CallStaticTypeMethod.	*)
-
-	^voidResult: (CallStaticTypeMethod: (api CallStaticVoidMethod) clazz: clazz methodID: methodID with: arg1).
-)
-public CallStaticVoidMethod: clazz methodID: methodID withArguments: varArgs = (
-	(*	void CallStaticVoidMethod(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
-
-		See documentation for CallStaticTypeMethod.	*)
-	
-	^voidResult: (CallStaticTypeMethod: (api CallStaticVoidMethod) clazz: clazz methodID: methodID withArguments: varArgs).
-)
-public CallStaticVoidMethodA: clazz methodID: methodID  args: args = (
-	(*	void CallStaticVoidMethodA(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args);
-
-		See documentation for CallStaticTypeMethodA.	*)
-
-	^voidResult: (CallStaticTypeMethodA: (api CallStaticVoidMethodA) clazz: clazz methodID: methodID args: args).
 )
 public FindClass: name  = (
 	(*	jclass FindClass(JNIEnv *env, const char *name);
@@ -457,6 +196,9 @@ private byteResult: primFFIBlock = (
 	| result = Alien new: 1. |
 	primFFIBlock value: result.
 	^result.
+)
+public callStatic = (
+	^theCallStatic
 )
 private pointerResult: primFFIBlock = (
 	| result = Alien new: 4. |

@@ -153,12 +153,12 @@ public get: fieldName = (
 )
 invokeCallStaticBooleanMethod: methodID args: args <Collection> = (
 	| result |
-	result:: env CallStaticBooleanMethod: jclass methodID: methodID withArguments: args.
+	result:: env callStatic CallStaticBooleanMethod: jclass methodID: methodID withArguments: args.
 	^result.
 )
 invokeCallStaticObjectMethod: methodID args: args <Collection> = (
 	| result |
-	result:: env CallStaticObjectMethod: jclass methodID: methodID withArguments: args.
+	result:: env callStatic CallStaticObjectMethod: jclass methodID: methodID withArguments: args.
 	^result.
 )
 invokeCallStaticVoidMethod: methodID args: args <Collection> = (

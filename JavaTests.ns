@@ -13,7 +13,19 @@ class JavaTests packageUsing: manifest = (|
 	generator
 	allTests = {JNILibraryStartVM. JavaAliensCallStaticMethods. JavaAliensRunApplication.}.
 |) (
-class JNILibraryGenerate classpath: classpath = Test classpath: classpath (|
+class JNILibraryDeflate classpath: classpath = Test classpath: classpath (|
+	CallStatic
+|) (
+public run = (
+	| env |
+	java loadClasspath: classpath.
+	env:: java env.
+	CallStatic:: env CallStatic.
+	generator deflate: CallStatic.
+)
+) : (
+)
+class JNILibraryInflate classpath: classpath = Test classpath: classpath (|
 	CallStatic
 |) (
 public run = (
@@ -22,7 +34,6 @@ public run = (
 	env:: java env.
 	CallStatic:: env CallStatic.
 	generator inflate: CallStatic.
-	(*generator clean: CallStatic*)
 )
 ) : (
 )
@@ -226,7 +237,7 @@ runTests = (
 	| tests classpath |
 	classpath:: '.\bin'.
 	(*tests:: allTests.*)
-	tests:: {JNILibraryGenerate}.
+	tests:: {JNILibraryInflate. JavaAliensRunApplication}.
 	tests do: [:eachTest | eachTest classpath: classpath].
 )
 ) : (
