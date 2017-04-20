@@ -325,6 +325,9 @@ public JavaString = (
 private defaultClasspath = (
 	^'.'
 )
+public env = (
+	^runtime env.
+)
 protected help = (
 	^AlienHelpers
 )

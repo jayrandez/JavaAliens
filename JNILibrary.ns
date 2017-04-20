@@ -106,19 +106,22 @@ private CallStaticTypeMethodA: clazz methodID: methodID args: args= (
 	^returnTypeResult: [:result | (api CallStaticTypeMethodA) primFFICallResult: result with: env with: clazz with: methodID with: args].
 )
 ) : (
-public clean: instance = (
-	| publicMethods |
-	publicMethods:: getPublicMethods: instance.
-	publicMethods do: [:eachMethod | deleteMethod: eachMethod].
+public clean = (
+	| builder methods publicMethods |
+	builder:: getBuilder.
+	methods:: getMethods: builder.
+	publicMethods:: getPublicMethods: builder.
+	publicMethods do: [:eachPublicMethod | methods removeMirrorNamed: (eachPublicMethod name)].
+	builder install.
 )
 private deleteMethod: method = (
 	
 )
 public generate = (
-	| instance regexFrom regexTo privateMethods |
+	| regexFrom regexTo |
 	regexFrom:: {'private', 'returnTypeResult'. 'NativeType'. 'CallStaticTypeMethod'.}.
 	regexTo:: {
-		{'public'. 'pointerResult', 'jobject'. 'CallStaticObjectMethod'}.
+		{'public'. 'pointerResult'. 'jobject'. 'CallStaticObjectMethod'}.
 		{'public'. 'byteResult'. 'jboolean'. 'CallStaticBooleanMethod'}.
 		{'public'. 'byteResult'. 'jbyte'. 'CallStaticByteMethod'}.
 		{'public'. 'shortResult'. 'jchar'. 'CallStaticCharMethod'}.
@@ -128,18 +131,47 @@ public generate = (
 		{'public'. 'longResult'. 'jfloat'. 'CallStaticFloatMethod'}.
 		{'public'. 'wordResult'. 'jdouble'. 'CallStaticDoubleMethod'}.
 	}.
-	instance:: self new.
-	privateMethods:: getPrivateMethods: instance.
-	privateMethods do: [:eachMethod | generateMethodsFrom: eachMethod instance: instance regexFrom: regexFrom regexTo: regexTo].
+	generateMethodsFrom: regexFrom to: regexTo.
 )
-private generateMethodsFrom: sourceMethod instance: instance regexFrom: from regexTo: to = (
-	
+private generateMethodFrom: sourceMethod builder: builder regexFrom: from regexTo: to = (
+	{sourceMethod. from. to.} inspect.
 )
-private getPrivateMethods: instance = (
-	^{}
+private generateMethodsFrom: regexFrom to: regexTo = (
+	| builder methods privateMethods |
+	builder:: getBuilder.
+	methods:: getMethods: builder.
+	privateMethods:: getPrivateMethods: builder.
+	privateMethods do: [:eachPrivateMethod |
+		regexTo do: [:eachRegexTo |
+			generateMethodFrom: eachPrivateMethod builder: builder regexFrom: regexFrom regexTo: eachRegexTo.
+		].
+	].
 )
-private getPublicMethods: instance = (
-	^{}
+private getBuilder = (
+	^(ObjectMirror reflecting: self) getClass mixin declaration asBuilder.
+)
+private getMethods: builder = (
+	^builder instanceSide methods.
+)
+private getPrivateMethods: builder = (
+	^(getMethods: builder) select: [:eachMethod | eachMethod accessModifier = #private]
+)
+private getPublicMethods: builder = (
+	^(getMethods: builder) select: [:eachMethod | eachMethod accessModifier = #public]
+)
+public inflationSpecFrom = (
+	^{'private'. 'returnTypeResult'. 'NativeType'. 'CallStaticTypeMethod'.}.
+)
+public inflationSpecTo = (
+	^{	{'public'. 'pointerResult'. 'jobject'. 'CallStaticObjectMethod'}.
+		{'public'. 'byteResult'. 'jboolean'. 'CallStaticBooleanMethod'}.
+		{'public'. 'byteResult'. 'jbyte'. 'CallStaticByteMethod'}.
+		{'public'. 'shortResult'. 'jchar'. 'CallStaticCharMethod'}.
+		{'public'. 'shortResult'. 'jshort'. 'CallStaticShortMethod'}.
+		{'public'. 'longResult'. 'jint'. 'CallStaticIntMethod'}.
+		{'public'. 'wordResult'. 'jlong'. 'CallStaticLongMethod'}.
+		{'public'. 'longResult'. 'jfloat'. 'CallStaticFloatMethod'}.
+		{'public'. 'wordResult'. 'jdouble'. 'CallStaticDoubleMethod'}.	}.
 )
 )
 public CallStaticBooleanMethod: clazz methodID: methodID = (

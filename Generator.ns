@@ -1,0 +1,59 @@
+Newspeak3
+'JavaAliens'
+class Generator usingPlatform: platform usingRegex: regex = (|
+ObjectMirror = platform mirrors ObjectMirror.
+Transcript = platform squeak Transcript.
+private regex = regex.
+private builder
+private methods
+|) (
+builderFor: aClass = (
+	^(ObjectMirror reflecting: aClass) getClass mixin declaration asBuilder.
+)
+public inflate: inflatableClass = (
+	| from to |
+	builder:: builderFor: inflatableClass.
+	methods:: builder instanceSide methods.
+	
+	from:: inflatableClass inflationSpecFrom.
+	to:: inflatableClass inflationSpecTo.
+	
+	Transcript clear.
+	
+	to do: [:eachTo | 
+		inflateMethodsFrom: from to: eachTo.
+	].
+
+	(* install *)
+)
+inflateMethodsFrom: from to: to= (
+	| replaced |
+	privateMethods do: [:eachPrivateMethod |
+		replaced:: replacedSource: (eachPrivateMethod source) from: from to: to.
+		(*replaced inspect.*)
+	].
+)
+install = (
+	builder install.
+)
+privateMethods = (
+	^methods select: [:eachMethod | eachMethod accessModifier = #private].
+)
+publicMethods = (
+	^methods select: [:eachMethod | eachMethod accessModifier = #public].
+)
+replacedSource: source from: from to: to = (
+	| replacedSource rx repl i |
+	replacedSource:: source.
+	i:: 1.
+	[i <= (from size)] whileTrue: [
+		rx:: from at: i.
+		repl:: to at: i.
+		Transcript show: 'Replacing ', rx, ' with ', repl; cr.
+		replacedSource:: regex string: replacedSource copyWithRegex: rx matchesReplacedWith: repl.
+		i:: (i + 1).
+	].
+	^replacedSource
+)
+) : (
+)

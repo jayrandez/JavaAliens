@@ -3,12 +3,29 @@ Newspeak3
 class JavaTests packageUsing: manifest = (|
 	private JNILibrary = manifest JNILibrary.
 	private JavaAliens = manifest JavaAliensForSqueak.
+	private RegexMatcher = manifest RegexMatcher.
+	private Generator = manifest Generator.
 	List
 	Alien
 	jni
 	java
+	regex
+	generator
 	allTests = {JNILibraryStartVM. JavaAliensCallStaticMethods. JavaAliensRunApplication.}.
 |) (
+class JNILibraryGenerate classpath: classpath = Test classpath: classpath (|
+	CallStatic
+|) (
+public run = (
+	| env |
+	java loadClasspath: classpath.
+	env:: java env.
+	CallStatic:: env CallStatic.
+	generator inflate: CallStatic.
+	(*generator clean: CallStatic*)
+)
+) : (
+)
 class JNILibraryStartVM classpath: classpath = Test classpath: classpath (
 (* Instantiate VM Instance and run mainClass in classPath. *)|
 	jvm
@@ -197,7 +214,9 @@ run = (
 public main: platform args: args = (
 	jni:: JNILibrary usingPlatform: platform.
 	java:: JavaAliens usingPlatform: platform usingJNILibrary: jni.
-
+	regex:: RegexMatcher usingPlatform: platform.
+	generator:: Generator usingPlatform: platform usingRegex: regex.
+	
 	List:: platform collections List.
 	Alien:: platform aliens Alien.
 
@@ -207,7 +226,7 @@ runTests = (
 	| tests classpath |
 	classpath:: '.\bin'.
 	(*tests:: allTests.*)
-	tests:: {JavaAliensCallStaticMethods}.
+	tests:: {JNILibraryGenerate}.
 	tests do: [:eachTest | eachTest classpath: classpath].
 )
 ) : (
