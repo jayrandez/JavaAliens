@@ -111,7 +111,8 @@ public inflationSpecFrom = (
 	^{'private'. 'returnTypeResult'. 'NativeType'. 'CallStaticTypeMethod'.}.
 )
 public inflationSpecTo = (
-	^{	{'public'. 'pointerResult'. 'jobject'. 'CallStaticObjectMethod'}.
+	^{	{'public'. 'voidResult'. 'void'. 'CallStaticVoidMethod'}.
+		{'public'. 'pointerResult'. 'jobject'. 'CallStaticObjectMethod'}.
 		{'public'. 'byteResult'. 'jboolean'. 'CallStaticBooleanMethod'}.
 		{'public'. 'byteResult'. 'jbyte'. 'CallStaticByteMethod'}.
 		{'public'. 'shortResult'. 'jchar'. 'CallStaticCharMethod'}.

@@ -162,7 +162,7 @@ invokeCallStaticObjectMethod: methodID args: args <Collection> = (
 	^result.
 )
 invokeCallStaticVoidMethod: methodID args: args <Collection> = (
-	env CallStaticVoidMethod: jclass methodID: methodID withArguments: args.
+	env callStatic CallStaticVoidMethod: jclass methodID: methodID withArguments: args.
 )
 public new: arg = (
 	
