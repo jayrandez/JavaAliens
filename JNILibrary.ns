@@ -339,11 +339,53 @@ public CallStaticBooleanMethod = (
 public CallStaticBooleanMethodA = (
 	^methodIndex: 119
 )
+public CallStaticByteMethod = (
+	^methodIndex: 120
+)
+public CallStaticByteMethodA = (
+	^methodIndex: 122
+)
+public CallStaticCharMethod = (
+	^methodIndex: 123
+)
+public CallStaticCharMethodA = (
+	^methodIndex: 125
+)
+public CallStaticDoubleMethod = (
+	^methodIndex: 138
+)
+public CallStaticDoubleMethodA = (
+	^methodIndex: 140
+)
+public CallStaticFloatMethod = (
+	^methodIndex: 135
+)
+public CallStaticFloatMethodA = (
+	^methodIndex: 137
+)
+public CallStaticIntMethod = (
+	^methodIndex: 129
+)
+public CallStaticIntMethodA = (
+	^methodIndex: 131
+)
+public CallStaticLongMethod = (
+	^methodIndex: 132
+)
+public CallStaticLongMethodA = (
+	^methodIndex: 134
+)
 public CallStaticObjectMethod = (
 	^methodIndex: 114
 )
 public CallStaticObjectMethodA = (
 	^methodIndex: 116
+)
+public CallStaticShortMethod = (
+	^methodIndex: 126
+)
+public CallStaticShortMethodA = (
+	^methodIndex: 128
 )
 public CallStaticVoidMethod = (
 	^methodIndex: 141
