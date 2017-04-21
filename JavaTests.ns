@@ -186,8 +186,6 @@ public run = (
 	javaClass:: java JavaClass find: 'JavaInstanceTest'.
 
 	testConstruction: javaClass.
-
-	'Test Passed' inspect.
 )
 testConstruction: javaClass = (
 	| javaInt javaObject |
