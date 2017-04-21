@@ -266,6 +266,15 @@ public GetObjectArrayElement: array index: index = (
 
 	^pointerResult: [:result | api GetObjectArrayElement primFFICallResult: result with: env with: array with: index].
 )
+public GetStaticFieldID: clazz name: name sig: sig = (
+	(*	jfieldID GetStaticFieldID(JNIEnv *env, jclass clazz, const char *name, const char *sig);
+
+		Returns the field ID for a static field of a class. The field is specified by its name and signature. The GetStatic<type>Field and SetStatic<type>Field families of accessor functions use field IDs to retrieve static fields.
+
+		GetStaticFieldID() causes an uninitialized class to be initialized.	*)
+
+	^pointerResult: [:result | api GetStaticFieldID primFFICallResult: result with: env with: clazz with: name with: sig].
+)
 public GetStaticMethodID: clazz name: name sig: sig = (
 	(*	jmethodID GetStaticMethodID(JNIEnv *env, jclass clazz,
 		const char *name, const char *sig);
@@ -275,6 +284,15 @@ public GetStaticMethodID: clazz name: name sig: sig = (
 		GetStaticMethodID() causes an uninitialized class to be initialized.	*)
 
 	^pointerResult: [:result | api GetStaticMethodID primFFICallResult: result with: env with: clazz with: name with: sig].
+)
+public GetStaticTypeField: returnType clazz: clazz fieldID: fieldID = (
+	(*	NativeType GetStatic<type>Field(JNIEnv *env, jclass clazz, jfieldID fieldID);
+
+		This family of accessor routines returns the value of a static field of an object. The field to access is specified by a field ID, which is obtained by calling GetStaticFieldID().		*)
+
+	| apiCall |
+	apiCall:: api GetStaticTypeField: returnType.
+	^returnType result: [:result | apiCall primFFICallResult: result with: env with: clazz with: fieldID].
 )
 public GetStringUTFChars: string isCopy: isCopy = (
 	(*	const char * GetStringUTFChars(JNIEnv *env, jstring string,
@@ -321,7 +339,7 @@ private doubleResult: primFFIBlock = (
 	^result.
 )
 private floatResult: primFFIBlock = (
-	| result = Alien newC: 4. |
+	| result = Alien new: 4. |
 	primFFIBlock value: result.
 	^result.
 )
@@ -415,8 +433,16 @@ public FindClass = (
 public GetObjectArrayElement = (
 	^methodAtIndex: 173
 )
+public GetStaticFieldID = (
+	^methodAtIndex: 144
+)
 public GetStaticMethodID = (
 	^methodAtIndex: 113
+)
+public GetStaticTypeField: returnType = (
+	| index |
+	index:: 145 + (returnType tablePosition) - 1.
+	^methodAtIndex: index.
 )
 public GetStringUTFChars = (
 	^methodAtIndex: 169
@@ -430,7 +456,7 @@ public NewStringUTF = (
 public SetObjectArrayElement = (
 	^methodAtIndex: 174
 )
-public methodAtIndex: index = (
+private methodAtIndex: index = (
 	| location = ((index * 4) + 1).|
 	^Alien forPointer: (data unsignedLongAt: location)
 )

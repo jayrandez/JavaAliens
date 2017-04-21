@@ -27,7 +27,7 @@ public safePtr: pointerAlien = (
 	^(isNullPtr: pointerAlien) ifTrue: [nil] ifFalse: [pointerAlien]
 )
 )
-class FieldTypeTranslator = TypeTranslator (|
+class GetFieldTypeTranslator = TypeTranslator (|
 |) (
 public field: fieldName = (
 	| invocation |
@@ -45,6 +45,9 @@ public field: fieldName sig: sig = (
 )
 public translateField: fieldName = (
 	subclassResponsibility
+)
+public translateField: fieldName sig: sig = (
+	^subclassResponsibility
 )
 ) : (
 )
@@ -134,7 +137,7 @@ public translateField: staticFieldName = (
 )
 public translateField: staticFieldName sig: sig = (
 	| fieldID type |
-	fieldID:: env GetStaticFieldID: jclass name: (help cstring: staticFieldName).
+	fieldID:: env GetStaticFieldID: jclass name: (help cstring: staticFieldName) sig: (help cstring: sig).
 	(help isNullPtr: fieldID) ifTrue: [^StaticFieldNotFound].
 
 	type:: returnType: sig.
@@ -148,8 +151,14 @@ public asAlien = (
 public call = (
 	^callTranslator
 )
+public get = (
+	^getTranslator.
+)
 invokeCallStaticTypeMethod: returnType methodID: methodID args: args <Collection> = (
 	^env CallStaticTypeMethod: returnType clazz: jclass methodID: methodID withArguments: args.
+)
+invokeGetStaticTypeField: returnType fieldID: fieldID = (
+	^env GetStaticTypeField: returnType clazz: jclass fieldID: fieldID.
 )
 ) : (
 public find: name = (
@@ -320,6 +329,30 @@ private recreateVM = (
 	result = (jni OK) ifFalse: [^false].
 
 	^createVM
+)
+) : (
+)
+class SetFieldTypeTranslator = TypeTranslator (|
+|) (
+public field: fieldName = (
+	| invocation |
+	invocation:: translateField: fieldName.
+	^invocation isNil
+		ifTrue: [super doesNotUnderstand]
+		ifFalse: [invocation value]
+)
+public field: fieldName sig: sig = (
+	| invocation |
+	invocation:: translateField: fieldName sig: sig.
+	^invocation isNil
+		ifTrue: [super doesNotUnderstand]
+		ifFalse: [invocation value]
+)
+public translateField: fieldName = (
+	subclassResponsibility
+)
+public translateField: fieldName sig: sig = (
+	^subclassResponsibility
 )
 ) : (
 )
