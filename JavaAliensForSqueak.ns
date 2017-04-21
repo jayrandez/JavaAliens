@@ -58,21 +58,22 @@ private class JavaAliens usingJNIEnv: env = (
 (* All JavaAlien instances have access to a JNIEnv library through this module. *)|
 	env = env.
 |) (
-class JavaAlien on: anAlien = Struct on: anAlien (| env |) (
+private class JavaAlien on: alien <Alien> = (alien = alien) (
+public asAlien = (
+	^alien
+)
+public asJavaAlien = (
+	^self
+)
 ) : (
 )
-public class JavaArray jarray: jarray = (
-(* Encapsulates a jarray(jobject) pointer and invokes jarray-oriented api calls. *)|
-	jarray = jarray.
+public class JavaArray on: jarray <Alien> = JavaAlien on: jarray (|
 |) (
-public asAlien = (
-	^jarray
-)
 public getElement: index = (
-	(* Currently assuming the object is a String *)
+	(* Currently assuming the object is a String. *)
 	| jobject |
-	jobject:: env GetObjectArrayElement: jarray index: index.
-	^(isNullPtr: jobject)
+	jobject:: env GetObjectArrayElement: (self asAlien) index: index.
+	^(help isNullPtr: jobject)
 		ifTrue: [nil]
 		ifFalse: [String jstring: jobject].
 )
@@ -82,7 +83,7 @@ public setElements: values = (
 	values do: [:eachValue |
 		| valuePointer |
 		valuePointer:: eachValue asAlien.
-		env SetObjectArrayElement: jarray index: index value: valuePointer.
+		env SetObjectArrayElement: (self asAlien) index: index value: valuePointer.
 		index:: index + 1
 	]
 )
@@ -91,20 +92,18 @@ public emptyOf: elementClass = (
 	^self of: elementClass size: 0
 )
 public of: elementClass size: size = (
-	| jarray |
+	| jarray <Alien> |
 	jarray:: env NewObjectArray: size elementClass: (elementClass asAlien) initialElement: help nullPtr.
-	^(jarray address = 0) ifFalse: [JavaArray jarray: jarray] ifTrue: [couldNotCreateArray. nil]
+	^(jarray address = 0) ifFalse: [JavaArray on: jarray] ifTrue: [NewObjectArrayFailed.]
 )
 public of: elementClass values: values = (
-	| arrayObject |
-	arrayObject:: self of: elementClass size: (values size).
-	arrayObject setElements: values.
-	^arrayObject.
+	| instance <JavaArray> |
+	instance:: self of: elementClass size: (values size).
+	instance setElements: values.
+	^instance.
 )
 )
-public class JavaClass jclass: jclass = (
-(*Encapsulates a jclass pointer and invokes jclass-oriented api calls, notably static method api calls.*)|
-	jclass = jclass.
+public class JavaClass on: jclass <Alien> = JavaAlien on: jclass (|
 	callTranslator = CallStaticMethodTypeTranslator new.
 	getTranslator = GetStaticFieldTypeTranslator new.
 	setTranslator = SetStaticFieldTypeTranslator new.
@@ -164,9 +163,6 @@ public translateField: staticFieldName sig: sig = (
 )
 ) : (
 )
-public asAlien = (
-	^jclass.
-)
 public call = (
 	^callTranslator
 )
@@ -174,28 +170,77 @@ public get = (
 	^getTranslator.
 )
 invokeCallStaticTypeMethod: returnType methodID: methodID args: args <Collection> = (
-	^env CallStaticTypeMethod: returnType clazz: jclass methodID: methodID withArguments: args.
+	^env CallStaticTypeMethod: returnType clazz: (self asAlien) methodID: methodID withArguments: args.
 )
 invokeGetStaticTypeField: returnType fieldID: fieldID = (
-	^env GetStaticTypeField: returnType clazz: jclass fieldID: fieldID.
+	^env GetStaticTypeField: returnType clazz: (self asAlien) fieldID: fieldID.
 )
 invokeSetStaticTypeField: returnType fieldID: fieldID value: value = (
-	^env SetStaticTypeField: returnType clazz: jclass fieldID: fieldID value: value.
+	^env SetStaticTypeField: returnType clazz: (self asAlien) fieldID: fieldID value: value.
 )
 public set = (
 	^setTranslator
 )
 ) : (
-public find: name = (
-	| jclass |
+public find: name <String> = (
+	| jclass <Alien> |
 	jclass:: env FindClass: (name asAlien address).
 	^(help isNullPtr: jclass)
 		ifTrue: [nil]
-		ifFalse: [JavaClass jclass: jclass].
+		ifFalse: [JavaClass on: jclass].
 )
 )
-public class JavaString jstring: jstring = (|
-	jstring = jstring.
+private class JavaObject on: jobject <Alien> = JavaAlien on: jobject (|
+|) (
+) : (
+)
+public class JavaPrimitive on: direct <Alien> = JavaAlien on: direct (|
+|) (
+) : (
+public boolean: value <Boolean> = (
+	| jboolean = Alien new: 1. integerValue |
+	integerValue:: value ifTrue: [1] ifFalse: [0].
+	jboolean unsignedByteAt: 1 put: integerValue.
+	^self on: jboolean.
+)
+public byte: value <Integer> = (
+	| jbyte = Alien new: 1. |
+	jbyte signedByteAt: 1 put: value.
+	^self on: jbyte.
+)
+public char: value <Character | Integer> = (
+	| jchar = Alien new: 2. integerValue |
+	integerValue:: value isCharacter ifTrue: [value asciiValue] ifFalse: [value].
+	jchar unsignedShortAt: 1 put: integerValue.
+	^self on: jchar
+)
+public double: value <Float> = (
+	| jdouble = Alien new: 8. |
+	jdouble doubleAt: 1 put: value.
+	^self on: jdouble.
+)
+public float: value <Float> = (
+	| jfloat = Alien new: 4. |
+	jfloat floatAt: 1 put: value.
+	^self on: jfloat.
+)
+public int: value <Integer>  = (
+	| jint = Alien new: 4. |
+	jint signedLongAt: 1 put: value.
+	^self on: jint.
+)
+public long: value <Integer> = (
+	| jlong = Alien new: 8. |
+	jlong unsignedWordAt: 1 put: value.
+	^self on: jlong.
+)
+public short: value <Integer> = (
+	| jshort = Alien new: 2. |
+	jshort signedShortAt: 1 put: value.
+	^self on: jshort.
+)
+)
+public class JavaString on: jstring <Alien> = JavaAlien on: jstring (|
 |) (
 public asAlien = (
 	^jstring
@@ -206,12 +251,12 @@ public stringValue = (
 	^cstring strcpy.
 )
 ) : (
-public from: nsString = (
+public from: string <String> = (
 	| jstring |
-	jstring:: (env NewStringUTF: (help cstring: nsString)).
+	jstring:: (env NewStringUTF: (help cstring: string)).
 	^(jstring address = 0)
-		ifTrue: [CouldNotCreateString. nil.]
-		ifFalse: [JavaString jstring: jstring.]
+		ifTrue: [NewStringUTFFailed.]
+		ifFalse: [JavaString on: jstring.]
 )
 )
 ) : (

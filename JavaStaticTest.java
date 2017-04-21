@@ -4,18 +4,19 @@ import javax.swing.JOptionPane;
 
 public class JavaStaticTest
 {
-	public static Object objectField = new ArrayList<Object>();
-	public static boolean booleanField = true;
-	public static byte byteField = 2;
-	public static char charField = 'A';
-	public static short shortField = 3;
-	public static int intField = 7;
-	public static long longField = 5;
-	public static float floatField = 5.5f;
-	public static double doubleField = 5.75;
+	public static Object objectField;
+	public static boolean booleanField;
+	public static byte byteField;
+	public static char charField;
+	public static short shortField;
+	public static int intField;
+	public static long longField;
+	public static float floatField;
+	public static double doubleField;
 
 	public static void setAll(Object anObject, boolean aBoolean, byte aByte, char aChar,
 			short aShort, int anInt, long aLong, float aFloat, double aDouble) {
+		objectField = anObject;
 		booleanField = aBoolean;
 		byteField = aByte;
 		charField = aChar;
