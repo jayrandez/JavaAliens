@@ -166,7 +166,7 @@ public translateNewSig: sig = (
 	methodID:: env GetMethodID: (outer JavaClass asAlien) name: (help cstring: '<init>') sig: (help cstring: sig).
 	(help isNullPtr: methodID) ifTrue: [^MethodNotFound].
 
-	^[:args | package: (invokeNewObject: methodID args: args) as JavaObject].
+	^[:args | package: (invokeNewObject: methodID args: args) as: JavaObject].
 )
 ) : (
 )
@@ -257,8 +257,7 @@ public class JavaObject on: jobject <Alien> = JavaAlien on: jobject (|
 |) (
 public javaClass = (
 	| returnType |
-	returnType:: env returnType jobject packager: [:result | javaAliens JavaClass on: result].
-	^env GetObjectClass: returnType obj: (self asAlien).
+	^JavaClass on: (env GetObjectClass: (self asAlien)).
 )
 ) : (
 )
@@ -506,7 +505,7 @@ class TypeEntry returnType: returnType alienClass: alienClass = (|
 ) : (
 )
 public package: alien <Alien> as: alienClass <JavaAlien class> = (
-	alienClass on: alien.
+	^alienClass on: alien.
 )
 protected translateSig: sig = (
 	| firstChar = (sig at: 1). |
