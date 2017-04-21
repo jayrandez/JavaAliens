@@ -104,6 +104,18 @@ public of: elementClass values: values = (
 	^instance.
 )
 )
+public class JavaBoolean on: jboolean = JavaPrimitive on: jboolean (|
+|) (
+) : (
+)
+public class JavaByte on: jbyte = JavaPrimitive on: jbyte (|
+|) (
+) : (
+)
+public class JavaChar on: jchar = JavaPrimitive on: jchar (|
+|) (
+) : (
+)
 public class JavaClass on: jclass = JavaAlien on: jclass (|
 	callTranslator = CallStaticMethodTypeTranslator new.
 	getTranslator = GetStaticFieldTypeTranslator new.
@@ -135,7 +147,7 @@ public translateMethod: staticMethodName sig: sig = (
 	)
 ) : (
 )
-private class ConstructTranslator = (||) (
+private class ConstructTranslator = TypeTranslator (||) (
 public new: args <List> = (
 	unimplemented.
 )
@@ -148,11 +160,12 @@ public new: args <List> sig: sig = (
 		ifFalse: [invocation value: nativeArgs].
 )
 public translateNewSig: sig = (
-	| methodID |
+	| methodID type |
 	methodID:: env GetMethodID: (outer JavaClass asAlien) name: (help cstring: '<init>') sig: (help cstring: sig).
 	(help isNullPtr: methodID) ifTrue: [^MethodNotFound].
 
-	^[:args | invokeNewObject: methodID args: args].
+	type:: returnType: 'L'.
+	^[:args | invokeNewObject: type methodID: methodID args: args].
 )
 ) : (
 )
@@ -201,8 +214,8 @@ invokeCallStaticTypeMethod: returnType methodID: methodID args: args <Collection
 invokeGetStaticTypeField: returnType fieldID: fieldID = (
 	^env GetStaticTypeField: returnType clazz: (self asAlien) fieldID: fieldID.
 )
-invokeNewObject: methodID args: args = (
-	^env NewObject: (self asAlien) methodID: methodID withArguments: args.
+invokeNewObject: returnType methodID: methodID args: args = (
+	^env NewObject: returnType clazz: (self asAlien) methodID: methodID withArguments: args.
 )
 invokeSetStaticTypeField: returnType fieldID: fieldID value: value = (
 	^env SetStaticTypeField: returnType clazz: (self asAlien) fieldID: fieldID value: value.
@@ -219,8 +232,29 @@ public find: name <String> = (
 		ifFalse: [JavaClass on: jclass].
 )
 )
-private class JavaObject on: jobject <Alien> = JavaAlien on: jobject (|
+public class JavaDouble on: jdouble = JavaPrimitive on: jdouble (|
 |) (
+) : (
+)
+public class JavaFloat on: jfloat = JavaPrimitive on: jfloat (|
+|) (
+) : (
+)
+public class JavaInt on: jint = JavaPrimitive on: jint (|
+|) (
+) : (
+)
+public class JavaLong on: jlong = JavaPrimitive on: jlong (|
+|) (
+) : (
+)
+public class JavaObject on: jobject <Alien> = JavaAlien on: jobject (|
+|) (
+public javaClass = (
+	| returnType |
+	returnType:: env returnType jobject packager: [:result | javaAliens JavaClass on: result].
+	^env GetObjectClass: returnType obj: (self asAlien).
+)
 ) : (
 )
 public class JavaPrimitive on: direct <Alien> = JavaAlien on: direct (|
@@ -268,6 +302,10 @@ public short: value <Integer> = (
 	jshort signedShortAt: 1 put: value.
 	^self on: jshort.
 )
+)
+public class JavaShort on: jshort = JavaPrimitive on: jshort (|
+|) (
+) : (
 )
 public class JavaString on: jstring <Alien> = JavaAlien on: jstring (|
 |) (
@@ -459,19 +497,22 @@ class TypeTranslator = (|
 protected dontPackage = (
 	^[:input | input]
 )
+protected packageAlien: type = (
+	^[:input | type on: input]
+)
 protected returnType: returnSignature = (
 	(* Can/should we query JNI for the return type instead of examining the signature? *)
 
 	returnSignature = 'V' ifTrue: [^env returnType void packager: dontPackage].
-	(returnSignature at: 1) = "L" ifTrue: [^env returnType jobject packager: dontPackage].
-	returnSignature = 'Z' ifTrue: [^env returnType jboolean packager: dontPackage].
-	returnSignature = 'I' ifTrue: [^env returnType jint packager: dontPackage].
-	returnSignature = 'D' ifTrue: [^env returnType jdouble packager: dontPackage].
-	returnSignature = 'J' ifTrue: [^env returnType jlong packager: dontPackage].
-	returnSignature = 'B' ifTrue: [^env returnType jbyte packager: dontPackage].
-	returnSignature = 'F' ifTrue: [^env returnType jfloat packager: dontPackage].
-	returnSignature = 'C' ifTrue: [^env returnType jchar packager: dontPackage].
-	returnSignature = 'S' ifTrue: [^env returnType jshort packager: dontPackage].
+	(returnSignature at: 1) = "L" ifTrue: [^env returnType jobject packager: (packageAlien: (javaAliens JavaObject))].
+	returnSignature = 'Z' ifTrue: [^env returnType jboolean packager: (packageAlien: (javaAliens JavaBoolean))].
+	returnSignature = 'I' ifTrue: [^env returnType jint packager: (packageAlien: (javaAliens JavaInt))].
+	returnSignature = 'D' ifTrue: [^env returnType jdouble packager: (packageAlien: (javaAliens JavaDouble))].
+	returnSignature = 'J' ifTrue: [^env returnType jlong packager: (packageAlien: (javaAliens JavaLong))].
+	returnSignature = 'B' ifTrue: [^env returnType jbyte packager: (packageAlien: (javaAliens JavaBoolean))].
+	returnSignature = 'F' ifTrue: [^env returnType jfloat packager: (packageAlien: (javaAliens JavaFloat))].
+	returnSignature = 'C' ifTrue: [^env returnType jchar packager: (packageAlien: (javaAliens JavaChar))].
+	returnSignature = 'S' ifTrue: [^env returnType jshort packager: (packageAlien: (javaAliens JavaShort))].
 	
 	^nil
 )
@@ -482,6 +523,12 @@ public JavaArray = (
 )
 public JavaClass = (
 	^javaAliens JavaClass
+)
+public JavaObject = (
+	^javaAliens JavaObject
+)
+public JavaPrimitive = (
+	^javaAliens JavaPrimitive
 )
 public JavaString = (
 	^javaAliens JavaString
@@ -495,7 +542,7 @@ public env = (
 protected help = (
 	^AlienHelpers
 )
-private javaAliens = (
+public javaAliens = (
 	theJavaAliens isNil ifTrue: [loadRuntime: defaultClasspath].
 	^theJavaAliens
 )

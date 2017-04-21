@@ -277,6 +277,13 @@ public GetObjectArrayElement: array index: index = (
 
 	^pointerResult: [:result | api GetObjectArrayElement primFFICallResult: result with: env with: array with: index].
 )
+public GetObjectClass: returnType obj: obj = (
+	(*	jclass GetObjectClass(JNIEnv *env, jobject obj);
+
+		Returns the class of an object.	*)
+
+	^returnType result: [:result | api GetObjectClass primFFICallResult: result with: env with: obj].
+)
 public GetStaticFieldID: clazz name: name sig: sig = (
 	(*	jfieldID GetStaticFieldID(JNIEnv *env, jclass clazz, const char *name, const char *sig);
 
@@ -315,7 +322,7 @@ public GetStringUTFChars: string isCopy: isCopy = (
 
 	^pointerResult: [:result |api GetStringUTFChars primFFICallResult: result with: env with: string with: isCopy].
 )
-public NewObject: clazz methodID: methodID withArguments: varArgs = (
+public NewObject: returnType clazz: clazz methodID: methodID withArguments: varArgs = (
 	(*	jobject NewObject(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
 
 		Constructs a new Java object. The method ID indicates which constructor method to invoke. This ID must be obtained by calling GetMethodID() with <init> as the method name and void (V) as the return type.
@@ -324,7 +331,7 @@ public NewObject: clazz methodID: methodID withArguments: varArgs = (
 
 	| arguments |
 	arguments:: {env. clazz. methodID}, varArgs.
-	^pointerResult: [:result | api NewObject primFFICallResult: result withArguments: arguments].
+	^returnType result: [:result | api NewObject primFFICallResult: result withArguments: arguments].
 )
 public NewObjectArray: length elementClass: elementClass initialElement: initialElement = (
 	(*	jobjectArray NewObjectArray(JNIEnv *env, jsize length,
@@ -468,6 +475,9 @@ public GetMethodID = (
 )
 public GetObjectArrayElement = (
 	^methodAtIndex: 173
+)
+public GetObjectClass = (
+	^methodAtIndex: 31.
 )
 public GetStaticFieldID = (
 	^methodAtIndex: 144
