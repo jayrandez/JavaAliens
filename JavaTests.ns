@@ -1,7 +1,7 @@
 Newspeak3
 'JavaAliens'
 class JavaTests packageUsing: manifest = (|
-	private JNILibrary = manifest JNILibrary.
+	private JNI = manifest JNI.
 	private JavaAliens = manifest JavaAliensForSqueak.
 	private RegexMatcher = manifest RegexMatcher.
 	private Generator = manifest Generator.
@@ -12,7 +12,7 @@ class JavaTests packageUsing: manifest = (|
 	regex
 	generator
 |) (
-class JNILibraryDeflate classpath: classpath = Test classpath: classpath (|
+class JNIDeflate classpath: classpath = Test classpath: classpath (|
 	CallStatic
 |) (
 public run = (
@@ -24,7 +24,7 @@ public run = (
 )
 ) : (
 )
-class JNILibraryInflate classpath: classpath = Test classpath: classpath (|
+class JNIInflate classpath: classpath = Test classpath: classpath (|
 	CallStatic
 |) (
 public run = (
@@ -36,7 +36,7 @@ public run = (
 )
 ) : (
 )
-class JNILibraryStartVM classpath: classpath = Test classpath: classpath (
+class JNIStartVM classpath: classpath = Test classpath: classpath (
 (* Instantiate VM Instance and run mainClass in classPath. *)|
 	jvm
 	env
@@ -298,8 +298,8 @@ run = (
 ) : (
 )
 public main: platform args: args = (
-	jni:: JNILibrary usingPlatform: platform.
-	java:: JavaAliens usingPlatform: platform usingJNILibrary: jni.
+	jni:: JNI usingPlatform: platform.
+	java:: JavaAliens usingPlatform: platform usingJNI: jni.
 	regex:: RegexMatcher usingPlatform: platform.
 	generator:: Generator usingPlatform: platform usingRegex: regex.
 	
@@ -312,7 +312,7 @@ runTests = (
 	| tests classpath |
 	classpath:: '.\bin'.
 	(*tests:: allTests.*)
-	tests:: { JNILibraryStartVM. JavaAliensRunApplication. JavaAliensStatic. JavaAliensInstance. }.
+	tests:: { JNIStartVM. JavaAliensRunApplication. JavaAliensStatic. JavaAliensInstance. }.
 	tests do: [:eachTest | eachTest classpath: classpath].
 )
 ) : (

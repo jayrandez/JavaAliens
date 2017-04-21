@@ -1,6 +1,6 @@
 Newspeak3
 'JavaAliens'
-class JavaAliensForSqueak usingPlatform: platform usingJNILibrary: jni = (
+class JavaAliensForSqueak usingPlatform: platform usingJNI: jni = (
 (* Java FFI built using JNI and Newspeak Aliens FFI. *)|
 	Alien = platform aliens Alien.
 	List = platform collections List.
