@@ -228,12 +228,12 @@ testStaticCallMethod: javaClass = (
 
 	(javaBoolean unsignedByteAt: 1) = 1 ifFalse: [TestFailed].
 	(javaByte unsignedByteAt: 1) = 2 ifFalse: [TestFailed].
-	(javaChar unsignedShortAt: 1) = ("A" asciiValue) ifFalse: [TestFailed].
-	(javaShort unsignedShortAt: 1) = 3 ifFalse: [TestFailed].
-	(javaInt unsignedLongAt: 1) = 7 ifFalse: [TestFailed].
-	(javaLong unsignedWordAt: 1) = 5 ifFalse: [TestFailed].
-	(*(((javaFloat floatAt: 1) < 5.6) and: [(javaFloat floatAt: 1) > 5.4]) ifFalse: [TestFailed].
-	(((javaDouble doubleAt: 1) <  5.76) and: [(javaDouble doubleAt: 1) > 5.74]) ifFalse: [TestFailed].*)
+	(javaChar unsignedShortAt: 1) = ("3" asciiValue) ifFalse: [TestFailed].
+	(javaShort unsignedShortAt: 1) = 4 ifFalse: [TestFailed].
+	(javaInt unsignedLongAt: 1) = 5 ifFalse: [TestFailed].
+	(javaLong unsignedWordAt: 1) = 6 ifFalse: [TestFailed].
+	(*(((javaFloat floatAt: 1) < 7.1) and: [(javaFloat floatAt: 1) > 6.9]) ifFalse: [TestFailed].
+	(((javaDouble doubleAt: 1) <  8.1) and: [(javaDouble doubleAt: 1) > 7.9]) ifFalse: [TestFailed].*)
 )
 testStaticCallMethodVoidAndArgs: javaClass = (
 	
@@ -253,35 +253,35 @@ public testStaticGetField: javaClass = (
 
 	(javaBoolean unsignedByteAt: 1) = 1 ifFalse: [TestFailed].
 	(javaByte unsignedByteAt: 1) = 2 ifFalse: [TestFailed].
-	(javaChar unsignedShortAt: 1) = ("A" asciiValue) ifFalse: [TestFailed].
-	(javaShort unsignedShortAt: 1) = 3 ifFalse: [TestFailed].
-	(javaInt unsignedLongAt: 1) = 7 ifFalse: [TestFailed].
-	(javaLong unsignedWordAt: 1) = 5 ifFalse: [TestFailed].
-	(*(((javaFloat floatAt: 1) < 5.6) and: [(javaFloat floatAt: 1) > 5.4]) ifFalse: [TestFailed].
-	(((javaDouble doubleAt: 1) <  5.76) and: [(javaDouble doubleAt: 1) > 5.74]) ifFalse: [TestFailed].*)
+	(javaChar unsignedShortAt: 1) = ("3" asciiValue) ifFalse: [TestFailed].
+	(javaShort unsignedShortAt: 1) = 4 ifFalse: [TestFailed].
+	(javaInt unsignedLongAt: 1) = 5 ifFalse: [TestFailed].
+	(javaLong unsignedWordAt: 1) = 6 ifFalse: [TestFailed].
+	(*(((javaFloat floatAt: 1) < 7.1) and: [(javaFloat floatAt: 1) > 6.9]) ifFalse: [TestFailed].
+	(((javaDouble doubleAt: 1) <  8.1) and: [(javaDouble doubleAt: 1) > 7.9]) ifFalse: [TestFailed].*)
 )
 public testStaticSetField: javaClass = (
 	| javaObject javaBoolean javaByte javaChar javaShort javaInt javaLong javaFloat javaDouble |
 
 	(*javaObject:: ... *)
-	javaBoolean:: Alien new: 1. 	javaBoolean unsignedByteAt: 1 put: 0.
-	javaByte:: Alien new: 1.		javaByte unsignedByteAt: 1 put: 5.
-	javaChar:: Alien new: 2.		javaChar unsignedShortAt: 1 put: ("Q" asciiValue).
-	javaShort:: Alien new: 2.		javaChar unsignedShortAt: 1 put: 8.
-	javaInt:: Alien new: 4.		javaInt unsignedLongAt: 1 put: 9.
-	javaLong:: Alien new: 8.		javaInt unsignedWordAt: 1 put: 10.
-	javaFloat:: Alien new: 4.		javaFloat floatAt: 1 put: 11.0.
-	javaDouble:: Alien new: 8.	javaDouble doubleAt: 1 put: 12.0.
+	javaBoolean:: Alien new: 1. 	javaBoolean unsignedByteAt: 1 put: 1.
+	javaByte:: Alien new: 1.		javaByte unsignedByteAt: 1 put: 2.
+	javaChar:: Alien new: 2.		javaChar unsignedShortAt: 1 put: ("3" asciiValue).
+	javaShort:: Alien new: 2.		javaShort unsignedShortAt: 1 put: 4.
+	javaInt:: Alien new: 4.		javaInt unsignedLongAt: 1 put: 5.
+	javaLong:: Alien new: 8.		javaLong unsignedWordAt: 1 put: 6.
+	javaFloat:: Alien new: 4.		javaFloat floatAt: 1 put: 7.0.
+	javaDouble:: Alien new: 8.	javaDouble doubleAt: 1 put: 8.0.
 
-	(*javaClass set field: 'objectField' to: javaObject.*)
-	javaClass set field: 'booleanField' to: javaBoolean.
-	javaClass set field: 'byteField' to: javaByte.
-	javaClass set field: 'charField' to: javaChar.
-	javaClass set field: 'shortField' to: javaShort.
-	javaClass set field: 'intField' to: javaInt.
-	javaClass set field: 'longField' to: javaLong.
-	(*javaFloat set field: 'floatField' to: javaFloat.
-	javaDouble set field: 'doubleField' to: javaDouble.*)
+	(*javaClass set field: 'objectField' sig: 'Ljava/lang/Object;' to: javaObject.*)
+	(javaClass set) field: 'booleanField' sig: 'Z' to: javaBoolean.
+	javaClass set field: 'byteField' sig: 'B' to: javaByte.
+	javaClass set field: 'charField' sig: 'C' to: javaChar.
+	javaClass set field: 'shortField' sig: 'S' to: javaShort.
+	javaClass set field: 'intField' sig: 'I' to: javaInt.
+	javaClass set field: 'longField' sig: 'J' to: javaLong.
+	(*javaFloat set field: 'floatField' sig: 'F' to: javaFloat.
+	javaDouble set field: 'doubleField' sig: 'D' to: javaDouble.*)
 )
 ) : (
 )

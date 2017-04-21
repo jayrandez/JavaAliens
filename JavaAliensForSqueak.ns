@@ -11,13 +11,11 @@ class JavaAliensForSqueak usingPlatform: platform usingJNILibrary: jni = (
 private class AlienHelpers = (
 (* Mainly Pointer Alien manipulation. Ideally this will go away. *)||) (
 ) : (
-public coerce: argList <JavaAlien | Collection[JavaAlien]> = (
-	(* 	Coerce is necessary so long as JavaAlien is not an Alien.
-		This function should still work if JavaAlien becomes an Alien, because Alien asAlien returns self.	*)
-
-	^argList isCollection
-		ifTrue: [argList collect: [:arg | arg asAlien]]
-		ifFalse: [argList asAlien].
+public coerce: arg <JavaAlien> = (
+	^arg asAlien.
+)
+public coerceList: argList <Collection[JavaAlien]> = (
+	^argList collect: [:arg | arg asAlien].
 )
 public cstring: string = (
 	^Alien forPointer: (string asAlien address).
@@ -185,7 +183,7 @@ invokeSetStaticTypeField: returnType fieldID: fieldID value: value = (
 	^env SetStaticTypeField: returnType clazz: jclass fieldID: fieldID value: value.
 )
 public set = (
-	^SetStaticFieldTypeTranslator
+	^setTranslator
 )
 ) : (
 public find: name = (
@@ -228,7 +226,7 @@ public method: staticMethodName arg: arg = (
 )
 public method: staticMethodName args: args = (
 	| invocation nativeArgs |
-	nativeArgs:: help coerce: args.
+	nativeArgs:: help coerceList: args.
 	invocation:: translateMethod: staticMethodName args: nativeArgs.
 	^invocation isNil
 		ifTrue: [super doesNotUnderstand]
@@ -242,7 +240,7 @@ public method: staticMethodName sig: sig arg: arg = (
 )
 public method: staticMethodName sig: sig args: args = (
 	| invocation nativeArgs |
-	nativeArgs:: help coerce: args.
+	nativeArgs:: help coerceList: args.
 	invocation:: translateMethod: staticMethodName sig: sig.
 	^invocation isNil
 		ifTrue: [super doesNotUnderstand]
