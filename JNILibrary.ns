@@ -259,17 +259,6 @@ public FindClass: name  = (
 
 	^pointerResult: [:result | api FindClass primFFICallResult: result with: env with: name].
 )
-public GetMethodID: clazz name: name sig: sig = (
-	(*	jmethodID GetMethodID(JNIEnv *env, jclass clazz, const char *name, const char *sig);
-
-		Returns the method ID for an instance (nonstatic) method of a class or interface. The method may be defined in one of the clazz’s superclasses and inherited by clazz. The method is determined by its name and signature.
-
-		GetMethodID() causes an uninitialized class to be initialized.
-
-		To obtain the method ID of a constructor, supply <init> as the method name and void (V) as the return type.	*)
-
-	^pointerResult: [:result | api GetMethodID primFFICallResult: result with: env with: clazz with: name with: sig].
-)
 public GetObjectArrayElement: array index: index = (
 	(*	jobject GetObjectArrayElement(JNIEnv *env, jobjectArray array, jsize index);
 
@@ -314,17 +303,6 @@ public GetStringUTFChars: string isCopy: isCopy = (
 		If isCopy is not NULL, then *isCopy is set to JNI_TRUE if a copy is made; or it is set to JNI_FALSE if no copy is made.	*)
 
 	^pointerResult: [:result |api GetStringUTFChars primFFICallResult: result with: env with: string with: isCopy].
-)
-public NewObject: clazz methodID: methodID withArguments: varArgs = (
-	(*	jobject NewObject(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
-
-		Constructs a new Java object. The method ID indicates which constructor method to invoke. This ID must be obtained by calling GetMethodID() with <init> as the method name and void (V) as the return type.
-
-		The clazz argument must not refer to an array class.	*)
-
-	| arguments |
-	arguments:: {env. clazz. methodID}, varArgs.
-	^pointerResult: [:result | api NewObject primFFICallResult: result withArguments: arguments].
 )
 public NewObjectArray: length elementClass: elementClass initialElement: initialElement = (
 	(*	jobjectArray NewObjectArray(JNIEnv *env, jsize length,
@@ -463,9 +441,6 @@ public CallStaticTypeMethod: returnType = (
 public FindClass = (
 	^methodAtIndex: 6
 )
-public GetMethodID = (
-	^methodAtIndex: 33
-)
 public GetObjectArrayElement = (
 	^methodAtIndex: 173
 )
@@ -482,9 +457,6 @@ public GetStaticTypeField: returnType = (
 )
 public GetStringUTFChars = (
 	^methodAtIndex: 169
-)
-public NewObject = (
-	^methodAtIndex: 28.
 )
 public NewObjectArray = (
 	^methodAtIndex: 172

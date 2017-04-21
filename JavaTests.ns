@@ -177,27 +177,6 @@ runMainClass = (
 )
 ) : (
 )
-class JavaAliensInstance classpath: classpath = Test classpath: classpath (|
-|) (
-public run = (
-	| javaClass |
-	
-	java loadClasspath: classpath.
-	javaClass:: java JavaClass find: 'JavaInstanceTest'.
-
-	testConstruction: javaClass.
-
-	'Test Passed' inspect.
-)
-testConstruction: javaClass = (
-	| javaInt javaObject |
-	javaInt:: Alien new: 4.	javaInt unsignedLongAt: 1 put: 101.	
-	(*javaObject:: javaClass construct new: {} sig: '()V'.*)
-	javaObject:: javaClass construct new: {java JavaString from: 'Hello, world!'. javaInt} sig: '(Ljava/lang/String;I)V'.
-	javaObject inspect.
-)
-) : (
-)
 class JavaAliensRunApplication classpath: classpath = Test classpath: classpath (|
 |) (
 public run = (
@@ -316,7 +295,7 @@ runTests = (
 	| tests classpath |
 	classpath:: '.\bin'.
 	(*tests:: allTests.*)
-	tests:: {JavaAliensInstance.}.
+	tests:: {JNILibraryStartVM.}.
 	tests do: [:eachTest | eachTest classpath: classpath].
 )
 ) : (

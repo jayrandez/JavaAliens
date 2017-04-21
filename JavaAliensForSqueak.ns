@@ -148,7 +148,7 @@ public new: args <List> sig: sig = (
 		ifFalse: [invocation value: nativeArgs].
 )
 public translateNewSig: sig = (
-	| methodID |
+	| methodID type |
 	methodID:: env GetMethodID: (outer JavaClass asAlien) name: (help cstring: '<init>') sig: (help cstring: sig).
 	(help isNullPtr: methodID) ifTrue: [^MethodNotFound].
 
@@ -200,9 +200,6 @@ invokeCallStaticTypeMethod: returnType methodID: methodID args: args <Collection
 )
 invokeGetStaticTypeField: returnType fieldID: fieldID = (
 	^env GetStaticTypeField: returnType clazz: (self asAlien) fieldID: fieldID.
-)
-invokeNewObject: methodID args: args = (
-	^env NewObject: (self asAlien) methodID: methodID withArguments: args.
 )
 invokeSetStaticTypeField: returnType fieldID: fieldID value: value = (
 	^env SetStaticTypeField: returnType clazz: (self asAlien) fieldID: fieldID value: value.
