@@ -216,8 +216,6 @@ public run = (
 	testStaticCallMethod: javaClass.
 	testStaticCallMethodVoidAndArgs: javaClass.
 	testStaticGetField: javaClass.
-
-	'Test Passed' inspect.
 )
 testStaticCallMethod: javaClass = (
 	| javaObject javaBoolean javaByte javaChar javaShort javaInt javaLong javaFloat javaDouble |
@@ -314,7 +312,7 @@ runTests = (
 	| tests classpath |
 	classpath:: '.\bin'.
 	(*tests:: allTests.*)
-	tests:: {JNILibraryStartVM.}.
+	tests:: { JNILibraryStartVM. JavaAliensRunApplication. JavaAliensStatic. JavaAliensInstance. }.
 	tests do: [:eachTest | eachTest classpath: classpath].
 )
 ) : (
