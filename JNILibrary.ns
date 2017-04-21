@@ -72,7 +72,7 @@ public class JNIEnv withEnvPtr: envPointerAlien = (
 |) (
 public class ReturnType resultBuilder: resultBuilder tablePosition: tablePosition = (|
 	resultBuilder = resultBuilder.
-	tablePosition = tablePosition.
+	public tablePosition = tablePosition.
 |) (
 public result: primFFIBlock = (
 	^resultBuilder value: primFFIBlock.
@@ -100,7 +100,7 @@ public jdouble = (
 	| resultBuilder tablePosition = 9. |
 	resultBuilder:: [:primFFIBlock | doubleResult: primFFIBlock].
 	
-	^self resultbuilder: resultBuilder tablePosition: tablePosition.
+	^self resultBuilder: resultBuilder tablePosition: tablePosition.
 )
 public jfloat = (
 	| resultBuilder tablePosition = 8. |

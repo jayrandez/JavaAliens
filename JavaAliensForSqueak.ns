@@ -106,14 +106,23 @@ public of: elementClass values: values = (
 )
 public class JavaBoolean on: jboolean = JavaPrimitive on: jboolean (|
 |) (
+public value = (
+	^((self asAlien) unsignedByteAt: 1) ~= 0.
+)
 ) : (
 )
 public class JavaByte on: jbyte = JavaPrimitive on: jbyte (|
 |) (
+public value = (
+	^(self asAlien) signedByteAt: 1.
+)
 ) : (
 )
 public class JavaChar on: jchar = JavaPrimitive on: jchar (|
 |) (
+public value = (
+	^Character value: ((self asAlien) unsignedShortAt: 1).
+)
 ) : (
 )
 public class JavaClass on: jclass = JavaAlien on: jclass (|
@@ -200,7 +209,7 @@ public translateField: staticFieldName sig: sig = (
 	type:: translateSig: sig.
 	returnType:: type returnType.
 	alienClass:: type alienClass.
-	^[:value | package: (invokeSetStaticTypeField: type fieldID: fieldID value: value) as: alienClass].
+	^[:value | package: (invokeSetStaticTypeField: returnType fieldID: fieldID value: value) as: alienClass].
 )
 ) : (
 )
@@ -239,18 +248,31 @@ public find: name <String> = (
 )
 public class JavaDouble on: jdouble = JavaPrimitive on: jdouble (|
 |) (
+public value = (
+	^(self asAlien) doubleAt: 1.
+)
 ) : (
 )
 public class JavaFloat on: jfloat = JavaPrimitive on: jfloat (|
 |) (
+public value = (
+	^(self asAlien) floatAt: 1.
+)
 ) : (
 )
 public class JavaInt on: jint = JavaPrimitive on: jint (|
 |) (
+public value = (
+	^(self asAlien) signedLongAt: 1.
+)
 ) : (
 )
 public class JavaLong on: jlong = JavaPrimitive on: jlong (|
 |) (
+public value = (
+	(* Should be "signedWordAt", per Java, but it is currently crashing, possibly stack frame issue w/ 32-bit arch. *)
+	^(self asAlien) unsignedWordAt: 1.
+)
 ) : (
 )
 public class JavaObject on: jobject <Alien> = JavaAlien on: jobject (|
@@ -298,7 +320,7 @@ public int: value <Integer>  = (
 )
 public long: value <Integer> = (
 	| jlong = Alien new: 8. |
-	jlong unsignedWordAt: 1 put: value.
+	jlong signedWordAt: 1 put: value.
 	^self on: jlong.
 )
 public short: value <Integer> = (
@@ -309,11 +331,14 @@ public short: value <Integer> = (
 )
 public class JavaShort on: jshort = JavaPrimitive on: jshort (|
 |) (
+public value = (
+	^(self asAlien) signedShortAt: 1.
+)
 ) : (
 )
 public class JavaString on: jstring <Alien> = JavaAlien on: jstring (|
 |) (
-public stringValue = (
+public value = (
 	| cstring |
 	cstring:: env GetStringUTFChars: (self asAlien) isCopy: (help nullPtr).
 	^cstring strcpy.
@@ -505,7 +530,7 @@ class TypeEntry returnType: returnType alienClass: alienClass = (|
 ) : (
 )
 public package: alien <Alien> as: alienClass <JavaAlien class> = (
-	^alienClass on: alien.
+	^alienClass isNil ifFalse: [alienClass on: alien] ifTrue: [nil].
 )
 protected translateSig: sig = (
 	| firstChar = (sig at: 1). |
