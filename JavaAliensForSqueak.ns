@@ -499,8 +499,8 @@ public translateField: fieldName sig: sig = (
 class TypeTranslator = (|
 |) (
 class TypeEntry returnType: returnType alienClass: alienClass = (|
-	returnType = returnType.
-	alienClass = alienClass.
+	public returnType = returnType.
+	public alienClass = alienClass.
 |) (
 ) : (
 )

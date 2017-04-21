@@ -314,7 +314,7 @@ runTests = (
 	| tests classpath |
 	classpath:: '.\bin'.
 	(*tests:: allTests.*)
-	tests:: {JavaAliensInstance.}.
+	tests:: {JavaAliensStatic.}.
 	tests do: [:eachTest | eachTest classpath: classpath].
 )
 ) : (
