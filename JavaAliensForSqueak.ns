@@ -11,8 +11,13 @@ class JavaAliensForSqueak usingPlatform: platform usingJNILibrary: jni = (
 private class AlienHelpers = (
 (* Mainly Pointer Alien manipulation. Ideally this will go away. *)||) (
 ) : (
-public coerce: argList <List> = (
-	^argList collect: [:arg | arg asAlien]
+public coerce: argList <JavaAlien | Collection[JavaAlien]> = (
+	(* 	Coerce is necessary so long as JavaAlien is not an Alien.
+		This function should still work if JavaAlien becomes an Alien, because Alien asAlien returns self.	*)
+
+	^argList isCollection
+		ifTrue: [argList collect: [:arg | arg asAlien]]
+		ifFalse: [argList asAlien].
 )
 public cstring: string = (
 	^Alien forPointer: (string asAlien address).
@@ -104,6 +109,7 @@ public class JavaClass jclass: jclass = (
 	jclass = jclass.
 	callTranslator = CallStaticMethodTypeTranslator new.
 	getTranslator = GetStaticFieldTypeTranslator new.
+	setTranslator = SetStaticFieldTypeTranslator new.
 |) (
 private class CallStaticMethodTypeTranslator = MethodTypeTranslator (
 (* Attempts to relay messages through method invokation. *)|
@@ -145,6 +151,21 @@ public translateField: staticFieldName sig: sig = (
 )
 ) : (
 )
+private class SetStaticFieldTypeTranslator = FieldTypeTranslator (|
+|) (
+public translateField: staticFieldName = (
+	unimplemented.
+)
+public translateField: staticFieldName sig: sig = (
+	| fieldID type |
+	fieldID:: env GetStaticFieldID: jclass name: (help cstring: staticFieldName) sig: (help cstring: sig).
+	(help isNullPtr: fieldID) ifTrue: [^StaticFieldNotFound].
+
+	type:: returnType: sig.
+	^[:value | invokeSetStaticTypeField: type fieldID: fieldID value: value ].
+)
+) : (
+)
 public asAlien = (
 	^jclass.
 )
@@ -159,6 +180,9 @@ invokeCallStaticTypeMethod: returnType methodID: methodID args: args <Collection
 )
 invokeGetStaticTypeField: returnType fieldID: fieldID = (
 	^env GetStaticTypeField: returnType clazz: jclass fieldID: fieldID.
+)
+invokeSetStaticTypeField: returnType fieldID: fieldID value: value = (
+	^env SetStaticTypeField: returnType clazz: jclass fieldID: fieldID value: value.
 )
 ) : (
 public find: name = (
@@ -334,19 +358,21 @@ private recreateVM = (
 )
 class SetFieldTypeTranslator = TypeTranslator (|
 |) (
-public field: fieldName = (
-	| invocation |
-	invocation:: translateField: fieldName.
-	^invocation isNil
-		ifTrue: [super doesNotUnderstand]
-		ifFalse: [invocation value]
-)
-public field: fieldName sig: sig = (
-	| invocation |
+public field: fieldName sig: sig to: value = (
+	| invocation nativeValue |
+	nativeValue:: help coerce: value.
 	invocation:: translateField: fieldName sig: sig.
 	^invocation isNil
 		ifTrue: [super doesNotUnderstand]
-		ifFalse: [invocation value]
+		ifFalse: [invocation value: nativeValue]
+)
+public field: fieldName to: value = (
+	| invocation nativeValue |
+	nativeValue:: help coerce: value.
+	invocation:: translateField: fieldName.
+	^invocation isNil
+		ifTrue: [super doesNotUnderstand]
+		ifFalse: [invocation value: nativeValue]
 )
 public translateField: fieldName = (
 	subclassResponsibility

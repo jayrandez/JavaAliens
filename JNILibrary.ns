@@ -328,6 +328,17 @@ public SetObjectArrayElement: array index: index value: value = (
 
 	^voidResult: [:result | api SetObjectArrayElement primFFICallResult: result with: env with: array with: index with: value].
 )
+public SetStaticTypeField: returnType clazz: clazz fieldID: fieldID value: value = (
+	(*	void SetStatic<type>Field(JNIEnv *env, jclass clazz, jfieldID fieldID, NativeType value);
+
+		This family of accessor routines sets the value of a static field of an object. The field to access is specified by a field ID, which is obtained by calling GetStaticFieldID().
+
+		The following table describes the set routine name and value types. You should replace type in SetStatic<type>Field with the Java type of the field, or one of the actual set static field routine names from the table, and replace NativeType with the corresponding native type for that routine.	*)
+	
+	| apiCall |
+	apiCall:: api SetStaticTypeField: returnType.
+	^returnType result: [:result | apiCall primFFICallResult: result with: env with: clazz with: fieldID with: value].
+)
 private byteResult: primFFIBlock = (
 	| result = Alien new: 1. |
 	primFFIBlock value: result.
@@ -455,6 +466,11 @@ public NewStringUTF = (
 )
 public SetObjectArrayElement = (
 	^methodAtIndex: 174
+)
+public SetStaticTypeField: returnType = (
+	| index |
+	index:: 154 + (returnType tablePosition) - 1.
+	^methodAtIndex: index.
 )
 private methodAtIndex: index = (
 	| location = ((index * 4) + 1).|

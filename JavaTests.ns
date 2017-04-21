@@ -261,7 +261,27 @@ public testStaticGetField: javaClass = (
 	(((javaDouble doubleAt: 1) <  5.76) and: [(javaDouble doubleAt: 1) > 5.74]) ifFalse: [TestFailed].*)
 )
 public testStaticSetField: javaClass = (
-	
+	| javaObject javaBoolean javaByte javaChar javaShort javaInt javaLong javaFloat javaDouble |
+
+	(*javaObject:: ... *)
+	javaBoolean:: Alien new: 1. 	javaBoolean unsignedByteAt: 1 put: 0.
+	javaByte:: Alien new: 1.		javaByte unsignedByteAt: 1 put: 5.
+	javaChar:: Alien new: 2.		javaChar unsignedShortAt: 1 put: ("Q" asciiValue).
+	javaShort:: Alien new: 2.		javaChar unsignedShortAt: 1 put: 8.
+	javaInt:: Alien new: 4.		javaInt unsignedLongAt: 1 put: 9.
+	javaLong:: Alien new: 8.		javaInt unsignedWordAt: 1 put: 10.
+	javaFloat:: Alien new: 4.		javaFloat floatAt: 1 put: 11.0.
+	javaDouble:: Alien new: 8.	javaDouble doubleAt: 1 put: 12.0.
+
+	(*javaClass set field: 'objectField' to: javaObject.*)
+	javaClass set field: 'booleanField' to: javaBoolean.
+	javaClass set field: 'byteField' to: javaByte.
+	javaClass set field: 'charField' to: javaChar.
+	javaClass set field: 'shortField' to: javaShort.
+	javaClass set field: 'intField' to: javaInt.
+	javaClass set field: 'longField' to: javaLong.
+	(*javaFloat set field: 'floatField' to: javaFloat.
+	javaDouble set field: 'doubleField' to: javaDouble.*)
 )
 ) : (
 )
