@@ -25,8 +25,6 @@ public class JavaStaticTest
 		longField = aLong;
 		floatField = aFloat;
 		doubleField = aDouble;
-		String message = "" + aBoolean +  " " + aByte +  " " + aChar +  " " + aShort +  " " + anInt +  " " + aLong +  " " + aFloat +  " " + aDouble;
-		JOptionPane.showMessageDialog(null, message);
 	}
 	
 	public static Object getObject() { return objectField; }
