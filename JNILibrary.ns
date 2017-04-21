@@ -321,7 +321,7 @@ private doubleResult: primFFIBlock = (
 	^result.
 )
 private floatResult: primFFIBlock = (
-	| result = Alien new: 4. |
+	| result = Alien newC: 4. |
 	primFFIBlock value: result.
 	^result.
 )

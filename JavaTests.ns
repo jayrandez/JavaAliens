@@ -11,7 +11,6 @@ class JavaTests packageUsing: manifest = (|
 	java
 	regex
 	generator
-	allTests = {JNILibraryStartVM. JavaAliensCallStaticMethods. JavaAliensRunApplication.}.
 |) (
 class JNILibraryDeflate classpath: classpath = Test classpath: classpath (|
 	CallStatic
@@ -191,26 +190,52 @@ runMainClass = (
 )
 ) : (
 )
-class JavaAliensCallStaticMethods classpath: classpath = Test classpath: classpath (|
-|) (
-public run = (
-	| javaClass javaObject javaBoolean |
-	java loadClasspath: classpath.
-
-	javaClass:: java JavaClass find: 'JavaGraphics'.
-	javaObject:: javaClass call method: 'builder' sig: '()LJavaGraphics;'.
-	javaBoolean:: javaClass call method: 'getBooleanValue' sig: '()Z'.
-
-	javaObject inspect.
-	javaBoolean inspect.
-)
-) : (
-)
 class JavaAliensRunApplication classpath: classpath = Test classpath: classpath (|
 |) (
 public run = (
 	java loadClasspath: classpath.
 	java runApplication: 'JavaGraphics' args: {'Java App Started By Newspeak'}.
+)
+) : (
+)
+class JavaAliensStatic classpath: classpath = Test classpath: classpath (|
+|) (
+public run = (
+	| javaClass javaObject javaBoolean javaByte javaChar javaShort javaInt javaLong javaFloat javaDouble |
+	java loadClasspath: classpath.
+
+	javaClass:: java JavaClass find: 'JavaStaticTest'.
+
+	javaObject:: javaClass call method: 'getObject' sig: '()Ljava/lang/Object;'.
+	javaBoolean:: javaClass call method: 'getBoolean' sig: '()Z'.
+	javaByte:: javaClass call method: 'getByte' sig: '()B'.
+	javaFloat:: javaClass call method: 'getFloat' sig: '()F'.
+	javaDouble:: javaClass call method: 'getDouble' sig: '()D'.
+	javaChar:: javaClass call method: 'getChar' sig: '()C'.
+	javaShort:: javaClass call method: 'getShort' sig: '()S'.
+	javaInt:: javaClass call method: 'getInt' sig: '()I'.
+	javaLong:: javaClass call method: 'getLong' sig: '()J'.
+
+	TestFailed.
+	(*(javaBoolean unsignedByteAt: 1) = 1 ifFalse: [TestFailed].
+	(javaByte unsignedByteAt: 1) = 2 ifFalse: [TestFailed].
+	(javaChar unsignedShortAt: 1) = ("A" asciiValue) ifFalse: [TestFailed].
+	(javaShort unsignedShortAt: 1) = 3 ifFalse: [TestFailed].
+	(javaInt unsignedLongAt: 1) = 7 ifFalse: [TestFailed].
+	(javaLong unsignedWordAt: 1) = 5 ifFalse: [TestFailed].
+	(((javaFloat floatAt: 1) < 5.6) and: [(javaFloat floatAt: 1) > 5.4]) ifFalse: [TestFailed].
+	(((javaDouble doubleAt: 1) <  5.76) and: [(javaDouble doubleAt: 1) > 5.74]) ifFalse: [TestFailed].*)
+
+	'Test Passed' inspect.
+)
+) : (
+)
+class NativeFloatTest classpath: classpath = Test classpath: classpath (|
+|) (
+public run = (
+	| result = Alien new: 4. |
+	(Alien lookup: 'getFloat' inLibrary: 'libFloatTest.dll') primFFICallResult: result.
+	stack.
 )
 ) : (
 )
@@ -237,7 +262,7 @@ runTests = (
 	| tests classpath |
 	classpath:: '.\bin'.
 	(*tests:: allTests.*)
-	tests:: {JavaAliensCallStaticMethods.}.
+	tests:: {JavaAliensStatic.}.
 	tests do: [:eachTest | eachTest classpath: classpath].
 )
 ) : (
