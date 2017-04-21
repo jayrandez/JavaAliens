@@ -138,13 +138,15 @@ public translateMethod: staticMethodName numArgs: numArgs = (
 	unimplemented.
 )
 public translateMethod: staticMethodName sig: sig = (
-	| methodID type |
+	| methodID type returnType alienClass |
 	methodID:: env GetStaticMethodID: (outer JavaClass asAlien) name: (help cstring: staticMethodName) sig: (help cstring: sig).
 	(help isNullPtr: methodID) ifTrue: [^StaticMethodNotFound].
 
-	type:: returnType: (returnSignature: sig).
-	^[:args | invokeCallStaticTypeMethod: type methodID: methodID args: args].
-	)
+	type:: translateSig: (returnSignature: sig).
+	returnType:: type returnType.
+	alienClass:: type alienClass.
+	^[:args | package: (invokeCallStaticTypeMethod: returnType methodID: methodID args: args) as: alienClass].
+)
 ) : (
 )
 private class ConstructTranslator = TypeTranslator (||) (
@@ -164,8 +166,7 @@ public translateNewSig: sig = (
 	methodID:: env GetMethodID: (outer JavaClass asAlien) name: (help cstring: '<init>') sig: (help cstring: sig).
 	(help isNullPtr: methodID) ifTrue: [^MethodNotFound].
 
-	type:: returnType: 'L'.
-	^[:args | invokeNewObject: type methodID: methodID args: args].
+	^[:args | package: (invokeNewObject: methodID args: args) as JavaObject].
 )
 ) : (
 )
@@ -175,12 +176,14 @@ public translateField: staticFieldName = (
 	unimplemented.
 )
 public translateField: staticFieldName sig: sig = (
-	| fieldID type |
+	| fieldID type returnType alienClass |
 	fieldID:: env GetStaticFieldID: (outer JavaClass asAlien) name: (help cstring: staticFieldName) sig: (help cstring: sig).
 	(help isNullPtr: fieldID) ifTrue: [^StaticFieldNotFound].
 
-	type:: returnType: sig.
-	^[invokeGetStaticTypeField: type fieldID: fieldID].
+	type:: translateSig: sig.
+	returnType:: type returnType.
+	alienClass:: type alienClass.
+	^[package: (invokeGetStaticTypeField: returnType fieldID: fieldID) as: alienClass].
 )
 ) : (
 )
@@ -190,12 +193,14 @@ public translateField: staticFieldName = (
 	unimplemented.
 )
 public translateField: staticFieldName sig: sig = (
-	| fieldID type |
+	| fieldID type returnType alienClass |
 	fieldID:: env GetStaticFieldID: (outer JavaClass asAlien) name: (help cstring: staticFieldName) sig: (help cstring: sig).
 	(help isNullPtr: fieldID) ifTrue: [^StaticFieldNotFound].
 
-	type:: returnType: sig.
-	^[:value | invokeSetStaticTypeField: type fieldID: fieldID value: value ].
+	type:: translateSig: sig.
+	returnType:: type returnType.
+	alienClass:: type alienClass.
+	^[:value | package: (invokeSetStaticTypeField: type fieldID: fieldID value: value) as: alienClass].
 )
 ) : (
 )
@@ -214,8 +219,8 @@ invokeCallStaticTypeMethod: returnType methodID: methodID args: args <Collection
 invokeGetStaticTypeField: returnType fieldID: fieldID = (
 	^env GetStaticTypeField: returnType clazz: (self asAlien) fieldID: fieldID.
 )
-invokeNewObject: returnType methodID: methodID args: args = (
-	^env NewObject: returnType clazz: (self asAlien) methodID: methodID withArguments: args.
+invokeNewObject: methodID args: args = (
+	^env NewObject: (self asAlien) methodID: methodID withArguments: args.
 )
 invokeSetStaticTypeField: returnType fieldID: fieldID value: value = (
 	^env SetStaticTypeField: returnType clazz: (self asAlien) fieldID: fieldID value: value.
@@ -494,25 +499,28 @@ public translateField: fieldName sig: sig = (
 )
 class TypeTranslator = (|
 |) (
-protected dontPackage = (
-	^[:input | input]
+class TypeEntry returnType: returnType alienClass: alienClass = (|
+	returnType = returnType.
+	alienClass = alienClass.
+|) (
+) : (
 )
-protected packageAlien: type = (
-	^[:input | type on: input]
+public package: alien <Alien> as: alienClass <JavaAlien class> = (
+	alienClass on: alien.
 )
-protected returnType: returnSignature = (
-	(* Can/should we query JNI for the return type instead of examining the signature? *)
+protected translateSig: sig = (
+	| firstChar = (sig at: 1). |
 
-	returnSignature = 'V' ifTrue: [^env returnType void packager: dontPackage].
-	(returnSignature at: 1) = "L" ifTrue: [^env returnType jobject packager: (packageAlien: (javaAliens JavaObject))].
-	returnSignature = 'Z' ifTrue: [^env returnType jboolean packager: (packageAlien: (javaAliens JavaBoolean))].
-	returnSignature = 'I' ifTrue: [^env returnType jint packager: (packageAlien: (javaAliens JavaInt))].
-	returnSignature = 'D' ifTrue: [^env returnType jdouble packager: (packageAlien: (javaAliens JavaDouble))].
-	returnSignature = 'J' ifTrue: [^env returnType jlong packager: (packageAlien: (javaAliens JavaLong))].
-	returnSignature = 'B' ifTrue: [^env returnType jbyte packager: (packageAlien: (javaAliens JavaBoolean))].
-	returnSignature = 'F' ifTrue: [^env returnType jfloat packager: (packageAlien: (javaAliens JavaFloat))].
-	returnSignature = 'C' ifTrue: [^env returnType jchar packager: (packageAlien: (javaAliens JavaChar))].
-	returnSignature = 'S' ifTrue: [^env returnType jshort packager: (packageAlien: (javaAliens JavaShort))].
+	firstChar = "V" ifTrue: [^TypeEntry returnType: (env ReturnType void) alienClass: nil].
+	firstChar = "L" ifTrue: [^TypeEntry returnType: (env ReturnType jobject) alienClass: JavaObject].
+	firstChar = "Z" ifTrue: [^TypeEntry returnType: (env ReturnType jboolean) alienClass: javaAliens JavaBoolean].
+	firstChar = "I" ifTrue: [^TypeEntry returnType: (env ReturnType jint) alienClass: javaAliens JavaInt].
+	firstChar = "D" ifTrue: [^TypeEntry returnType: (env ReturnType jdouble) alienClass: javaAliens JavaDouble].
+	firstChar = "J" ifTrue: [^TypeEntry returnType: (env ReturnType jlong) alienClass: javaAliens JavaLong].
+	firstChar = "B" ifTrue: [^TypeEntry returnType: (env ReturnType jbyte) alienClass: javaAliens JavaByte].
+	firstChar = "F" ifTrue: [^TypeEntry returnType: (env ReturnType jfloat) alienClass: javaAliens JavaFloat].
+	firstChar = "C" ifTrue: [^TypeEntry returnType: (env ReturnType jchar) alienClass: javaAliens JavaChar].
+	firstChar = "S" ifTrue: [^TypeEntry returnType: (env ReturnType jshort) alienClass: javaAliens JavaShort].
 	
 	^nil
 )

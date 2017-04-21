@@ -66,165 +66,78 @@ public VERSION_1_8 = (
 ) : (
 )
 public class JNIEnv withEnvPtr: envPointerAlien = (
-(* Encapsulates standard env methods. Function pointers provided by struct JNINativeInterface. *)|
+(* Encapsulates standard env methods. Function table provided by struct JNINativeInterface. *)|
 	env = envPointerAlien.
 	api = struct JNINativeInterface on: (Alien forPointer: (envPointerAlien unsignedLongAt: 1)).
-	private theReturnTypes = ReturnTypes new.
 |) (
-private class ReturnTypes = (|
-|) (
-public class BooleanReturnType packager: packager = ReturnType packager: packager (||) (
-public result: primFFIBlock = (
-	| result |
-	result:: byteResult: primFFIBlock.
-	^packager value: result.
-)
-public tablePosition = (
-	^2
-)
-) : (
-)
-public class ByteReturnType packager: packager = ReturnType packager: packager (||) (
-public result: primFFIBlock = (
-	| result |
-	result:: byteResult: primFFIBlock.
-	^packager value: result.
-)
-public tablePosition = (
-	^3
-)
-) : (
-)
-public class CharReturnType packager: packager = ReturnType packager: packager (||) (
-public result: primFFIBlock = (
-	| result |
-	result:: shortResult: primFFIBlock.
-	^packager value: result.
-)
-public tablePosition = (
-	^4
-)
-) : (
-)
-public class DoubleReturnType packager: packager = ReturnType packager: packager (||) (
-public result: primFFIBlock = (
-	| result |
-	result:: doubleResult: primFFIBlock.
-	^packager value: result.
-)
-public tablePosition = (
-	^9
-)
-) : (
-)
-public class FloatReturnType packager: packager = ReturnType packager: packager (||) (
-public result: primFFIBlock = (
-	| result |
-	result:: floatResult: primFFIBlock.
-	^packager value: result.
-)
-public tablePosition = (
-	^8
-)
-) : (
-)
-public class IntReturnType packager: packager = ReturnType packager: packager (||) (
-public result: primFFIBlock = (
-	| result |
-	result:: longResult: primFFIBlock.
-	^packager value: result.
-)
-public tablePosition = (
-	^6
-)
-) : (
-)
-public class LongReturnType packager: packager = ReturnType packager: packager (||) (
-public result: primFFIBlock = (
-	| result |
-	result:: wordResult: primFFIBlock.
-	^packager value: result.
-)
-public tablePosition = (
-	^7
-)
-) : (
-)
-public class ObjectReturnType packager: packager = ReturnType packager: packager (||) (
-public result: primFFIBlock = (
-	| result |
-	result:: pointerResult: primFFIBlock.
-	^packager value: result.
-)
-public tablePosition = (
-	^1.
-)
-) : (
-)
-private class ReturnType packager: packager = (|
-	packager = packager.
+public class ReturnType resultBuilder: resultBuilder tablePosition: tablePosition = (|
+	resultBuilder = resultBuilder.
+	tablePosition = tablePosition.
 |) (
 public result: primFFIBlock = (
-	subclassResponsibility
-)
-public tablePosition  = (
-	subclassResponsibility
+	^resultBuilder value: primFFIBlock.
 )
 ) : (
-)
-public class ShortReturnType packager: packager = ReturnType packager: packager (||) (
-public result: primFFIBlock = (
-	| result |
-	result:: shortResult: primFFIBlock.
-	^packager value: result.
-)
-public tablePosition = (
-	^5
-)
-) : (
-)
-public class VoidReturnType packager: packager = ReturnType packager: packager (||) (
-public result: primFFIBlock = (
-	| result |
-	result:: voidResult: primFFIBlock.
-	^packager value: result.
-)
-public tablePosition = (
-	^10
-)
-) : (
-)
 public jboolean = (
-	^self BooleanReturnType
+	| resultBuilder tablePosition = 2. |
+	resultBuilder:: [:primFFIBlock | byteResult: primFFIBlock].
+
+	^self resultBuilder: resultBuilder tablePosition: tablePosition.
 )
 public jbyte = (
-	^self ByteReturnType
+	| resultBuilder tablePosition = 3. |
+	resultBuilder:: [:primFFIBlock | byteResult: primFFIBlock].
+	
+	^self resultBuilder: resultBuilder tablePosition: tablePosition.
 )
 public jchar = (
-	^self CharReturnType
+	| resultBuilder tablePosition = 4. |
+	resultBuilder:: [:primFFIBlock | shortResult: primFFIBlock].
+
+	^self resultBuilder: resultBuilder tablePosition: tablePosition.
 )
 public jdouble = (
-	^self DoubleReturnType
+	| resultBuilder tablePosition = 9. |
+	resultBuilder:: [:primFFIBlock | doubleResult: primFFIBlock].
+	
+	^self resultbuilder: resultBuilder tablePosition: tablePosition.
 )
 public jfloat = (
-	^self FloatReturnType
+	| resultBuilder tablePosition = 8. |
+	resultBuilder:: [:primFFIBlock | floatResult: primFFIBlock].
+	
+	^self resultBuilder: resultBuilder tablePosition: tablePosition.
 )
 public jint = (
-	^self IntReturnType
+	| resultBuilder tablePosition = 6. |
+	resultBuilder:: [:primFFIBlock | longResult: primFFIBlock].
+
+	^self resultBuilder: resultBuilder tablePosition: tablePosition.
 )
 public jlong = (
-	^self LongReturnType
+	| resultBuilder tablePosition = 7. |
+	resultBuilder:: [:primFFIBlock | wordResult: primFFIBlock].
+
+	^self resultBuilder: resultBuilder tablePosition: tablePosition.
 )
 public jobject = (
-	^self ObjectReturnType
+	| resultBuilder tablePosition = 1. |
+	resultBuilder:: [:primFFIBlock | pointerResult: primFFIBlock].
+
+	^self resultBuilder: resultBuilder tablePosition: tablePosition.
 )
 public jshort = (
-	^self ShortReturnType
+	| resultBuilder tablePosition = 5. |
+	resultBuilder:: [:primFFIBlock | shortResult: primFFIBlock].
+	
+	^self resultBuilder: resultBuilder tablePosition: tablePosition.
 )
 public void = (
-	^self VoidReturnType
+	| resultBuilder tablePosition = 10. |
+	resultBuilder:: [:primFFIBlock | voidResult: primFFIBlock].
+
+	^self resultBuilder: resultBuilder tablePosition: tablePosition.
 )
-) : (
 )
 public CallStaticTypeMethod: returnType clazz: clazz methodID: methodID withArguments: varArgs = (
 	(*	NativeType CallStatic<type>Method(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
@@ -277,12 +190,12 @@ public GetObjectArrayElement: array index: index = (
 
 	^pointerResult: [:result | api GetObjectArrayElement primFFICallResult: result with: env with: array with: index].
 )
-public GetObjectClass: returnType obj: obj = (
+public GetObjectClass: obj = (
 	(*	jclass GetObjectClass(JNIEnv *env, jobject obj);
 
 		Returns the class of an object.	*)
 
-	^returnType result: [:result | api GetObjectClass primFFICallResult: result with: env with: obj].
+	^pointerResult: [:result | api GetObjectClass primFFICallResult: result with: env with: obj].
 )
 public GetStaticFieldID: clazz name: name sig: sig = (
 	(*	jfieldID GetStaticFieldID(JNIEnv *env, jclass clazz, const char *name, const char *sig);
@@ -322,7 +235,7 @@ public GetStringUTFChars: string isCopy: isCopy = (
 
 	^pointerResult: [:result |api GetStringUTFChars primFFICallResult: result with: env with: string with: isCopy].
 )
-public NewObject: returnType clazz: clazz methodID: methodID withArguments: varArgs = (
+public NewObject: clazz methodID: methodID withArguments: varArgs = (
 	(*	jobject NewObject(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
 
 		Constructs a new Java object. The method ID indicates which constructor method to invoke. This ID must be obtained by calling GetMethodID() with <init> as the method name and void (V) as the return type.
@@ -331,7 +244,7 @@ public NewObject: returnType clazz: clazz methodID: methodID withArguments: varA
 
 	| arguments |
 	arguments:: {env. clazz. methodID}, varArgs.
-	^returnType result: [:result | api NewObject primFFICallResult: result withArguments: arguments].
+	^pointerResult: [:result | api NewObject primFFICallResult: result withArguments: arguments].
 )
 public NewObjectArray: length elementClass: elementClass initialElement: initialElement = (
 	(*	jobjectArray NewObjectArray(JNIEnv *env, jsize length,
@@ -393,9 +306,6 @@ private pointerResult: primFFIBlock = (
 	primFFIBlock value: result.
 	^Alien forPointer: (result unsignedLongAt: 1).
 )
-public returnType = (
-	^theReturnTypes
-)
 private shortResult: primFFIBlock = (
 	| result = Alien new: 2. |
 	primFFIBlock value: result.
@@ -412,7 +322,7 @@ private wordResult: primFFIBlock = (
 ) : (
 )
 public class JavaVM withVmPtr: vmPointerAlien = (
-(* Encapsulates standard vm methods. Function pointers provided by struct JNIInvokeInterface. *)|
+(* Encapsulates standard vm methods. Function table provided by struct JNIInvokeInterface. *)|
 	vm = vmPointerAlien.
 	api = struct JNIInvokeInterface on: (Alien forPointer: (vmPointerAlien unsignedLongAt: 1)).
 |) (
