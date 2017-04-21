@@ -58,7 +58,8 @@ private class JavaAliens usingJNIEnv: env = (
 (* All JavaAlien instances have access to a JNIEnv library through this module. *)|
 	env = env.
 |) (
-private class JavaAlien on: alien <Alien> = (alien = alien) (
+private class JavaAlien on: alien <Alien> = (|
+	private alien = alien.|) (
 public asAlien = (
 	^alien
 )
@@ -103,7 +104,7 @@ public of: elementClass values: values = (
 	^instance.
 )
 )
-public class JavaClass on: jclass <Alien> = JavaAlien on: jclass (|
+public class JavaClass on: jclass = JavaAlien on: jclass (|
 	callTranslator = CallStaticMethodTypeTranslator new.
 	getTranslator = GetStaticFieldTypeTranslator new.
 	setTranslator = SetStaticFieldTypeTranslator new.
@@ -125,7 +126,7 @@ public translateMethod: staticMethodName numArgs: numArgs = (
 )
 public translateMethod: staticMethodName sig: sig = (
 	| methodID type |
-	methodID:: env GetStaticMethodID: jclass name: (help cstring: staticMethodName) sig: (help cstring: sig).
+	methodID:: env GetStaticMethodID: (outer JavaClass asAlien) name: (help cstring: staticMethodName) sig: (help cstring: sig).
 	(help isNullPtr: methodID) ifTrue: [^StaticMethodNotFound].
 
 	type:: returnType: (returnSignature: sig).
@@ -140,7 +141,7 @@ public translateField: staticFieldName = (
 )
 public translateField: staticFieldName sig: sig = (
 	| fieldID type |
-	fieldID:: env GetStaticFieldID: jclass name: (help cstring: staticFieldName) sig: (help cstring: sig).
+	fieldID:: env GetStaticFieldID: (outer JavaClass asAlien) name: (help cstring: staticFieldName) sig: (help cstring: sig).
 	(help isNullPtr: fieldID) ifTrue: [^StaticFieldNotFound].
 
 	type:: returnType: sig.
@@ -155,7 +156,7 @@ public translateField: staticFieldName = (
 )
 public translateField: staticFieldName sig: sig = (
 	| fieldID type |
-	fieldID:: env GetStaticFieldID: jclass name: (help cstring: staticFieldName) sig: (help cstring: sig).
+	fieldID:: env GetStaticFieldID: (outer JavaClass asAlien) name: (help cstring: staticFieldName) sig: (help cstring: sig).
 	(help isNullPtr: fieldID) ifTrue: [^StaticFieldNotFound].
 
 	type:: returnType: sig.
