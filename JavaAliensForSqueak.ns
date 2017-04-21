@@ -136,7 +136,7 @@ public translateMethod: staticMethodName sig: sig = (
 	)
 ) : (
 )
-private class GetStaticFieldTypeTranslator = FieldTypeTranslator (|
+private class GetStaticFieldTypeTranslator = GetFieldTypeTranslator (|
 |) (
 public translateField: staticFieldName = (
 	unimplemented.
@@ -151,7 +151,7 @@ public translateField: staticFieldName sig: sig = (
 )
 ) : (
 )
-private class SetStaticFieldTypeTranslator = FieldTypeTranslator (|
+private class SetStaticFieldTypeTranslator = SetFieldTypeTranslator (|
 |) (
 public translateField: staticFieldName = (
 	unimplemented.
@@ -183,6 +183,9 @@ invokeGetStaticTypeField: returnType fieldID: fieldID = (
 )
 invokeSetStaticTypeField: returnType fieldID: fieldID value: value = (
 	^env SetStaticTypeField: returnType clazz: jclass fieldID: fieldID value: value.
+)
+public set = (
+	^SetStaticFieldTypeTranslator
 )
 ) : (
 public find: name = (
