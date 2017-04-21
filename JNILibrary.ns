@@ -68,7 +68,7 @@ public VERSION_1_8 = (
 public class JNIEnv withEnvPtr: envPointerAlien = (
 (* Encapsulates standard env methods. Function table provided by struct JNINativeInterface. *)|
 	env = envPointerAlien.
-	api = struct JNINativeInterface on: (Alien forPointer: (envPointerAlien unsignedLongAt: 1)).
+	api = struct FunctionTable on: (Alien forPointer: (envPointerAlien unsignedLongAt: 1)).
 |) (
 public class ReturnType resultBuilder: resultBuilder tablePosition: tablePosition = (|
 	resultBuilder = resultBuilder.
@@ -344,7 +344,7 @@ private wordResult: primFFIBlock = (
 public class JavaVM withVmPtr: vmPointerAlien = (
 (* Encapsulates standard vm methods. Function table provided by struct JNIInvokeInterface. *)|
 	vm = vmPointerAlien.
-	api = struct JNIInvokeInterface on: (Alien forPointer: (vmPointerAlien unsignedLongAt: 1)).
+	api = struct FunctionTable on: (Alien forPointer: (vmPointerAlien unsignedLongAt: 1)).
 |) (
 public DestroyJavaVM = (
 	(*	jint DestroyJavaVM(JavaVM *vm);
@@ -353,8 +353,8 @@ public DestroyJavaVM = (
 
 	The support for DestroyJavaVM was not complete in JDK/JRE 1.1. As of JDK/JRE 1.1 Only the main thread may call DestroyJavaVM. Since JDK/JRE 1.2, any thread, whether attached or not, can call this function. If the current thread is attached, the VM waits until the current thread is the only non-daemon user-level Java thread. If the current thread is not attached, the VM attaches the current thread and then waits until the current thread is the only non-daemon user-level thread. The JDK/JRE still does not support VM unloading, however.	*)
 
-	| result = Alien new: 4. |
-	api DestroyJavaVM primFFICallResult: result with: vm.
+	| apiCall = api methodAtIndex: 3. result = Alien new: 4. |
+	apiCall primFFICallResult: result with: vm.
 	^result signedLongAt: 1
 )
 public GetEnv: env version: version = (
@@ -362,38 +362,16 @@ public GetEnv: env version: version = (
 		
 		If the current thread is not attached to the VM, sets *env to NULL, and returns JNI_EDETACHED. If the specified version is not supported, sets *env to NULL, and returns JNI_EVERSION. Otherwise, sets *env to the appropriate interface, and returns JNI_OK.	*)
 
-	| result = Alien new: 4. |
-	api GetEnv primFFICallResult: result with: vm with: env with: version.
+	| apiCall = api methodAtIndex: 6. result = Alien new: 4. |
+	apiCall primFFICallResult: result with: vm with: env with: version.
 	^result signedLongAt: 1
 )
 ) : (
 )
 private class Structures = (||) (
-public class JNIInvokeInterface on: anAlien = Struct on: anAlien (||) (
-public AttachCurrentThread = (
-	^methodIndex: 4
-)
-public AttachCurrentThreadAsDaemon = (
-	^methodIndex: 7
-)
-public DestroyJavaVM = (
-	^methodIndex: 3
-)
-public DetachCurrentThread = (
-	^methodIndex: 5
-)
-public GetEnv = (
-	^methodIndex: 6
-)
-private methodIndex: index = (
-	| location = ((index * 4) + 1). |
-	^Alien forPointer: (data unsignedLongAt: location)
-)
-) : (
-)
-public class JNINativeInterface on: anAlien = Struct on: anAlien (||) (
+public class FunctionTable on: anAlien = Struct on: anAlien (||) (
 public methodAtIndex: index = (
-	| location = ((index * 4) + 1).|
+	| location = ((index * 4) + 1). |
 	^Alien forPointer: (data unsignedLongAt: location)
 )
 ) : (
