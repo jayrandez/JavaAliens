@@ -108,6 +108,7 @@ public class JavaClass on: jclass = JavaAlien on: jclass (|
 	callTranslator = CallStaticMethodTypeTranslator new.
 	getTranslator = GetStaticFieldTypeTranslator new.
 	setTranslator = SetStaticFieldTypeTranslator new.
+	constructTranslator = ConstructTranslator new.
 |) (
 private class CallStaticMethodTypeTranslator = MethodTypeTranslator (
 (* Attempts to relay messages through method invokation. *)|
@@ -130,8 +131,29 @@ public translateMethod: staticMethodName sig: sig = (
 	(help isNullPtr: methodID) ifTrue: [^StaticMethodNotFound].
 
 	type:: returnType: (returnSignature: sig).
-	^[:finalArgs | invokeCallStaticTypeMethod: type methodID: methodID args: finalArgs].
+	^[:args | invokeCallStaticTypeMethod: type methodID: methodID args: args].
 	)
+) : (
+)
+private class ConstructTranslator = (||) (
+public new: args <List> = (
+	unimplemented.
+)
+public new: args <List> sig: sig = (
+	| invocation nativeArgs |
+	nativeArgs:: help coerceList: args.
+	invocation:: translateNewSig: sig.
+	^invocation isNil
+		ifTrue: [super doesNotUnderstand]
+		ifFalse: [invocation value: nativeArgs].
+)
+public translateNewSig: sig = (
+	| methodID type |
+	methodID:: env GetMethodID: (outer JavaClass asAlien) name: (help cstring: '<init>') sig: (help cstring: sig).
+	(help isNullPtr: methodID) ifTrue: [^MethodNotFound].
+
+	^[:args | invokeNewObject: methodID args: args].
+)
 ) : (
 )
 private class GetStaticFieldTypeTranslator = GetFieldTypeTranslator (|
@@ -166,6 +188,9 @@ public translateField: staticFieldName sig: sig = (
 )
 public call = (
 	^callTranslator
+)
+public construct = (
+	^constructTranslator
 )
 public get = (
 	^getTranslator.
@@ -243,12 +268,9 @@ public short: value <Integer> = (
 )
 public class JavaString on: jstring <Alien> = JavaAlien on: jstring (|
 |) (
-public asAlien = (
-	^jstring
-)
 public stringValue = (
 	| cstring |
-	cstring:: env GetStringUTFChars: jstring isCopy: nullPtr.
+	cstring:: env GetStringUTFChars: (self asAlien) isCopy: (help nullPtr).
 	^cstring strcpy.
 )
 ) : (
@@ -345,7 +367,7 @@ public getClass: name = (
 	jclass:: env FindClass: (name asAlien address).
 	^(help isNullPtr: jclass)
 		ifTrue: [nil]
-		ifFalse: [JavaClass jclass: jclass].
+		ifFalse: [JavaClass on: jclass].
 )
 private init: classpath = (
 	loadExistingVM ifTrue: [

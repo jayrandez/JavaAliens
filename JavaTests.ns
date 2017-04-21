@@ -171,20 +171,7 @@ runMainClass = (
 	objectArrayArg:: makeEmptyArrayOf: stringClass.
 	objectArrayArg isNil ifTrue: [^false].
 
-	(* Through CallStaticVoidMethodA method, which takes an array of jvalue arguments...*)
-
-	(* Here a pointer to an array of java arguments *)
-	(*arrayOfArgs:: Alien newC: 4.
-	arrayOfArgs unsignedLongAt: 1 put: (objectArrayArg address).
-	env CallStaticVoidMethodA: javaGraphicsClass methodID: javaGraphicsMain args: (arrayOfArgs address).*)
-	
-	(* Through CallStaticVoidMethod method, which accepts a variable number of jvalue arguments... *)
-	
-	(* Here just sending one argument *)
-	env CallStaticTypeMethod: (env returnTypes void) clazz: javaGraphicsClass methodID: javaGraphicsMain with: objectArrayArg.
-	
-	(* Here sending variable number of arguments *)
-	(*env CallStaticVoidMethod: javaGraphicsClass methodID: javaGraphicsMain withArguments: {objectArrayArg}.*)
+	env CallStaticTypeMethod: (env returnType void packager: [:value|value]) clazz: javaGraphicsClass methodID: javaGraphicsMain withArguments: {objectArrayArg}.
 
 	^true.
 )
@@ -285,15 +272,6 @@ public testStaticSetField: javaClass = (
 )
 ) : (
 )
-class NativeFloatTest classpath: classpath = Test classpath: classpath (|
-|) (
-public run = (
-	| result = Alien new: 4. |
-	(Alien lookup: 'getFloat' inLibrary: 'libFloatTest.dll') primFFICallResult: result.
-	stack.
-)
-) : (
-)
 class Test classpath: classpath = (|
 	public classpath = classpath.
 |run) (
@@ -317,7 +295,7 @@ runTests = (
 	| tests classpath |
 	classpath:: '.\bin'.
 	(*tests:: allTests.*)
-	tests:: {JavaAliensStatic.}.
+	tests:: {JNILibraryStartVM.}.
 	tests do: [:eachTest | eachTest classpath: classpath].
 )
 ) : (
