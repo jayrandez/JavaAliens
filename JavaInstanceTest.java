@@ -12,12 +12,10 @@ public class JavaInstanceTest
 	public float floatField;
 	public double doubleField;
 	
-	public JavaInstanceTest() {
-		JOptionPane.showMessageDialog(null, "In constructor!");
-	}
+	public JavaInstanceTest() {}
 
-	public JavaInstanceTest(Object anObject, boolean aBoolean, byte aByte, char aChar,
-			short aShort, int anInt, long aLong, float aFloat, double aDouble) {
+	public void setAll(Object anObject, boolean aBoolean, byte aByte, char aChar,
+			short aShort, int anInt, long aLong/*, float aFloat, double aDouble*/) {
 		objectField = anObject;
 		booleanField = aBoolean;
 		byteField = aByte;
@@ -25,8 +23,8 @@ public class JavaInstanceTest
 		shortField = aShort;
 		intField = anInt;
 		longField = aLong;
-		floatField = aFloat;
-		doubleField = aDouble;
+		/*floatField = aFloat;
+		doubleField = aDouble;*/
 	}
 	
 	public Object getObject() { return objectField; }

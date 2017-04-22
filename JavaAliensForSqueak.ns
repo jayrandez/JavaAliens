@@ -234,6 +234,9 @@ invokeNewObject: methodID args: args = (
 invokeSetStaticTypeField: returnType fieldID: fieldID value: value = (
 	^env SetStaticTypeField: returnType clazz: (self asAlien) fieldID: fieldID value: value.
 )
+public isJavaClass = (
+	^true
+)
 public set = (
 	^setTranslator
 )
@@ -242,7 +245,7 @@ public find: name <String> = (
 	| jclass <Alien> |
 	jclass:: env FindClass: (name asAlien address).
 	^(help isNullPtr: jclass)
-		ifTrue: [nil]
+		ifTrue: [FindClassFailed.]
 		ifFalse: [JavaClass on: jclass].
 )
 )
@@ -331,7 +334,7 @@ public translateField: staticFieldName = (
 )
 public translateField: staticFieldName sig: sig = (
 	| fieldID type returnType alienClass |
-	fieldID:: env GetStaticFieldID: (javaClass asAlien) name: (help cstring: staticFieldName) sig: (help cstring: sig).
+	fieldID:: env GetFieldID: (javaClass asAlien) name: (help cstring: staticFieldName) sig: (help cstring: sig).
 	(help isNullPtr: fieldID) ifTrue: [^FieldNotFound].
 
 	type:: translateSig: sig.
@@ -347,14 +350,27 @@ public call = (
 public get = (
 	^getTranslator
 )
+public instanceOf: clazz <JavaClass> = (
+	| result |
+	
+	clazz isJavaClass ifFalse: [^NotAJavaClass].
+
+	(* Arguments unchecked after this point. *)
+	result:: env IsInstanceOf: (self asAlien) clazz: (clazz asAlien).
+
+	^(result unsignedByteAt: 1) ~= 0.
+)
 invokeCallTypeMethod: returnType methodID: methodID args: args <Collection> = (
-	^env CallTypeMethod: returnType clazz: (javaClass asAlien) methodID: methodID withArguments: args.
+	(* Arguments unchecked after this point. *)
+	^env CallTypeMethod: returnType obj: (self asAlien) methodID: methodID withArguments: args.
 )
 invokeGetTypeField: returnType fieldID: fieldID = (
-	^env GetTypeField: returnType clazz: (javaClass asAlien) fieldID: fieldID.
+	(* Arguments unchecked after this point. *)
+	^env GetTypeField: returnType obj: (self asAlien) fieldID: fieldID.
 )
 invokeSetTypeField: returnType fieldID: fieldID value: value = (
-	^env SetTypeField: returnType clazz: (javaClass asAlien) fieldID: fieldID value: value.
+	(* Arguments unchecked after this point. *)
+	^env SetTypeField: returnType obj: (self asAlien) fieldID: fieldID value: value.
 )
 public javaClass = (
 	| returnType |

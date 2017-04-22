@@ -149,13 +149,31 @@ public CallStaticTypeMethod: returnType clazz: clazz methodID: methodID withArgu
 
 		The method ID must be derived from clazz, not from one of its superclasses.	*)
 
-	| index step = 3. apiCall arguments |
+	| index apiCall arguments |
 
-	index:: 114 + (((returnType tablePosition) - 1) * step).
+	index:: 114 + (((returnType tablePosition) - 1) * 3).
 	apiCall:: api methodAtIndex: index.
 
 	arguments:: {env. clazz. methodID}, varArgs.
 
+	^returnType result: [:result | apiCall primFFICallResult: result withArguments: arguments].
+)
+public CallTypeMethod: returnType obj: obj methodID: methodID withArguments: varArgs = (
+	(*	NativeType Call<type>Method(JNIEnv *env, jobject obj, jmethodID methodID, ...);
+
+		Methods from these three families of operations are used to call a Java instance method from a native method.They only differ in their mechanism for passing parameters to the methods that they call.
+
+		These families of operations invoke an instance (nonstatic) method on a Java object, according to the specified method ID. The methodID argument must be obtained by calling GetMethodID().
+
+		When these functions are used to call private methods and constructors, the method ID must be derived from the real class of obj, not from one of its superclasses.	*)
+
+	| index apiCall arguments |
+
+	index:: 34 + (((returnType tablePosition) - 1) * 3).
+	apiCall:: api methodAtIndex: index.
+	
+	arguments:: {env. obj. methodID}, varArgs.
+	
 	^returnType result: [:result | apiCall primFFICallResult: result withArguments: arguments].
 )
 public FindClass: name  = (
@@ -177,6 +195,18 @@ public FindClass: name  = (
 
 	| apiCall = api methodAtIndex: 6. |
 	^pointerResult: [:result | apiCall primFFICallResult: result with: env with: name].
+)
+public GetFieldID: clazz name: name sig: sig = (
+	(*	jfieldID GetFieldID(JNIEnv *env, jclass clazz, const char *name, const char *sig);
+
+		Returns the field ID for an instance (nonstatic) field of a class. The field is specified by its name and signature. The Get<type>Field and Set<type>Field families of accessor functions use field IDs to retrieve object fields.
+
+		GetFieldID() causes an uninitialized class to be initialized.
+
+		GetFieldID() cannot be used to obtain the length field of an array. Use GetArrayLength() instead.	*)
+
+	| apiCall = api methodAtIndex: 94. |
+	^pointerResult: [:result | apiCall primFFICallResult: result with: env with: clazz with: name with: sig].
 )
 public GetMethodID: clazz name: name sig: sig = (
 	(*	jmethodID GetMethodID(JNIEnv *env, jclass clazz, const char *name, const char *sig);
@@ -250,6 +280,28 @@ public GetStringUTFChars: string isCopy: isCopy = (
 	| apiCall = api methodAtIndex: 169. |
 	^pointerResult: [:result | apiCall primFFICallResult: result with: env with: string with: isCopy].
 )
+public GetTypeField: returnType obj: obj fieldID: fieldID = (
+	(*	NativeType Get<type>Field(JNIEnv *env, jobject obj, jfieldID fieldID);
+
+		This family of accessor routines returns the value of an instance (nonstatic) field of an object. The field to access is specified by a field ID obtained by calling GetFieldID().
+
+		The following table describes the Get<type>Field routine name and result type. You should replace type in Get<type>Field with the Java type of the field, or use one of the actual routine names from the table, and replace NativeType with the corresponding native type for that routine.	*)
+
+	| index apiCall |
+	
+	index:: 95 + (returnType tablePosition) - 1.
+	apiCall:: api methodAtIndex: index.
+
+	^returnType result: [:result | apiCall primFFICallResult: result with: env with: obj with: fieldID].
+)
+public IsInstanceOf: obj clazz: clazz = (
+	(*	jboolean IsInstanceOf(JNIEnv *env, jobject obj, jclass clazz);
+
+		Tests whether an object is an instance of a class.	*)
+	
+	| apiCall = api methodAtIndex: 32. |
+	^byteResult: [:result | apiCall primFFICallResult: result with: env with: obj with: clazz].
+)
 public NewObject: clazz methodID: methodID withArguments: varArgs = (
 	(*	jobject NewObject(JNIEnv *env, jclass clazz, jmethodID methodID, ...);
 
@@ -303,6 +355,20 @@ public SetStaticTypeField: returnType clazz: clazz fieldID: fieldID value: value
 	apiCall:: api methodAtIndex: index.
 
 	^returnType result: [:result | apiCall primFFICallResult: result with: env with: clazz with: fieldID with: value].
+)
+public SetTypeField: returnType obj: obj fieldID: fieldID value: value = (
+	(*	void Set<type>Field(JNIEnv *env, jobject obj, jfieldID fieldID, NativeType value);
+
+		This family of accessor routines sets the value of an instance (nonstatic) field of an object. The field to access is specified by a field ID obtained by calling GetFieldID().
+
+		The following table describes the Set<type>Field routine name and value type. You should replace type in Set<type>Field with the Java type of the field, or use one of the actual routine names from the table, and replace NativeType with the corresponding native type for that routine.	*)
+
+	| index apiCall |
+
+	index:: 104 + (returnType tablePosition) - 1.
+	apiCall:: api methodAtIndex: index.
+
+	^returnType result: [:result | apiCall primFFICallResult: result with: env with: obj with: fieldID with: value].
 )
 ) : (
 )

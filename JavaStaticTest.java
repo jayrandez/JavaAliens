@@ -15,7 +15,7 @@ public class JavaStaticTest
 	public static double doubleField;
 
 	public static void setAll(Object anObject, boolean aBoolean, byte aByte, char aChar,
-			short aShort, int anInt, long aLong, float aFloat, double aDouble) {
+			short aShort, int anInt, long aLong/*, float aFloat, double aDouble*/) {
 		objectField = anObject;
 		booleanField = aBoolean;
 		byteField = aByte;
@@ -23,10 +23,8 @@ public class JavaStaticTest
 		shortField = aShort;
 		intField = anInt;
 		longField = aLong;
-		floatField = aFloat;
-		doubleField = aDouble;
-		String message = "" + aBoolean +  " " + aByte +  " " + aChar +  " " + aShort +  " " + anInt +  " " + aLong +  " " + aFloat +  " " + aDouble;
-		JOptionPane.showMessageDialog(null, message);
+		/*floatField = aFloat;
+		doubleField = aDouble;*/
 	}
 	
 	public static Object getObject() { return objectField; }
