@@ -30,7 +30,7 @@ public safePtr: pointerAlien = (
 	^(isNullPtr: pointerAlien) ifTrue: [nil] ifFalse: [pointerAlien]
 )
 )
-class GetFieldTypeTranslator = TypeTranslator (|
+public class GetTypeTranslator = TypeTranslator (|
 |) (
 public field: fieldName = (
 	| invocation |
@@ -179,7 +179,7 @@ public translateNewSig: sig = (
 )
 ) : (
 )
-private class GetStaticFieldTypeTranslator = GetFieldTypeTranslator (|
+private class GetStaticFieldTypeTranslator = GetTypeTranslator (|
 |) (
 public translateField: staticFieldName = (
 	unimplemented.
@@ -196,7 +196,7 @@ public translateField: staticFieldName sig: sig = (
 )
 ) : (
 )
-private class SetStaticFieldTypeTranslator = SetFieldTypeTranslator (|
+private class SetStaticFieldTypeTranslator = SetTypeTranslator (|
 |) (
 public translateField: staticFieldName = (
 	unimplemented.
@@ -276,10 +276,92 @@ public value = (
 ) : (
 )
 public class JavaObject on: jobject <Alien> = JavaAlien on: jobject (|
+	callTranslator = CallMethodTypeTranslator new.
+	getTranslator = GetFieldTypeTranslator new.
+	setTranslator = SetFieldTypeTranslator new.
 |) (
+private class CallMethodTypeTranslator = MethodTypeTranslator (
+(* Attempts to relay messages through method invokation. *)|
+|) (
+protected returnSignature: methodSignature = (
+	^(methodSignature subStrings: ')') at: 2
+)
+public translateMethod: staticMethodName args: args = (
+	^unimplemented.
+)
+public translateMethod: instanceMethodName argsTypes: argTypes = (
+	^unimplemented.
+)
+public translateMethod: instanceMethodName numArgs: numArgs = (
+	unimplemented.
+)
+public translateMethod: instanceMethodName sig: sig = (
+	| methodID type returnType alienClass |
+	methodID:: env GetMethodID: (javaClass asAlien) name: (help cstring: instanceMethodName) sig: (help cstring: sig).
+	(help isNullPtr: methodID) ifTrue: [^InstanceMethodNotFound].
+
+	type:: translateSig: (returnSignature: sig).
+	returnType:: type returnType.
+	alienClass:: type alienClass.
+	^[:args | package: (invokeCallTypeMethod: returnType methodID: methodID args: args) as: alienClass].
+)
+) : (
+)
+private class GetFieldTypeTranslator = GetTypeTranslator (|
+|) (
+public translateField: staticFieldName = (
+	unimplemented.
+)
+public translateField: staticFieldName sig: sig = (
+	| fieldID type returnType alienClass |
+	fieldID:: env GetFieldID: (javaClass asAlien) name: (help cstring: staticFieldName) sig: (help cstring: sig).
+	(help isNullPtr: fieldID) ifTrue: [^FieldNotFound].
+
+	type:: translateSig: sig.
+	returnType:: type returnType.
+	alienClass:: type alienClass.
+	^[package: (invokeGetTypeField: returnType fieldID: fieldID) as: alienClass].
+)
+) : (
+)
+private class SetFieldTypeTranslator = SetTypeTranslator (|
+|) (
+public translateField: staticFieldName = (
+	unimplemented.
+)
+public translateField: staticFieldName sig: sig = (
+	| fieldID type returnType alienClass |
+	fieldID:: env GetStaticFieldID: (javaClass asAlien) name: (help cstring: staticFieldName) sig: (help cstring: sig).
+	(help isNullPtr: fieldID) ifTrue: [^FieldNotFound].
+
+	type:: translateSig: sig.
+	returnType:: type returnType.
+	alienClass:: type alienClass.
+	^[:value | package: (invokeSetTypeField: returnType fieldID: fieldID value: value) as: alienClass].
+)
+) : (
+)
+public call = (
+	^callTranslator
+)
+public get = (
+	^getTranslator
+)
+invokeCallTypeMethod: returnType methodID: methodID args: args <Collection> = (
+	^env CallTypeMethod: returnType clazz: (javaClass asAlien) methodID: methodID withArguments: args.
+)
+invokeGetTypeField: returnType fieldID: fieldID = (
+	^env GetTypeField: returnType clazz: (javaClass asAlien) fieldID: fieldID.
+)
+invokeSetTypeField: returnType fieldID: fieldID value: value = (
+	^env SetTypeField: returnType clazz: (javaClass asAlien) fieldID: fieldID value: value.
+)
 public javaClass = (
 	| returnType |
 	^JavaClass on: (env GetObjectClass: (self asAlien)).
+)
+public set = (
+	^setTranslator
 )
 ) : (
 )
@@ -354,7 +436,7 @@ public from: string <String> = (
 )
 ) : (
 )
-protected class MethodTypeTranslator = TypeTranslator (|
+public class MethodTypeTranslator = TypeTranslator (|
 |) (
 public method: methodName = (
 	^method: methodName args: (List new).
@@ -495,7 +577,7 @@ private recreateVM = (
 )
 ) : (
 )
-class SetFieldTypeTranslator = TypeTranslator (|
+public class SetTypeTranslator = TypeTranslator (|
 |) (
 public field: fieldName sig: sig to: value = (
 	| invocation nativeValue |
@@ -521,7 +603,7 @@ public translateField: fieldName sig: sig = (
 )
 ) : (
 )
-class TypeTranslator = (|
+public class TypeTranslator = (|
 |) (
 class TypeEntry returnType: returnType alienClass: alienClass = (|
 	public returnType = returnType.
