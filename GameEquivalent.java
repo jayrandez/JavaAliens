@@ -43,7 +43,7 @@ public class GameEquivalent {
 	
 	private static void draw(JavaGraphics.AppState state) {
 		state.start();
-		//synchronized(state.backbuffer) {
+		synchronized(state.backbuffer) {
 			Graphics2D g = (Graphics2D)state.backbuffer.getGraphics();
 			
 			g.setColor(color);
@@ -59,7 +59,7 @@ public class GameEquivalent {
 				g.drawLine(799, 599, state.mousePoint.x, state.mousePoint.y);
 				g.drawLine(0, 599, state.mousePoint.x, state.mousePoint.y);
 			}
-		//}
+		}
 		state.stop();
 	}
 	
@@ -67,13 +67,13 @@ public class GameEquivalent {
 		JavaGraphics.AppState state = JavaGraphics.makeWindow();
 		
 		while(true) {
-			if(state.finished) {
+			if(state.finished)
 				System.exit(0);
-			}
 			
-			if(run(state)) {
+			boolean dirty = run(state);
+			if(dirty)
 				state.panel.repaint();
-			}
+			
 			Thread.yield();
 		}
 	}

@@ -14,7 +14,7 @@ public class JavaGraphics extends JPanel implements MouseListener, MouseMotionLi
 		java.awt.Point mousePoint;
 		ArrayList<Point> mouseClicks;
 		boolean finished;
-		long millis;
+		ArrayList<Integer> millis;
 		
 		public AppState() {
 			backbuffer = new BufferedImage(800, 600, BufferedImage.TYPE_INT_ARGB);
@@ -23,6 +23,7 @@ public class JavaGraphics extends JPanel implements MouseListener, MouseMotionLi
 			mousePoint = null;
 			mouseClicks = new ArrayList<Point>();
 			finished = false;
+			millis = new ArrayList<Integer>();
 		}
 		
 		long startTime;
@@ -32,14 +33,16 @@ public class JavaGraphics extends JPanel implements MouseListener, MouseMotionLi
 		}
 		
 		public void stop() {
-			millis = System.currentTimeMillis() - startTime;
+			millis.add((int)(System.currentTimeMillis() - startTime));
+			if(millis.size() > 20)
+				millis.remove(0);
 		}
 	}
 	
-	public AppState state;
+	public static AppState state;
 
 	public JavaGraphics(AppState appState) {
-		this.state = appState;
+		state = appState;
 		
 		this.addMouseListener(this);
 		this.addMouseMotionListener(this);
@@ -56,7 +59,7 @@ public class JavaGraphics extends JPanel implements MouseListener, MouseMotionLi
 		}
 		
 		g.setColor(Color.WHITE);
-		g.drawString("Millis: " + state.millis, 700, 100);
+		g.drawString("Millis: " + state.millis, 450, 50);
 	}
 
 	public void step() {
@@ -88,36 +91,40 @@ public class JavaGraphics extends JPanel implements MouseListener, MouseMotionLi
 	
 	public static AppState makeWindow() {
 		AppState state = new AppState();
+		JavaGraphics graphicsPanel = new JavaGraphics(state);
+		state.panel = graphicsPanel;
 		
 		new Thread() {
-		public void run() {
-			JavaGraphics graphicsPanel = new JavaGraphics(state);
-			state.panel = graphicsPanel;
-			
-			new Thread() {
-				public void run() {
-					while(true) {
-						graphicsPanel.step();
-						try { Thread.sleep(33); }
-						catch(Exception ex) {}
+			public void run() {
+				new Thread() {
+					public void run() {
+						while(true) {
+							graphicsPanel.step();
+							try { Thread.sleep(33); }
+							catch(Exception ex) {}
+						}
 					}
-				}
-			}.start();
-			
-			JFrame frame = new JFrame();
-			frame.addWindowListener(new java.awt.event.WindowAdapter() {
-	    		public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-	    			graphicsPanel.state.finished = true;
-	    		}
-	    	});
-	
-			frame.setLayout(new BorderLayout());
-			frame.add(graphicsPanel, BorderLayout.CENTER);
-			frame.pack();
-			frame.setVisible(true);
+				}.start();
+				
+				JFrame frame = new JFrame();
+				frame.addWindowListener(new java.awt.event.WindowAdapter() {
+		    		public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+		    			graphicsPanel.state.finished = true;
+		    		}
+		    	});
 		
-		}}.start();
+				frame.setLayout(new BorderLayout());
+				frame.add(graphicsPanel, BorderLayout.CENTER);
+				frame.pack();
+				frame.setVisible(true);
+			
+			}
+		}.start();
 		
 		return state;
+	}
+
+	public static void main(String[] args) {
+		makeWindow();
 	}
 }

@@ -87,7 +87,7 @@ private mouse = (
 private run = (
 	| finished |
 	finished: false.
-	[finished:: gameLoop] doWhileTrue: [finished not].
+	[finished:: gameLoop. (*Thread.yield()*)] doWhileTrue: [finished not].
 )
 private setColor: g color: color <BlockClosure> = (
 	g call method: 'setColor' sig: '(Ljava/awt/Color;)V' args: {color value}.
@@ -106,7 +106,9 @@ public main: platform args: args = (
 	java:: JavaAliens usingPlatform: platform usingJNI: jni.
 
 	java loadClasspath: './bin'.
-	state:: (java JavaClass find: 'JavaGraphics') call method: 'makeWindow' sig: '()LJavaGraphics$AppState;'.
+	(*state:: (java JavaClass find: 'JavaGraphics') call method: 'makeWindow' sig: '()LJavaGraphics$AppState;'.*)
+	java runApplication: 'JavaGraphics' args: {}.
+	state:: (java JavaClass find: 'JavaGraphics') get field: 'state' sig: '()LJavaGraphics$AppState;'.
 	panel:: state get field: 'panel' sig: 'LJavaGraphics;'.
 	Game state: state.
 )
