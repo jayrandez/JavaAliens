@@ -14,8 +14,8 @@ Only JavaAliens are passed to the core JNI library, however inferences can be ma
 
 | If the Newspeak Object answers: |	It can be inferred as a JavaAlien: |
 | - | - |
-| isInteger	| JavaInteger (int), JavaShort(short), JavaLong (long), JavaByte (byte) |
-| isFloat | JavaFloat (float), JavaDouble(double) |
+| isInteger	| JavaInt (int), JavaShort (short), JavaLong (long), JavaByte (byte) |
+| isFloat | JavaFloat (float), JavaDouble (double) |
 | isCharacter | JavaChar (char) |
 | isString | JavaString (String) |
 | isBoolean | JavaBoolean (boolean) |
@@ -30,7 +30,7 @@ obj call: 'method' args: {self class}.
 ```
 obj call: 'method' args: {101}.
 ```
-**6.** Arguments can be inferred multiple ways. Reflection will determine if the arguments can be inferred to match one (and-only-one) method. E.g. Java provides: void method(int a, boolean b) and void method(String a, boolean b)
+**6.** Arguments can be inferred multiple ways. Reflection will determine if the arguments can be inferred to match one (and-only-one) method. E.g. Java provides: `void method(int a, boolean b)` and `void method(String a, boolean b)`
 ```
 obj call: 'method' args: {101. true}
 ```
