@@ -15,15 +15,7 @@ public class JavaInstanceTest
 	public JavaInstanceTest() {
 		JOptionPane.showMessageDialog(null, "In constructor!");
 	}
-	
-	public JavaInstanceTest(int n) {
-		JOptionPane.showMessageDialog(null, "Less fancy: " + n);
-	}
-	
-	public JavaInstanceTest(String fancy, int n) {
-		JOptionPane.showMessageDialog(null, "In fancy constructor: " + n + " - " + fancy);
-	}
-	
+
 	public JavaInstanceTest(Object anObject, boolean aBoolean, byte aByte, char aChar,
 			short aShort, int anInt, long aLong, float aFloat, double aDouble) {
 		objectField = anObject;

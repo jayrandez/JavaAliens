@@ -180,19 +180,43 @@ runMainClass = (
 class JavaAliensInstance classpath: classpath = Test classpath: classpath (|
 |) (
 public run = (
-	| javaClass |
+	| javaClass javaObject |
 	
 	java loadClasspath: classpath.
 	javaClass:: java JavaClass find: 'JavaInstanceTest'.
 
-	testConstruction: javaClass.
+	javaObject:: testConstruction: javaClass.
+	testSetField: javaObject.
 )
 testConstruction: javaClass = (
 	| javaInt javaObject |
 	javaInt:: Alien new: 4.	javaInt unsignedLongAt: 1 put: 101.	
-	(*javaObject:: javaClass construct new: {} sig: '()V'.*)
-	javaObject:: javaClass construct new: {java JavaString from: 'Hello, world!'. javaInt} sig: '(Ljava/lang/String;I)V'.
-	javaObject inspect.
+	javaObject:: javaClass construct new: {} sig: '()V'.
+	(* Should test that this object was actually created, rather than observing JOptionPane message *)
+	^javaObject.
+)
+testSetField: javaObject = (
+	| javaBoolean javaByte javaChar javaShort javaInt javaLong javaFloat javaDouble |
+
+	(*javaObject:: ... *)
+	javaBoolean:: Alien new: 1. 	javaBoolean unsignedByteAt: 1 put: 1.
+	javaByte:: Alien new: 1.		javaByte unsignedByteAt: 1 put: 2.
+	javaChar:: Alien new: 2.		javaChar unsignedShortAt: 1 put: ("3" asciiValue).
+	javaShort:: Alien new: 2.		javaShort unsignedShortAt: 1 put: 4.
+	javaInt:: Alien new: 4.		javaInt unsignedLongAt: 1 put: 5.
+	javaLong:: Alien new: 8.		javaLong unsignedWordAt: 1 put: 6.
+	(*javaFloat:: Alien new: 4.		javaFloat floatAt: 1 put: 7.0.
+	javaDouble:: Alien new: 8.	javaDouble doubleAt: 1 put: 8.0.*)
+
+	(*javaClass set field: 'objectField' sig: 'Ljava/lang/Object;' to: javaObject.*)
+	javaObject set field: 'booleanField' sig: 'Z' to: javaBoolean.
+	javaObject set field: 'byteField' sig: 'B' to: javaByte.
+	javaObject set field: 'charField' sig: 'C' to: javaChar.
+	javaObject set field: 'shortField' sig: 'S' to: javaShort.
+	javaObject set field: 'intField' sig: 'I' to: javaInt.
+	javaObject set field: 'longField' sig: 'J' to: javaLong.
+	(*javaFloat set field: 'floatField' sig: 'F' to: javaFloat.
+	javaDouble set field: 'doubleField' sig: 'D' to: javaDouble.*)
 )
 ) : (
 )
@@ -242,7 +266,7 @@ testStaticCallMethod: javaClass = (
 testStaticCallMethodVoidAndArgs: javaClass = (
 	
 )
-public testStaticGetField: javaClass = (
+testStaticGetField: javaClass = (
 	| javaObject javaBoolean javaByte javaChar javaShort javaInt javaLong javaFloat javaDouble |
 
 	javaObject:: javaClass get field: 'objectField' sig: 'Ljava/lang/Object;'.
@@ -264,7 +288,7 @@ public testStaticGetField: javaClass = (
 	(*(((javaFloat floatAt: 1) < 7.1) and: [(javaFloat floatAt: 1) > 6.9]) ifFalse: [TestFailed].
 	(((javaDouble doubleAt: 1) <  8.1) and: [(javaDouble doubleAt: 1) > 7.9]) ifFalse: [TestFailed].*)
 )
-public testStaticSetField: javaClass = (
+testStaticSetField: javaClass = (
 	| javaObject javaBoolean javaByte javaChar javaShort javaInt javaLong javaFloat javaDouble |
 
 	(*javaObject:: ... *)
@@ -312,7 +336,7 @@ runTests = (
 	| tests classpath |
 	classpath:: '.\bin'.
 	(*tests:: allTests.*)
-	tests:: { JNIStartVM. JavaAliensRunApplication. JavaAliensStatic. JavaAliensInstance. }.
+	tests:: { JavaAliensInstance. }.
 	tests do: [:eachTest | eachTest classpath: classpath].
 )
 ) : (
