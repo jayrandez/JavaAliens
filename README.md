@@ -20,7 +20,7 @@ Only JavaAliens are passed to the core JNI library, however inferences can be ma
 | isString | JavaString (String) |
 | isBoolean | JavaBoolean (boolean) |
 
-## Argument Translation and Ambiguity Rules by Example
+## Method Lookup by Example
 
 **8.** If an argument can not be inferred as any JavaAlien type the call can not complete.
 ```
