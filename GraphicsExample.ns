@@ -1,0 +1,117 @@
+Newspeak3
+'JavaAliens'
+class GraphicsExample packageUsing: manifest = (|
+	private JNI = manifest JNI.
+	private JavaAliens = manifest JavaAliensForSqueak.
+
+	Point
+
+	java
+	panel
+|) (
+class Game state: state <JavaObject> = (|
+	state = state.
+|run) (
+private clearFlag: fieldName = (
+	state set field: fieldName sig: 'Z' to: (java JavaPrimitive boolean: false).
+)
+private colorBlack = (
+	| Color |
+	Color:: (java JavaClass find: 'java/awt/Color').
+	^Color construct new: {java JavaPrimitive int: 0. java JavaPrimitive int: 0. java JavaPrimitive int: 0} sig: '(III)V'.
+)
+private colorWhite = (
+	| Color |
+	Color:: (java JavaClass find: 'java/awt/Color').
+	^Color construct new: {java JavaPrimitive int: 255. java JavaPrimitive int: 255. java JavaPrimitive int: 255} sig: '(III)V'.
+)
+private draw = (
+	| g = graphics2D. mousePoint = mouse. |
+	state call method: 'start' sig: '()V' args: {}.
+	drawBackground: g color: [colorBlack].
+	setColor: g color: [colorWhite].
+	mousePoint ifNotNil: [drawLine: g from: (Point x: 0 y: 0) to: mousePoint].
+	state call method: 'stop' sig: '()V' args: {}.
+)
+private drawBackground: g <JavaObject> color: color <BlockClosure> = (
+	setColor: g color: color.
+	g call method: 'fillRect' sig: '(IIII)V' args:
+	{	java JavaPrimitive int: 0.
+		java JavaPrimitive int: 0.
+		java JavaPrimitive int: 800.
+		java JavaPrimitive int: 600	}.
+)
+private drawLine: g from: from <Point> to: to <Point> = (
+	g call method: 'drawLine' sig: '(IIII)V' args:
+	{	java JavaPrimitive int: (from x).
+		java JavaPrimitive int: (from y).
+		java JavaPrimitive int: (to x).
+		java JavaPrimitive int: (to y).	}.
+)
+private gameLoop = (
+	| dirty |
+	dirty:: false.
+
+	(*(getFlag: 'step') ifTrue: [
+		step.
+		clearFlag: 'step'.
+		dirty: true.
+	].*)
+
+	(getFlag: 'mouseMoved') ifTrue: [
+		clearFlag: 'mouseMoved'.
+		dirty: true.
+	].
+
+	dirty ifTrue: [draw. repaint].
+	^getFlag: 'finished'.
+)
+private getFlag: fieldName = (
+	^(state get field: fieldName sig: 'Z') value.
+)
+private graphics2D = (
+	| bufferedImage graphics |
+	bufferedImage:: state get field: 'backbuffer' sig: 'Ljava/awt/image/BufferedImage;'.
+	graphics:: bufferedImage call method: 'getGraphics' sig: '()Ljava/awt/Graphics;'.
+	^graphics castTo: (java JavaClass find: 'java/awt/Graphics2D').
+)
+private mouse = (
+	| mousePoint x y |
+	mousePoint:: state get field: 'mousePoint' sig: 'Ljava/awt/Point;'.
+	mousePoint isNull ifTrue: [^nil].
+
+	x:: mousePoint get field: 'x' sig: 'I'.
+	y:: mousePoint get field: 'y' sig: 'I'.
+	^(Point x: (x value) y: (y value)).
+)
+private run = (
+	| finished |
+	finished: false.
+	[finished:: gameLoop] doWhileTrue: [finished not].
+)
+private setColor: g color: color <BlockClosure> = (
+	g call method: 'setColor' sig: '(Ljava/awt/Color;)V' args: {color value}.
+)
+private step = (
+	
+)
+) : (
+)
+public main: platform args: args = (
+	| jni state |
+
+	Point:: platform squeak Point.
+
+	jni:: JNI usingPlatform: platform.
+	java:: JavaAliens usingPlatform: platform usingJNI: jni.
+
+	java loadClasspath: './bin'.
+	state:: (java JavaClass find: 'JavaGraphics') call method: 'makeWindow' sig: '()LJavaGraphics$AppState;'.
+	panel:: state get field: 'panel' sig: 'LJavaGraphics;'.
+	Game state: state.
+)
+public repaint = (
+	panel call method: 'repaint' sig: '()V'.
+)
+) : (
+)

@@ -118,6 +118,14 @@ public value = (
 )
 ) : (
 )
+public class JavaCastObject on: jobject <Alien> clazz: clazz <JavaClass> = JavaObject on: jobject (|
+	explicitClass = clazz.
+|) (
+public javaClass = (
+	^explicitClass
+)
+) : (
+)
 public class JavaChar on: jchar = JavaPrimitive on: jchar (|
 |) (
 public value = (
@@ -345,9 +353,23 @@ public translateField: staticFieldName sig: sig = (
 ) : (
 )
 public call = (
+	(* Equivalent to NullPointerException. *)
+	isNull ifTrue: [^ObjectIsNull].
+
 	^callTranslator
 )
+public castTo: clazz <JavaClass> = (
+	| alienCopy result |
+
+	clazz isJavaClass ifFalse: [^NotAJavaClass].
+	
+	alienCopy:: Alien forPointer: ((self asAlien) address).
+	^JavaCastObject on: alienCopy clazz: clazz.
+)
 public get = (
+	(* Equivalent to NullPointerException. *)
+	isNull ifTrue: [^ObjectIsNull].
+
 	^getTranslator
 )
 public instanceOf: clazz <JavaClass> = (
@@ -372,11 +394,20 @@ invokeSetTypeField: returnType fieldID: fieldID value: value = (
 	(* Arguments unchecked after this point. *)
 	^env SetTypeField: returnType obj: (self asAlien) fieldID: fieldID value: value.
 )
+public isJavaObject = (
+	^true.
+)
+public isNull = (
+	^help isNullPtr: (self asAlien).
+)
 public javaClass = (
 	| returnType |
 	^JavaClass on: (env GetObjectClass: (self asAlien)).
 )
 public set = (
+	(* Equivalent to NullPointerException. *)
+	isNull ifTrue: [^ObjectIsNull].
+
 	^setTranslator
 )
 ) : (
@@ -718,6 +749,17 @@ private runApplication: mainClassName argsArray: argsArray = (
 private runtime = (
 	theRuntime isNil ifTrue: [loadRuntime: defaultClasspath].
 	^theRuntime.
+)
+public synchronized: block <BlockClosure> on: obj <JavaObject> = (
+	| result |
+
+	obj isJavaObject ifFalse: [^NotAJavaObject].
+	
+	env MonitorEnter: (obj asAlien).
+	result:: block value.
+	env MonitorExit: (obj asAlien).
+
+	^result.
 )
 ) : (
 )

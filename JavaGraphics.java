@@ -1,183 +1,123 @@
 import java.awt.*;
 import java.awt.event.*;
-
+import java.awt.image.*;
+import java.util.*;
 import javax.swing.*;
 
-public class JavaGraphics extends JFrame
+public class JavaGraphics extends JPanel implements MouseListener, MouseMotionListener
 {
-	Color ballColor = Color.BLACK;
-	final ToolbarPanel toolbarPanel;
-	final GraphicsPanel graphicsPanel;
+	public static class AppState {
+		JavaGraphics panel;
+		BufferedImage backbuffer;
+		boolean step;
+		boolean mouseMoved;
+		java.awt.Point mousePoint;
+		ArrayList<Point> mouseClicks;
+		boolean finished;
+		long millis;
+		
+		public AppState() {
+			backbuffer = new BufferedImage(800, 600, BufferedImage.TYPE_INT_ARGB);
+			step = false;
+			mouseMoved = false;
+			mousePoint = null;
+			mouseClicks = new ArrayList<Point>();
+			finished = false;
+		}
+		
+		long startTime;
+		
+		public void start() {
+			startTime = System.currentTimeMillis();
+		}
+		
+		public void stop() {
+			millis = System.currentTimeMillis() - startTime;
+		}
+	}
 	
-	public JavaGraphics(String title, String initialValue) {
-		super(title);
+	public AppState state;
+
+	public JavaGraphics(AppState appState) {
+		this.state = appState;
 		
-		this.toolbarPanel = new ToolbarPanel(initialValue);
-		this.graphicsPanel = new GraphicsPanel(initialValue);
+		this.addMouseListener(this);
+		this.addMouseMotionListener(this);
+		this.setBackground(Color.WHITE);
+		this.setPreferredSize(new Dimension(800, 600));
+	}
+	
+	public void paint(Graphics gg) {
+		super.paint(gg);
+		Graphics2D g = (Graphics2D)gg;
+
+		synchronized(state.backbuffer) {
+			g.drawImage(state.backbuffer, 0, 0, null);
+		}
 		
-		toolbarPanel.textField.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent ev) {
-				graphicsPanel.text = toolbarPanel.textField.getText();
-			}
-		});
+		g.setColor(Color.WHITE);
+		g.drawString("Millis: " + state.millis, 700, 100);
+	}
+
+	public void step() {
+		state.step = true;
+	}
+	
+	public void mouseMoved(MouseEvent ev) {
+		state.mousePoint = ev.getPoint();
+		state.mouseMoved = true;
+	}
+	
+	public void mouseDragged(MouseEvent ev) {
+		state.mousePoint = ev.getPoint();
+		state.mouseMoved = true;
+	}
+
+	public void mouseExited(MouseEvent ev) {
+		state.mousePoint = null;
+		state.mouseMoved = true;
+	}
+
+	public void mousePressed(MouseEvent ev)  {
+		state.mouseClicks.add(ev.getPoint());
+	}
+	
+	public void mouseEntered(MouseEvent ev) {}
+	public void mouseClicked(MouseEvent ev) {}
+	public void mouseReleased(MouseEvent ev) {}
+	
+	public static AppState makeWindow() {
+		AppState state = new AppState();
 		
 		new Thread() {
-			public void run() {
-				while(true) {
-					graphicsPanel.update();
-					try {
-						Thread.sleep(33);
+		public void run() {
+			JavaGraphics graphicsPanel = new JavaGraphics(state);
+			state.panel = graphicsPanel;
+			
+			new Thread() {
+				public void run() {
+					while(true) {
+						graphicsPanel.step();
+						try { Thread.sleep(33); }
+						catch(Exception ex) {}
 					}
-					catch(Exception ex) {}
 				}
-			}
-		}.start();
-		
-		this.setLayout(new BorderLayout());
-		this.add(toolbarPanel, BorderLayout.NORTH);
-		this.add(graphicsPanel, BorderLayout.CENTER);
-		this.setJMenuBar(buildMenuBar());
-		this.pack();
-		this.setVisible(true);
-	}
-	
-	private JMenuBar buildMenuBar() {
-		JMenuBar menuBar = new JMenuBar();
-		JMenu fileMenu = new JMenu("File");
-		JMenuItem exitItem = new JMenuItem("Exit");
-		
-		exitItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent ev) {
-				System.exit(1);
-			}
-		});
-		
-		fileMenu.add(exitItem);
-		menuBar.add(fileMenu);
-		
-		return menuBar;
-	}
-	
-	private class GraphicsPanel extends JPanel implements MouseListener, MouseMotionListener {
-		public String text;
-		private Point ball;
-		private Point mouse;
-		private boolean dragging;
-		private boolean increasing;
-		
-		public GraphicsPanel(String initialText) {
-			this.text = initialText;
-			this.ball = new Point(0, 300);
-			this.mouse = null;
-			this.dragging = false;
-			this.increasing = true;
+			}.start();
 			
-			this.addMouseListener(this);
-			this.addMouseMotionListener(this);
-			this.setBackground(Color.WHITE);
-			this.setPreferredSize(new Dimension(800, 600));
-		}
-		
-		public void paint(Graphics gg) {
-			super.paint(gg);
-			Graphics2D g = (Graphics2D)gg;
-
-			g.setColor(ballColor);
-			g.fillOval(ball.x - 5, ball.y - 5, 11, 11);
-			
-			if(mouse != null) {
-				g.setColor(Color.BLACK);
-				g.drawLine(0, 0, mouse.x, mouse.y);
-				g.drawLine(799, 0, mouse.x, mouse.y);
-				g.drawLine(0, 599, mouse.x, mouse.y);
-				g.drawLine(799, 599, mouse.x, mouse.y);
-			}
-			
-			g.setColor(Color.RED);
-			g.setFont(new Font("Arial", 50, 50));
-			g.drawString(text, 20, 80);
-		}
-
-		public void update() {
-			if(dragging)
-				return;
-			
-			if(increasing) {
-				ball.x+=10;
-				if(ball.x >= 799)
-					increasing = false;
-			}
-			else {
-				ball.x-=10;
-				if(ball.x <= 0)
-					increasing = true;
-			}
-			repaint();
-		}
-		
-		public void mouseMoved(MouseEvent ev) {
-			this.mouse = ev.getPoint();
-			repaint();
-		}
-		
-		public void mouseDragged(MouseEvent ev) {
-			this.mouse = ev.getPoint();
-			this.ball = ev.getPoint();
-			repaint();
-		}
-
-		public void mouseExited(MouseEvent ev) {
-			this.mouse = null;
-			repaint();
-		}
-
-		public void mousePressed(MouseEvent ev) {
-			this.ball = ev.getPoint();
-			this.dragging = true;
-			repaint();
-		}
-
-		public void mouseReleased(MouseEvent ev) {
-			this.dragging = false;
-		}
-		
-		public void mouseClicked(MouseEvent ev) {}
-		public void mouseEntered(MouseEvent ev) {}
-	}
+			JFrame frame = new JFrame();
+			frame.addWindowListener(new java.awt.event.WindowAdapter() {
+	    		public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+	    			graphicsPanel.state.finished = true;
+	    		}
+	    	});
 	
-	private class ToolbarPanel extends JPanel {
-		public JTextField textField;
+			frame.setLayout(new BorderLayout());
+			frame.add(graphicsPanel, BorderLayout.CENTER);
+			frame.pack();
+			frame.setVisible(true);
 		
-		public ToolbarPanel(String initialText) {
-			this.textField = new JTextField(initialText);
-			textField.setPreferredSize(new Dimension(150, 26));
-			this.setLayout(new FlowLayout(FlowLayout.LEFT));
-			this.add(textField);
-			this.add(new JLabel("(Press Enter)"));
-		}
-	}
-	
-	static boolean booleanValue = true;
-	public static void setBooleanValue(boolean val) {
-		booleanValue = booleanValue;
-	}
-	public static boolean getBooleanValue() {
-		return booleanValue;
-	}
-	
-	public static JavaGraphics builder() {
-		String title = "Static Factory";
-		String initialText = "Default Textbox String";
-		return new JavaGraphics(title, initialText);
-	}
-	
-	public static void main(String[] args) {
-		String title = (args.length > 0) ? (args[0]) : ("Default Title");
-		if(title == null)
-			title = "null";
-		String initialText = (args.length > 1) ? (args[1]) : ("Default Textbox String");
-		if(initialText == null)
-			initialText = "null";
-		new JavaGraphics(title, initialText);
+		}}.start();
+		
+		return state;
 	}
 }

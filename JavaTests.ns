@@ -135,7 +135,7 @@ public run = (
 )
 runMainClass = (
 	| javaGraphicsClass javaGraphicsMain stringClass objectArrayArg arrayOfArgs |
-	javaGraphicsClass:: findClass: 'JavaGraphics'.
+	javaGraphicsClass:: findClass: 'JavaApplication'.
 	javaGraphicsClass isNil ifTrue: [^false].
 
 	javaGraphicsMain:: getMainMethodID: javaGraphicsClass.
@@ -269,7 +269,7 @@ class JavaAliensRunApplication classpath: classpath = Test classpath: classpath 
 |) (
 public run = (
 	java loadClasspath: classpath.
-	java runApplication: 'JavaGraphics' args: {'Java App Started By Newspeak'. 'All tests passed.'}.
+	java runApplication: 'JavaApplication' args: {'Java App Started By Newspeak'. 'All tests passed.'}.
 )
 ) : (
 )
