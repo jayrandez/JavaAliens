@@ -3,7 +3,8 @@ Access the Java Runtime in Newspeak through the Aliens FFI and Java Native Inter
 
 **Usage:**
 1. Have Java.
-2. Have in PATH env. var: `JRE_DIR\bin` & `JRE_DIR\bin\client`. Otherwise it'll crash. Also, it will probably crash anyway.
-3. Compile \*.java and place class files in directory `bin` next to the Image. The classpath used by tests is `.\bin`
+2. Have in PATH your particular `JRE_DIR\bin` & `JRE_DIR\bin\client`.
+3. Compile \*.java into directory `bin` next to the Image (or compile.bat).
+4. [Run] JavaTests in package JavaAliens.
 
-**Note:** Currently NSVM crashes if you provide a bad Java classpath. Not sure yet how to trap this condition.
+The default classpath used by tests is `.\bin`
