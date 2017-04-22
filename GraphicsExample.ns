@@ -108,7 +108,7 @@ public main: platform args: args = (
 	java loadClasspath: './bin'.
 	(*state:: (java JavaClass find: 'JavaGraphics') call method: 'makeWindow' sig: '()LJavaGraphics$AppState;'.*)
 	java runApplication: 'JavaGraphics' args: {}.
-	state:: (java JavaClass find: 'JavaGraphics') get field: 'state' sig: '()LJavaGraphics$AppState;'.
+	state:: (java JavaClass find: 'JavaGraphics') get field: 'state' sig: 'LJavaGraphics$AppState;'.
 	panel:: state get field: 'panel' sig: 'LJavaGraphics;'.
 	Game state: state.
 )
