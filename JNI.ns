@@ -66,7 +66,7 @@ public VERSION_1_8 = (
 )
 ) : (
 )
-class Generator usingPlatform: platform usingRegex: regex = (
+public class Generator usingPlatform: platform usingRegex: regex = (
 (* No longer used *)|
 ObjectMirror = platform mirrors ObjectMirror.
 Transcript = platform squeak Transcript.

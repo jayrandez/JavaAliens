@@ -4,7 +4,6 @@ class JavaAliensTests packageUsing: manifest = (|
 	private JNI = manifest JNI.
 	private JavaAliens = manifest JavaAliensForSqueak.
 	private RegexMatcher = manifest RegexMatcher.
-	private Generator = manifest Generator.
 	List
 	Alien
 	jni
@@ -135,7 +134,7 @@ public run = (
 )
 runMainClass = (
 	| javaGraphicsClass javaGraphicsMain stringClass objectArrayArg arrayOfArgs |
-	javaGraphicsClass:: findClass: 'JavaApplication'.
+	javaGraphicsClass:: findClass: 'TestRunApp'.
 	javaGraphicsClass isNil ifTrue: [^false].
 
 	javaGraphicsMain:: getMainMethodID: javaGraphicsClass.
@@ -153,7 +152,15 @@ runMainClass = (
 )
 ) : (
 )
-class JavaAliensInstance classpath: classpath = Test classpath: classpath (|
+class Test classpath: classpath = (|
+	public classpath = classpath.
+|run) (
+run = (
+	subclassResponsibility.
+)
+) : (
+)
+class TestInstance classpath: classpath = Test classpath: classpath (|
 |) (
 _1_construction: javaClass = (
 	| javaObject aDifferentClass |
@@ -255,7 +262,7 @@ public run = (
 	| javaClass javaObject |
 	
 	java loadClasspath: classpath.
-	javaClass:: java JavaClass find: 'JavaInstanceTest'.
+	javaClass:: java JavaClass find: 'TestInstance'.
 
 	javaObject:: _1_construction: javaClass.
 	_2_setField: javaObject.
@@ -265,15 +272,15 @@ public run = (
 )
 ) : (
 )
-class JavaAliensRunApplication classpath: classpath = Test classpath: classpath (|
+class TestRunApp classpath: classpath = Test classpath: classpath (|
 |) (
 public run = (
 	java loadClasspath: classpath.
-	java runApplication: 'JavaApplication' args: {'Java App Started By Newspeak'. 'All tests passed.'}.
+	java runApplication: 'TestRunApp' args: {'Java App Started By Newspeak'. 'All tests passed.'}.
 )
 ) : (
 )
-class JavaAliensStatic classpath: classpath = Test classpath: classpath (|
+class TestStatic classpath: classpath = Test classpath: classpath (|
 |) (
 _1_staticSetField: javaClass = (
 	| objectField booleanField byteField charField shortField intField longField floatField doubleField |
@@ -366,7 +373,7 @@ public run = (
 	| javaClass  |
 
 	java loadClasspath: classpath.
-	javaClass:: java JavaClass find: 'JavaStaticTest'.
+	javaClass:: java JavaClass find: 'TestStatic'.
 
 	_1_staticSetField: javaClass.
 	_2_staticCallMethod: javaClass.
@@ -375,19 +382,11 @@ public run = (
 )
 ) : (
 )
-class Test classpath: classpath = (|
-	public classpath = classpath.
-|run) (
-run = (
-	subclassResponsibility.
-)
-) : (
-)
 public main: platform args: args = (
 	jni:: JNI usingPlatform: platform.
 	java:: JavaAliens usingPlatform: platform usingJNI: jni.
 	regex:: RegexMatcher usingPlatform: platform.
-	generator:: Generator usingPlatform: platform usingRegex: regex.
+	generator:: jni Generator usingPlatform: platform usingRegex: regex.
 	
 	List:: platform collections List.
 	Alien:: platform aliens Alien.
@@ -398,7 +397,7 @@ runTests = (
 	| tests classpath |
 	classpath:: '.\bin'.
 	(*tests:: allTests.*)
-	tests:: { JNIStartVM. JavaAliensStatic. JavaAliensInstance. JavaAliensRunApplication. }.
+	tests:: { JNIStartVM. TestStatic. TestInstance. TestRunApp. }.
 	tests do: [:eachTest | eachTest classpath: classpath].
 )
 ) : (
