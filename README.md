@@ -10,7 +10,7 @@ Access the Java Runtime in Newspeak through the Aliens FFI and Java Native Inter
 The default classpath used by tests is `.\bin`
 
 ## Inference Rules
-Only JavaAliens are passed to the core JNI library, however inferences can be made. The first choice is the inference made if the Java methods are ambiguous, e.g. an "isInteger" type is provided, but Java provides `void call(short a)` and `void call(int a)`.
+Inferences can be made to cast arguments to JavaAlien types. The first option is chosen if the Java methods are ambiguous, e.g. an "isInteger" type is provided, but Java defines `void call(short a)` and `void call(int a)`. Explicit JavaAlien types can be passed to resolve ambiguities.
 
 | If the Newspeak Object answers: |	It can be inferred as a JavaAlien: |
 | - | - |
