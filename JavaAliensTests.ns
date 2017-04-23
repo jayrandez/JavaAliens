@@ -12,7 +12,9 @@ class JavaAliensTests packageUsing: manifest = (|
 	generator
 |) (
 class JNIStartVM classpath: classpath = Test classpath: classpath (
-(* Instantiate VM Instance and run mainClass in classPath. *)|
+(* No longer used. Formed basis for Runtime in JavaAliensForSqueak.
+
+Instantiate VM Instance and run mainClass in classPath. *)|
 	jvm
 	env
 |) (
@@ -272,14 +274,6 @@ public run = (
 )
 ) : (
 )
-class TestRunApp classpath: classpath = Test classpath: classpath (|
-|) (
-public run = (
-	java loadClasspath: classpath.
-	java runApplication: 'TestRunApp' args: {'Java App Started By Newspeak'. 'All tests passed.'}.
-)
-) : (
-)
 class TestStatic classpath: classpath = Test classpath: classpath (|
 |) (
 _1_staticSetField: javaClass = (
@@ -396,8 +390,7 @@ public main: platform args: args = (
 runTests = (
 	| tests classpath |
 	classpath:: '.\bin'.
-	(*tests:: allTests.*)
-	tests:: { JNIStartVM. TestStatic. TestInstance. TestRunApp. }.
+	tests:: { TestStatic. TestInstance. }.
 	tests do: [:eachTest | eachTest classpath: classpath].
 )
 ) : (

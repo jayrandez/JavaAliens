@@ -561,13 +561,6 @@ private derefPtrPtr: pointerPointerAlien = (
 private destroyVM = (
 	^jvm DestroyJavaVM
 )
-public getClass: name = (
-	| jclass |
-	jclass:: env FindClass: (name asAlien address).
-	^(help isNullPtr: jclass)
-		ifTrue: [nil]
-		ifFalse: [JavaClass on: jclass].
-)
 private init: classpath = (
 	loadExistingVM ifTrue: [
 		preexisting:: true. 
@@ -730,24 +723,6 @@ private loadRuntime: classpath = (
 
 	theRuntime:: aRuntime.
 	theJavaAliens:: JavaAliens usingJNIEnv: (theRuntime env).
-)
-public runApplication: mainClassName = (
-	| mainClass stringClass |
-	(* For now this is passing an empty String array *)
-	stringClass:: runtime getClass: 'java/lang/String'.
-	^runApplication: mainClassName argsArray: (Array emptyOf: stringClass)
-)
-public runApplication: mainClassName  args: args <Collection> = (
-	| stringClass argStringObjects |
-	(* For now this is passing an empty String array *)
-	stringClass:: runtime getClass: 'java/lang/String'.
-	argStringObjects:: args collect: [:eachArg | JavaString from: eachArg].
-	^runApplication: mainClassName argsArray: (JavaArray of: stringClass values: argStringObjects)
-)
-private runApplication: mainClassName argsArray: argsArray = (
-	| mainClass |
-	mainClass:: runtime getClass: mainClassName.
-	mainClass call method: 'main' sig: '([Ljava/lang/String;)V' arg: argsArray.
 )
 private runtime = (
 	theRuntime isNil ifTrue: [loadRuntime: defaultClasspath].
