@@ -66,6 +66,66 @@ public VERSION_1_8 = (
 )
 ) : (
 )
+class Generator usingPlatform: platform usingRegex: regex = (
+(* No longer used *)|
+ObjectMirror = platform mirrors ObjectMirror.
+Transcript = platform squeak Transcript.
+private regex = regex.
+private builder
+private methods
+|) (
+builderFor: aClass = (
+	^(ObjectMirror reflecting: aClass) getClass mixin declaration asBuilder.
+)
+public deflate: inflatableClass = (
+	builder:: builderFor: inflatableClass.
+	methods:: builder instanceSide methods.
+	
+	publicMethods do: [:eachPublicMethod | methods removeMirrorNamed: (eachPublicMethod name)].
+
+	install.
+)
+public inflate: inflatableClass = (
+	| from to |
+	builder:: builderFor: inflatableClass.
+	methods:: builder instanceSide methods.
+	
+	from:: inflatableClass inflationSpecFrom.
+	to:: inflatableClass inflationSpecTo.
+	to do: [:eachTo | inflateMethodsFrom: from to: eachTo].
+
+	install.
+)
+inflateMethodsFrom: from to: to= (
+	| replaced |
+	privateMethods do: [:eachPrivateMethod |
+		replaced:: replacedSource: (eachPrivateMethod source) from: from to: to.
+		methods addFromSource: replaced.
+	].
+)
+install = (
+	builder install.
+)
+privateMethods = (
+	^methods select: [:eachMethod | eachMethod accessModifier = #private].
+)
+publicMethods = (
+	^methods select: [:eachMethod | eachMethod accessModifier = #public].
+)
+replacedSource: source from: from to: to = (
+	| replacedSource rx repl i |
+	replacedSource:: source.
+	i:: 1.
+	[i <= (from size)] whileTrue: [
+		rx:: from at: i.
+		repl:: to at: i.
+		replacedSource:: regex string: replacedSource copyWithRegex: rx matchesReplacedWith: repl.
+		i:: (i + 1).
+	].
+	^replacedSource
+)
+) : (
+)
 private class Libraries = (|
 |) (
 public class JNIEnv withEnvPtr: envPointerAlien = (
