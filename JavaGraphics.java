@@ -94,8 +94,8 @@ public class JavaGraphics extends JPanel implements MouseListener, MouseMotionLi
 		JavaGraphics graphicsPanel = new JavaGraphics(state);
 		state.panel = graphicsPanel;
 		
-		new Thread() {
-			public void run() {
+		//new Thread() {
+			//public void run() {
 				new Thread() {
 					public void run() {
 						while(true) {
@@ -118,8 +118,8 @@ public class JavaGraphics extends JPanel implements MouseListener, MouseMotionLi
 				frame.pack();
 				frame.setVisible(true);
 			
-			}
-		}.start();
+			//}
+		//}.start();
 		
 		return state;
 	}

@@ -1,0 +1,44 @@
+Newspeak3
+'JavaAliens'
+class AppliedJava usingPlatform: platform usingJavaAliens: java = (
+(* Toolkits built on the JavaAliens FFI. *)|
+	Transcript = platform squeak Transcript.
+	Processor = platform squeak Processor.
+	java = java.
+|) (
+public class JavaProcess clazz: clazz <JavaClass> = (
+(*For building applications which Java can interact with asynchronously. Forks a Smalltalk process which polls a native Java message queue. Rather than calling "static void main(String[] args)", it calls "static void main(NSObject arg)". Java can message the NSObject's bound Newspeak object.*)|
+	clazz = clazz.
+	process
+	queue
+|) (
+public asProcess = (
+	^process.
+)
+main = (
+	| ConcurrentLinkedQueue NSObject arg |
+	ConcurrentLinkedQueue:: java JavaClass find: 'java/util/concurrent/ConcurrentLinkedQueue'.
+	NSObject:: java JavaClass find: 'org/newspeaklanguage/NSObject'.
+
+	queue:: ConcurrentLinkedQueue construct new: {} sig: '()V'.
+	arg:: NSObject construct new: {} sig: '()V'.
+	arg set field: 'messageQueue' sig: 'Ljava/util/concurrent/ConcurrentLinkedQueue;' to: queue.
+	
+	[true] whileTrue: [pollMessage. Processor yield. ].
+)
+pollMessage = (
+	Transcript show: 'polling.'.
+)
+public start = (
+	process:: [ main ] forkAt: 40.
+)
+) : (
+public fork: clazz <JavaClass> arg: arg = (
+	| process |
+	process:: self clazz: clazz.
+	process start.
+	^process.
+)
+)
+) : (
+)

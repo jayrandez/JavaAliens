@@ -1,13 +1,16 @@
 Newspeak3
 'JavaAliens'
-class GraphicsExample packageUsing: manifest = (|
+class JavaProcessExample packageUsing: manifest = (|
 	private JNI = manifest JNI.
 	private JavaAliens = manifest JavaAliensForSqueak.
-
-	Point
+	private AppliedJava = manifest AppliedJava.
 
 	java
+	appJava
 	panel
+
+	Point
+	JavaProcess
 |) (
 class Game state: state <JavaObject> = (|
 	state = state.
@@ -108,20 +111,29 @@ private stopTimer = (
 )
 ) : (
 )
+javaProcessTest = (
+	| JavaProcessExample process |
+	java loadClasspath: './bin'.
+	JavaProcessExample:: java JavaClass find: 'JavaProcessExample'.
+	process:: JavaProcess fork: JavaProcessExample arg: nil.
+)
 public main: platform args: args = (
 	| jni state |
 
-	Point:: platform squeak Point.
-
 	jni:: JNI usingPlatform: platform.
 	java:: JavaAliens usingPlatform: platform usingJNI: jni.
+	appJava:: AppliedJava usingPlatform: platform usingJavaAliens: java.
 
-	java loadClasspath: './bin'.
+	Point:: platform squeak Point.
+	JavaProcess:: appJava JavaProcess.
+
+	javaProcessTest.
+
 	(*state:: (java JavaClass find: 'JavaGraphics') call method: 'makeWindow' sig: '()LJavaGraphics$AppState;'.*)
-	java runApplication: 'JavaGraphics' args: {}.
+	(*java runApplication: 'JavaGraphics' args: {}.
 	state:: (java JavaClass find: 'JavaGraphics') get field: 'state' sig: 'LJavaGraphics$AppState;'.
 	panel:: state get field: 'panel' sig: 'LJavaGraphics;'.
-	Game state: state.
+	Game state: state.*)
 )
 public repaint = (
 	panel call method: 'repaint' sig: '()V'.
