@@ -392,6 +392,13 @@ runTests = (
 	classpath:: '.\bin'.
 	tests:: { TestStatic. TestInstance. }.
 	tests do: [:eachTest | eachTest classpath: classpath].
+	testsComplete.
+)
+testsComplete = (
+	| JOptionPane string |
+	JOptionPane:: java JavaClass find: 'javax/swing/JOptionPane'.
+	string:: java JavaString from: 'Tests complete'.
+	JOptionPane call method: 'showMessageDialog' sig: '(Ljava/awt/Component;Ljava/lang/Object;)V' args: {nil. string}
 )
 ) : (
 )
