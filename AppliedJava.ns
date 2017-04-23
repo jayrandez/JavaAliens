@@ -11,9 +11,38 @@ public class JavaProcess clazz: clazz <JavaClass> = (
 	clazz = clazz.
 	process
 	queue
+	messagingModule = MessagingModule new.
 |) (
+class MessagingModule = (|
+|) (
+class NSMessage on: anObj <JavaObject> = (
+(* Describe the class in this comment. *)|
+	obj = anObj castTo: (java JavaClass find: 'org/newspeaklanguage/NSMessage').
+|) (
+public selector = (
+	^(obj get field: 'selector' sig: 'Ljava/lang/String;') value.
+)
+) : (
+)
+public poll = (
+	| result message |
+	Transcript show: 'polling...'.
+	result:: queue call method: 'poll' sig: '()Ljava/lang/Object;' args: {}.
+	result isNull ifFalse: [
+		message:: NSMessage on: result.
+		Transcript show: 'received: '; show: (message selector); cr.
+	].
+)
+) : (
+)
 public asProcess = (
 	^process.
+)
+dialog: message = (
+	| JOptionPane string |
+	JOptionPane:: java JavaClass find: 'javax/swing/JOptionPane'.
+	string:: java JavaString from: message.
+	JOptionPane call method: 'showMessageDialog' sig: '(Ljava/awt/Component;Ljava/lang/Object;)V' args: {nil. string}
 )
 main = (
 	| ConcurrentLinkedQueue NSObject arg |
@@ -23,18 +52,28 @@ main = (
 	queue:: ConcurrentLinkedQueue construct new: {} sig: '()V'.
 	arg:: NSObject construct new: {} sig: '()V'.
 	arg set field: 'messageQueue' sig: 'Ljava/util/concurrent/ConcurrentLinkedQueue;' to: queue.
+
+	clazz call method: 'main' sig: '(Lorg/newspeaklanguage/NSObject;)V' args: {arg}.
 	
-	[true] whileTrue: [pollMessage. Processor yield. ].
+	[true] whileTrue: [msg poll. Processor yield. ].
 )
-pollMessage = (
-	Transcript show: 'polling.'.
+private msg = (
+	^messagingModule.
 )
 public start = (
 	process:: [ main ] forkAt: 40.
 )
+public terminate = (
+	process ifNotNil: [
+		process terminate.
+		dialog: 'Process terminated.'.
+		process:: nil.
+	].
+)
 ) : (
 public fork: clazz <JavaClass> arg: arg = (
 	| process |
+	Transcript open.
 	process:: self clazz: clazz.
 	process start.
 	^process.

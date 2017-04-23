@@ -6,6 +6,7 @@ public class JavaProcessExample
 {
 	public static void main(NSObject arg) {
 		JOptionPane.showMessageDialog(null, "In java app.");
+		arg.send("terminate");
 	}
 	
 	public static void main(String[] args) {

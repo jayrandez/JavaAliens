@@ -362,7 +362,7 @@ public castTo: clazz <JavaClass> = (
 	| alienCopy result |
 
 	clazz isJavaClass ifFalse: [^NotAJavaClass].
-	
+
 	alienCopy:: Alien forPointer: ((self asAlien) address).
 	^JavaCastObject on: alienCopy clazz: clazz.
 )
@@ -665,7 +665,10 @@ protected translateSig: sig = (
 	| firstChar = (sig at: 1). |
 
 	firstChar = "V" ifTrue: [^TypeEntry returnType: (env ReturnType void) alienClass: nil].
-	firstChar = "L" ifTrue: [^TypeEntry returnType: (env ReturnType jobject) alienClass: JavaObject].
+	firstChar = "L" ifTrue: [^sig = 'Ljava/lang/String;'
+		ifTrue: [TypeEntry returnType: (env ReturnType jobject) alienClass: JavaString]
+		ifFalse: [TypeEntry returnType: (env ReturnType jobject) alienClass: JavaObject]
+	].
 	firstChar = "Z" ifTrue: [^TypeEntry returnType: (env ReturnType jboolean) alienClass: javaAliens JavaBoolean].
 	firstChar = "I" ifTrue: [^TypeEntry returnType: (env ReturnType jint) alienClass: javaAliens JavaInt].
 	firstChar = "D" ifTrue: [^TypeEntry returnType: (env ReturnType jdouble) alienClass: javaAliens JavaDouble].
