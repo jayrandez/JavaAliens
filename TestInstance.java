@@ -1,6 +1,5 @@
-import javax.swing.JOptionPane;
 
-public class JavaInstanceTest
+public class TestInstance
 {
 	public Object objectField;
 	public boolean booleanField;
@@ -12,7 +11,7 @@ public class JavaInstanceTest
 	public float floatField;
 	public double doubleField;
 	
-	public JavaInstanceTest() {}
+	public TestInstance() {}
 
 	public void setAll(Object anObject, boolean aBoolean, byte aByte, char aChar,
 			short aShort, int anInt, long aLong/*, float aFloat, double aDouble*/) {

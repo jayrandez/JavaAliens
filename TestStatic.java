@@ -1,8 +1,5 @@
-import java.util.*;
 
-import javax.swing.JOptionPane;
-
-public class JavaStaticTest
+public class TestStatic
 {
 	public static Object objectField;
 	public static boolean booleanField;

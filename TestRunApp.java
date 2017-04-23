@@ -2,13 +2,13 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
-public class JavaApplication extends JFrame
+public class TestRunApp extends JFrame
 {
 	Color ballColor = Color.BLACK;
 	final ToolbarPanel toolbarPanel;
 	final GraphicsPanel graphicsPanel;
 	
-	public JavaApplication(String title, String initialValue) {
+	public TestRunApp(String title, String initialValue) {
 		super(title);
 		
 		this.toolbarPanel = new ToolbarPanel(initialValue);
@@ -156,10 +156,10 @@ public class JavaApplication extends JFrame
 		}
 	}
 	
-	public static JavaApplication builder() {
+	public static TestRunApp builder() {
 		String title = "Static Factory";
 		String initialText = "Default Textbox String";
-		return new JavaApplication(title, initialText);
+		return new TestRunApp(title, initialText);
 	}
 	
 	public static void main(String[] args) {
@@ -169,6 +169,6 @@ public class JavaApplication extends JFrame
 		String initialText = (args.length > 1) ? (args[1]) : ("Default Textbox String");
 		if(initialText == null)
 			initialText = "null";
-		new JavaApplication(title, initialText);
+		new TestRunApp(title, initialText);
 	}
 }
