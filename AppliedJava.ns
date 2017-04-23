@@ -4,80 +4,118 @@ class AppliedJava usingPlatform: platform usingJavaAliens: java = (
 (* Toolkits built on the JavaAliens FFI. *)|
 	Transcript = platform squeak Transcript.
 	Processor = platform squeak Processor.
+	List = platform collections List.
+	Map = platform collections Map.
 	java = java.
 |) (
-public class JavaProcess clazz: clazz <JavaClass> = (
+public class JavaProcess clazz: clazz <JavaClass> arg: arg <TaggedObject> = (
 (*For building applications which Java can interact with asynchronously. Forks a Smalltalk process which polls a native Java message queue. Rather than calling "static void main(String[] args)", it calls "static void main(NSObject arg)". Java can message the NSObject's bound Newspeak object.*)|
 	clazz = clazz.
+	arg = arg.
 	process
 	queue
-	messagingModule = MessagingModule new.
+	theMessaging = Messaging new.
+	theRegistry = Registry new.
 |) (
-class MessagingModule = (|
+class Messaging = (|
 |) (
 class NSMessage on: anObj <JavaObject> = (
 (* Describe the class in this comment. *)|
 	obj = anObj castTo: (java JavaClass find: 'org/newspeaklanguage/NSMessage').
 |) (
+public receiver = (
+	| tag |
+	tag:: (obj get field: 'tag' sig: 'J') value.
+	^reg objectForTag: tag.
+)
 public selector = (
 	^(obj get field: 'selector' sig: 'Ljava/lang/String;') value.
 )
 ) : (
 )
+dispatch: message <NSMessage> = (
+	message receiver perform: (message selector asSymbol).
+)
 public poll = (
-	| result message |
-	Transcript show: 'polling...'.
+	| result |
 	result:: queue call method: 'poll' sig: '()Ljava/lang/Object;' args: {}.
-	result isNull ifFalse: [
-		message:: NSMessage on: result.
-		Transcript show: 'received: '; show: (message selector); cr.
-	].
+	result isNull ifFalse: [dispatch: (NSMessage on: result)].
 )
 ) : (
 )
-public asProcess = (
-	^process.
+class Registry = (|
+	tags = Map new.
+	lastTag
+|lastTag:: 0) (
+NSObject = (
+	^java JavaClass find: 'org/newspeaklanguage/NSObject'.
 )
-dialog: message = (
-	| JOptionPane string |
-	JOptionPane:: java JavaClass find: 'javax/swing/JOptionPane'.
-	string:: java JavaString from: message.
-	JOptionPane call method: 'showMessageDialog' sig: '(Ljava/awt/Component;Ljava/lang/Object;)V' args: {nil. string}
+public makeNSObjectFor: obj <TaggedObject> = (
+	| tag nsObj |
+	tag:: obj tagIn: self.
+	tag ifNil: [tag:: tagObject: obj ].
+	nsObj:: NSObject construct new: {} sig: '()V'.
+	nsObj set field: 'queue' sig: 'Ljava/util/concurrent/ConcurrentLinkedQueue;' to: queue.
+	nsObj set field: 'tag' sig: 'J' to: (java JavaPrimitive long: tag).
+	^nsObj.
+)
+nextTag = (
+	| tag = lastTag. |
+	lastTag:: tag + 1.
+	^tag
+)
+public objectForTag: tag = (
+	^tags at: tag ifAbsent: [nil].
+)
+tagObject: obj <TaggedObject> = (
+	| tag = nextTag. |
+	obj setTagIn: self tag: tag.
+	tags at: tag put: obj.
+	^tag.
+)
+) : (
 )
 main = (
-	| ConcurrentLinkedQueue NSObject arg |
+	| ConcurrentLinkedQueue NSObject |
+
 	ConcurrentLinkedQueue:: java JavaClass find: 'java/util/concurrent/ConcurrentLinkedQueue'.
-	NSObject:: java JavaClass find: 'org/newspeaklanguage/NSObject'.
-
 	queue:: ConcurrentLinkedQueue construct new: {} sig: '()V'.
-	arg:: NSObject construct new: {} sig: '()V'.
-	arg set field: 'messageQueue' sig: 'Ljava/util/concurrent/ConcurrentLinkedQueue;' to: queue.
 
-	clazz call method: 'main' sig: '(Lorg/newspeaklanguage/NSObject;)V' args: {arg}.
+	clazz call method: 'main' sig: '(Lorg/newspeaklanguage/NSObject;)V' args: {reg makeNSObjectFor: arg}.
 	
 	[true] whileTrue: [msg poll. Processor yield. ].
 )
 private msg = (
-	^messagingModule.
+	^theMessaging.
+)
+private reg = (
+	^theRegistry
 )
 public start = (
 	process:: [ main ] forkAt: 40.
 )
 public terminate = (
-	process ifNotNil: [
-		process terminate.
-		dialog: 'Process terminated.'.
-		process:: nil.
-	].
+	| myProcess = process. |
+	process ifNotNil: [process:: nil. myProcess terminate.].
 )
 ) : (
-public fork: clazz <JavaClass> arg: arg = (
+public fork: clazz <JavaClass> arg: arg <TaggedObject> = (
 	| process |
-	Transcript open.
-	process:: self clazz: clazz.
+	process:: self clazz: clazz arg: arg.
 	process start.
 	^process.
 )
+)
+public class TaggedObject = (|
+	registryTags = Map new.
+|) (
+public setTagIn: registry <Registry> tag: i = (
+	registryTags at: registry put: i.
+)
+public tagIn: registry <Registry> = (
+	^registryTags at: registry ifAbsent: [nil].
+)
+) : (
 )
 ) : (
 )

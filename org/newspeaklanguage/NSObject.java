@@ -4,20 +4,31 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class NSObject
 {
-	private ConcurrentLinkedQueue<NSMessage> messageQueue;
+	public long tag;
+	public ConcurrentLinkedQueue<NSMessage> queue;
 	
-	/* Asynchronous, non-blocking send. */
+	/* Non-blocking send. */
 	public void send(String selector, Object... args) {
-		messageQueue.add(new NSMessage(selector, args));
+		queue.add(new NSMessage(tag, selector, args));
 	}
 	
-	/* Synchronous, blocking send. */
-	public void syncSend(String selector, Object... args) throws DoesNotUnderstand {
+	/* Blocking send. */
+	public void sync(String selector, Object... args) throws DoesNotUnderstand
+	{
 		
 	}
 	
-	/* Synchronous, blocking send that yields a result. */
-	public Object getSyncSend(String selector, Object... args) throws DoesNotUnderstand {
+	/* Blocking send that yields a result. */
+	public Object get(String selector, Object... args) throws DoesNotUnderstand
+	{
+		return null;
+	}
+	
+	/* Blocking send that yields an NSObject registered with the Java Process. */
+	public NSObject getNSObj(String selector, Object... args) throws DoesNotUnderstand
+	{
 		return null;
 	}
 }
+
+
