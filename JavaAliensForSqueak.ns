@@ -66,6 +66,9 @@ public asAlien = (
 public asJavaAlien = (
 	^self
 )
+public isJavaAlien = (
+	^true
+)
 ) : (
 )
 public class JavaArray on: jarray <Alien> = JavaAlien on: jarray (|
