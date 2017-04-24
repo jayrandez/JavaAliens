@@ -15,7 +15,7 @@ Inferences can be made to cast arguments to JavaAlien types. The first option is
 | If the Newspeak Object answers: |	It can be inferred as a JavaAlien: |
 | - | - |
 | isInteger	| JavaInt (int), JavaShort (short), JavaLong (long), JavaByte (byte) |
-| isFraction, isFloat | JavaFloat (float), JavaDouble (double) |
+| isFraction, isFloat, isNumber | JavaFloat (float), JavaDouble (double) |
 | isCharacter | JavaChar (char) |
 | isString | JavaString (String) |
 | isBoolean | JavaBoolean (boolean) |
