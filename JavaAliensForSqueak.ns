@@ -5,12 +5,13 @@ class JavaAliensForSqueak usingPlatform: platform usingJNI: jni = (
 	Alien = platform aliens Alien.
 	List = platform collections List.
 	jni = jni.
-	private theRuntime
-	private theJavaAliens
+	private theRuntime = Runtime new.
+	private theAlienHelpers = AlienHelpers new.
+	private theJavaAliens = JavaAliens new.
+	private theTranslation = Translation new.
 |) (
 private class AlienHelpers = (
 (* Mainly Pointer Alien manipulation. Ideally this will go away. *)||) (
-) : (
 public coerce: arg <JavaAlien> = (
 	^arg asAlien.
 )
@@ -29,34 +30,9 @@ public nullPtr = (
 public safePtr: pointerAlien = (
 	^(isNullPtr: pointerAlien) ifTrue: [nil] ifFalse: [pointerAlien]
 )
-)
-public class GetTypeTranslator = TypeTranslator (|
-|) (
-public field: fieldName = (
-	| invocation |
-	invocation:: translateField: fieldName.
-	^invocation isNil
-		ifTrue: [super doesNotUnderstand]
-		ifFalse: [invocation value]
-)
-public field: fieldName sig: sig = (
-	| invocation |
-	invocation:: translateField: fieldName sig: sig.
-	^invocation isNil
-		ifTrue: [super doesNotUnderstand]
-		ifFalse: [invocation value]
-)
-public translateField: fieldName = (
-	subclassResponsibility
-)
-public translateField: fieldName sig: sig = (
-	^subclassResponsibility
-)
 ) : (
 )
-private class JavaAliens usingJNIEnv: env = (
-(* All JavaAlien instances have access to a JNIEnv library through this module. *)|
-	env = env.
+private class JavaAliens = (|
 |) (
 private class JavaAlien on: alien <Alien> = (|
 	private alien = alien.|) (
@@ -68,6 +44,9 @@ public asJavaAlien = (
 )
 public isJavaAlien = (
 	^true
+)
+public javaSignature = (
+	subclassResponsibility
 )
 ) : (
 )
@@ -137,6 +116,11 @@ public value = (
 ) : (
 )
 public class JavaClass on: jclass = JavaAlien on: jclass (|
+	TypeTranslator = translation TypeTranslator.
+	MethodTypeTranslator = translation MethodTypeTranslator.
+	GetTypeTranslator = translation GetTypeTranslator.
+	SetTypeTranslator = translation SetTypeTranslator.
+
 	callTranslator = CallStaticMethodTypeTranslator new.
 	getTranslator = GetStaticFieldTypeTranslator new.
 	setTranslator = SetStaticFieldTypeTranslator new.
@@ -290,6 +274,10 @@ public value = (
 ) : (
 )
 public class JavaObject on: jobject <Alien> = JavaAlien on: jobject (|
+	MethodTypeTranslator = translation MethodTypeTranslator.
+	GetTypeTranslator = translation GetTypeTranslator.
+	SetTypeTranslator = translation SetTypeTranslator.
+
 	callTranslator = CallMethodTypeTranslator new.
 	getTranslator = GetFieldTypeTranslator new.
 	setTranslator = SetFieldTypeTranslator new.
@@ -413,6 +401,15 @@ public set = (
 
 	^setTranslator
 )
+public synchronized: block <BlockClosure> = (
+	| result |
+
+	env MonitorEnter: (self asAlien).
+	result:: block value.
+	env MonitorExit: (self asAlien).
+
+	^result.
+)
 ) : (
 )
 public class JavaPrimitive on: direct <Alien> = JavaAlien on: direct (|
@@ -486,51 +483,13 @@ public from: string <String> = (
 )
 ) : (
 )
-public class MethodTypeTranslator = TypeTranslator (|
-|) (
-public method: methodName = (
-	^method: methodName args: (List new).
-)
-public method: staticMethodName arg: arg = (
-	^method: staticMethodName args: (List with: arg).
-)
-public method: staticMethodName args: args = (
-	| invocation nativeArgs |
-	nativeArgs:: help coerceList: args.
-	invocation:: translateMethod: staticMethodName args: nativeArgs.
-	^invocation isNil
-		ifTrue: [super doesNotUnderstand]
-		ifFalse: [invocation value: nativeArgs]
-)
-public method: staticMethodName sig: sig = (
-	^method: staticMethodName sig: sig args: (List new).
-)
-public method: staticMethodName sig: sig arg: arg = (
-	^method: staticMethodName sig: sig args: (List with: arg)
-)
-public method: staticMethodName sig: sig args: args = (
-	| invocation nativeArgs |
-	nativeArgs:: help coerceList: args.
-	invocation:: translateMethod: staticMethodName sig: sig.
-	^invocation isNil
-		ifTrue: [super doesNotUnderstand]
-		ifFalse: [invocation value: nativeArgs]
-)
-public translateMethod: methodName numArgs: numArgs = (
-	subclassResponsibility.
-)
-public translateMethod: methodName sig: sig = (
-	subclassResponsibility
-)
-) : (
-)
-private class Runtime classpath: classpath = (
+private class Runtime = (
 (* Encapsulates JVM and access to the classpath. Holds jvm and env pointers required for all interactions with Java. *)|
 	public jvm	
 	public env
 	public running
 	public preexisting 
-|init: classpath) (
+|running:: false) (
 private createVM: classpath = (
 	| options initArgs jvmPtrBuffer envPtrBuffer result success |
 
@@ -564,7 +523,7 @@ private derefPtrPtr: pointerPointerAlien = (
 private destroyVM = (
 	^jvm DestroyJavaVM
 )
-private init: classpath = (
+public init: classpath = (
 	loadExistingVM ifTrue: [
 		preexisting:: true. 
 		running:: true
@@ -617,6 +576,80 @@ private recreateVM = (
 	result = (jni OK) ifFalse: [^false].
 
 	^createVM
+)
+) : (
+)
+private class Translation = (|
+	JavaObject = javaAliens JavaObject.
+	JavaString = javaAliens JavaString.
+	JavaBoolean = javaAliens JavaBoolean.
+	JavaInt = javaAliens JavaInt.
+	JavaDouble = javaAliens JavaDouble.
+	JavaLong = javaAliens JavaLong.
+	JavaByte = javaAliens JavaByte.
+	JavaFloat = javaAliens JavaFloat.
+	JavaChar = javaAliens JavaChar.
+	JavaShort = javaAliens JavaShort.
+|) (
+public class GetTypeTranslator = TypeTranslator (|
+|) (
+public field: fieldName = (
+	| invocation |
+	invocation:: translateField: fieldName.
+	^invocation isNil
+		ifTrue: [super doesNotUnderstand]
+		ifFalse: [invocation value]
+)
+public field: fieldName sig: sig = (
+	| invocation |
+	invocation:: translateField: fieldName sig: sig.
+	^invocation isNil
+		ifTrue: [super doesNotUnderstand]
+		ifFalse: [invocation value]
+)
+public translateField: fieldName = (
+	subclassResponsibility
+)
+public translateField: fieldName sig: sig = (
+	^subclassResponsibility
+)
+) : (
+)
+public class MethodTypeTranslator = TypeTranslator (|
+|) (
+public method: methodName = (
+	^method: methodName args: (List new).
+)
+public method: staticMethodName arg: arg = (
+	^method: staticMethodName args: (List with: arg).
+)
+public method: staticMethodName args: args = (
+	| invocation nativeArgs |
+	nativeArgs:: help coerceList: args.
+	invocation:: translateMethod: staticMethodName args: nativeArgs.
+	^invocation isNil
+		ifTrue: [super doesNotUnderstand]
+		ifFalse: [invocation value: nativeArgs]
+)
+public method: staticMethodName sig: sig = (
+	^method: staticMethodName sig: sig args: (List new).
+)
+public method: staticMethodName sig: sig arg: arg = (
+	^method: staticMethodName sig: sig args: (List with: arg)
+)
+public method: staticMethodName sig: sig args: args = (
+	| invocation nativeArgs |
+	nativeArgs:: help coerceList: args.
+	invocation:: translateMethod: staticMethodName sig: sig.
+	^invocation isNil
+		ifTrue: [super doesNotUnderstand]
+		ifFalse: [invocation value: nativeArgs]
+)
+public translateMethod: methodName numArgs: numArgs = (
+	subclassResponsibility.
+)
+public translateMethod: methodName sig: sig = (
+	subclassResponsibility
 )
 ) : (
 )
@@ -678,69 +711,40 @@ protected translateSig: sig = (
 )
 ) : (
 )
-public JavaArray = (
-	^javaAliens JavaArray
-)
-public JavaClass = (
-	^javaAliens JavaClass
-)
-public JavaObject = (
-	^javaAliens JavaObject
-)
-public JavaPrimitive = (
-	^javaAliens JavaPrimitive
-)
-public JavaString = (
-	^javaAliens JavaString
+) : (
 )
 private defaultClasspath = (
-	^'.'
+	^'.\bin'
 )
-public env = (
-	^runtime env.
+env = (
+	^runtime env
 )
 protected help = (
-	^AlienHelpers
+	^theAlienHelpers
 )
 public javaAliens = (
-	theJavaAliens isNil ifTrue: [loadRuntime: defaultClasspath].
-	^theJavaAliens
+	^theJavaAliens.
 )
 public loadClasspath: classpath = (
 	^loadClasspath: classpath ifAlreadyLoaded: [self]
 )
 public loadClasspath: classpath ifAlreadyLoaded: exec = (
-	theRuntime isNil ifTrue: [
-		loadRuntime: classpath.
-		theRuntime preexisting ifTrue: [
-			^exec value
-		].
-	] ifFalse: [
-		^exec value.
-	].
+	runtime running 
+		ifFalse: [
+			loadRuntime: classpath.
+			theRuntime preexisting ifTrue: [^exec value].
+		]
+		ifTrue: [^exec value.].
 )
 private loadRuntime: classpath = (
-	| aRuntime |
-	aRuntime:: Runtime classpath: classpath.
-	aRuntime running ifFalse: [couldNotLoadRuntime].
-
-	theRuntime:: aRuntime.
-	theJavaAliens:: JavaAliens usingJNIEnv: (theRuntime env).
+	runtime init: classpath.
+	runtime running ifFalse: [CouldNotLoadRuntime].
 )
-private runtime = (
-	theRuntime isNil ifTrue: [loadRuntime: defaultClasspath].
+protected runtime = (
 	^theRuntime.
 )
-public synchronized: block <BlockClosure> on: obj <JavaObject> = (
-	| result |
-
-	obj isJavaObject ifFalse: [^NotAJavaObject].
-	
-	env MonitorEnter: (obj asAlien).
-	result:: block value.
-	env MonitorExit: (obj asAlien).
-
-	^result.
+protected translation = (
+	^theTranslation
 )
 ) : (
 )

@@ -4,12 +4,17 @@ class JavaAliensTests packageUsing: manifest = (|
 	private JNI = manifest JNI.
 	private JavaAliens = manifest JavaAliensForSqueak.
 	private RegexMatcher = manifest RegexMatcher.
-	List
-	Alien
+	
 	jni
 	java
 	regex
 	generator
+
+	List
+	Alien
+	JavaClass
+	JavaPrimitive
+	JavaString
 |) (
 class JNIStartVM classpath: classpath = Test classpath: classpath (
 (* No longer used. Formed basis for Runtime in JavaAliensForSqueak.
@@ -176,14 +181,14 @@ _2_setField: javaObject = (
 	| objectField booleanField byteField charField shortField intField longField floatField doubleField |
 
 	objectField:: nil.
-	booleanField:: java JavaPrimitive boolean: true.
-	byteField:: java JavaPrimitive byte: 2.
-	charField:: java JavaPrimitive char: "3".
-	shortField:: java JavaPrimitive short: 4.
-	intField:: java JavaPrimitive int: 5.
-	longField:: java JavaPrimitive long: 6.
-	(*floatField:: java JavaPrimitive float: 7.0.
-	doubleField:: java JavaPrimitive double: 8.0*)
+	booleanField:: JavaPrimitive boolean: true.
+	byteField:: JavaPrimitive byte: 2.
+	charField:: JavaPrimitive char: "3".
+	shortField:: JavaPrimitive short: 4.
+	intField:: JavaPrimitive int: 5.
+	longField:: JavaPrimitive long: 6.
+	(*floatField:: JavaPrimitive float: 7.0.
+	doubleField:: JavaPrimitive double: 8.0*)
 
 	javaObject set field: 'objectField' sig: 'Ljava/lang/Object;' to: objectField.
 	javaObject set field: 'booleanField' sig: 'Z' to: booleanField.
@@ -208,7 +213,7 @@ _3_callMethod: javaObject = (
 	(*floatField:: javaObject call method: 'getFloat' sig: '()F'.
 	doubleField:: javaObject call method: 'getDouble' sig: '()D'.*)
 
-	(objectField instanceOf: (java JavaClass find: 'java/lang/String')) ifFalse: [TestFailed].
+	(objectField instanceOf: (JavaClass find: 'java/lang/String')) ifFalse: [TestFailed].
 	(booleanField value) = true ifFalse: [TestFailed].
 	(byteField value) = 2 ifFalse: [TestFailed].
 	(charField value) = "3" ifFalse: [TestFailed].
@@ -221,15 +226,15 @@ _3_callMethod: javaObject = (
 _4_callMethodVoidAndArgs: javaObject = (
 	| objectField booleanField byteField charField shortField intField longField floatField doubleField |
 
-	objectField:: (java JavaClass find: 'java/util/ArrayList') construct new: {} sig: '()V'.	
-	booleanField:: java JavaPrimitive boolean: false.
-	byteField:: java JavaPrimitive byte: 1.
-	charField:: java JavaPrimitive char: "2".
-	shortField:: java JavaPrimitive short: 3.
-	intField:: java JavaPrimitive int: 4.
-	longField:: java JavaPrimitive long: 5.
-	(*floatField:: java JavaPrimitive float: 6.0.
-	doubleField:: java JavaPrimitive double: 7.0*)
+	objectField:: (JavaClass find: 'java/util/ArrayList') construct new: {} sig: '()V'.	
+	booleanField:: JavaPrimitive boolean: false.
+	byteField:: JavaPrimitive byte: 1.
+	charField:: JavaPrimitive char: "2".
+	shortField:: JavaPrimitive short: 3.
+	intField:: JavaPrimitive int: 4.
+	longField:: JavaPrimitive long: 5.
+	(*floatField:: JavaPrimitive float: 6.0.
+	doubleField:: JavaPrimitive double: 7.0*)
 
 	javaObject call
 		method: 'setAll'
@@ -250,7 +255,7 @@ _5_getField: javaObject = (
 	(*floatField:: javaObject get field: 'floatField' sig: 'F'.
 	doubleField:: javaObject get field: 'doubleField' sig: 'D'.*)
 
-	(objectField instanceOf: (java JavaClass find: 'java/lang/String')) ifTrue: [TestFailed].
+	(objectField instanceOf: (JavaClass find: 'java/lang/String')) ifTrue: [TestFailed].
 	(booleanField value) = false ifFalse: [TestFailed].
 	(byteField value) = 1 ifFalse: [TestFailed].
 	(charField value) = "2" ifFalse: [TestFailed].
@@ -264,7 +269,7 @@ public run = (
 	| javaClass javaObject |
 	
 	java loadClasspath: classpath.
-	javaClass:: java JavaClass find: 'TestInstance'.
+	javaClass:: JavaClass find: 'TestInstance'.
 
 	javaObject:: _1_construction: javaClass.
 	_2_setField: javaObject.
@@ -280,14 +285,14 @@ _1_staticSetField: javaClass = (
 	| objectField booleanField byteField charField shortField intField longField floatField doubleField |
 
 	objectField:: nil.
-	booleanField:: java JavaPrimitive boolean: true.
-	byteField:: java JavaPrimitive byte: 2.
-	charField:: java JavaPrimitive char: "3".
-	shortField:: java JavaPrimitive short: 4.
-	intField:: java JavaPrimitive int: 5.
-	longField:: java JavaPrimitive long: 6.
-	(*floatField:: java JavaPrimitive float: 7.0.
-	doubleField:: java JavaPrimitive double: 8.0*)
+	booleanField:: JavaPrimitive boolean: true.
+	byteField:: JavaPrimitive byte: 2.
+	charField:: JavaPrimitive char: "3".
+	shortField:: JavaPrimitive short: 4.
+	intField:: JavaPrimitive int: 5.
+	longField:: JavaPrimitive long: 6.
+	(*floatField:: JavaPrimitive float: 7.0.
+	doubleField:: JavaPrimitive double: 8.0*)
 
 	javaClass set field: 'objectField' sig: 'Ljava/lang/Object;' to: objectField.
 	javaClass set field: 'booleanField' sig: 'Z' to: booleanField.
@@ -312,7 +317,7 @@ _2_staticCallMethod: javaClass = (
 	(*floatField:: javaClass call method: 'getFloat' sig: '()F'.
 	doubleField:: javaClass call method: 'getDouble' sig: '()D'.*)
 
-	(objectField instanceOf: (java JavaClass find: 'java/lang/String')) ifFalse: [TestFailed].
+	(objectField instanceOf: (JavaClass find: 'java/lang/String')) ifFalse: [TestFailed].
 	(booleanField value) = true ifFalse: [TestFailed].
 	(byteField value) = 2 ifFalse: [TestFailed].
 	(charField value) = "3" ifFalse: [TestFailed].
@@ -325,15 +330,15 @@ _2_staticCallMethod: javaClass = (
 _3_staticCallMethodVoidAndArgs: javaClass = (
 	| objectField booleanField byteField charField shortField intField longField floatField doubleField |
 
-	objectField:: (java JavaClass find: 'java/util/ArrayList') construct new: {} sig: '()V'.	
-	booleanField:: java JavaPrimitive boolean: false.
-	byteField:: java JavaPrimitive byte: 1.
-	charField:: java JavaPrimitive char: "2".
-	shortField:: java JavaPrimitive short: 3.
-	intField:: java JavaPrimitive int: 4.
-	longField:: java JavaPrimitive long: 5.
-	(*floatField:: java JavaPrimitive float: 6.0.
-	doubleField:: java JavaPrimitive double: 7.0*)
+	objectField:: (JavaClass find: 'java/util/ArrayList') construct new: {} sig: '()V'.	
+	booleanField:: JavaPrimitive boolean: false.
+	byteField:: JavaPrimitive byte: 1.
+	charField:: JavaPrimitive char: "2".
+	shortField:: JavaPrimitive short: 3.
+	intField:: JavaPrimitive int: 4.
+	longField:: JavaPrimitive long: 5.
+	(*floatField:: JavaPrimitive float: 6.0.
+	doubleField:: JavaPrimitive double: 7.0*)
 
 	javaClass call
 		method: 'setAll'
@@ -353,7 +358,7 @@ _4_staticGetField: javaClass = (
 	floatField:: javaClass get field: 'floatField' sig: 'F'.
 	doubleField:: javaClass get field: 'doubleField' sig: 'D'.
 
-	(objectField instanceOf: (java JavaClass find: 'java/lang/String')) ifTrue: [TestFailed].
+	(objectField instanceOf: (JavaClass find: 'java/lang/String')) ifTrue: [TestFailed].
 	(booleanField value) = false ifFalse: [TestFailed].
 	(byteField value) = 1 ifFalse: [TestFailed].
 	(charField value) = "2" ifFalse: [TestFailed].
@@ -367,7 +372,7 @@ public run = (
 	| javaClass  |
 
 	java loadClasspath: classpath.
-	javaClass:: java JavaClass find: 'TestStatic'.
+	javaClass:: JavaClass find: 'TestStatic'.
 
 	_1_staticSetField: javaClass.
 	_2_staticCallMethod: javaClass.
@@ -384,7 +389,10 @@ public main: platform args: args = (
 	
 	List:: platform collections List.
 	Alien:: platform aliens Alien.
-
+	JavaClass:: java javaAliens JavaClass.
+	JavaPrimitive:: java javaAliens JavaPrimitive.
+	JavaString:: java javaAliens JavaString.
+	
 	runTests
 )
 runTests = (
@@ -395,10 +403,10 @@ runTests = (
 	testsComplete.
 )
 testsComplete = (
-	| JOptionPane string |
-	JOptionPane:: java JavaClass find: 'javax/swing/JOptionPane'.
-	string:: java JavaString from: 'Tests complete'.
-	JOptionPane call method: 'showMessageDialog' sig: '(Ljava/awt/Component;Ljava/lang/Object;)V' args: {nil. string}
+	| _JOptionPane string |
+	_JOptionPane:: JavaClass find: 'javax/swing/JOptionPane'.
+	string:: JavaString from: 'Tests complete'.
+	_JOptionPane call method: 'showMessageDialog' sig: '(Ljava/awt/Component;Ljava/lang/Object;)V' args: {nil. string}
 )
 ) : (
 )
