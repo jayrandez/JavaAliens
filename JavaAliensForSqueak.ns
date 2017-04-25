@@ -45,12 +45,16 @@ public asJavaAlien = (
 public isJavaAlien = (
 	^true
 )
-public javaSignature = (
-	subclassResponsibility
+public signature = (
+	^subclassResponsibility
+)
+public value = (
+	(* Return a Newspeak-friendly value. *)
+	^subclassResponsibility.
 )
 ) : (
 )
-public class JavaArray on: jarray = JavaAlien on: jarray (|
+public class JavaArray on: jarray = JavaNonPrimitive on: jarray (|
 	cachedLength
 |) (
 public length = (
@@ -58,7 +62,7 @@ public length = (
 	^cachedLength.
 )
 private lookupLength = (
-	Unimplemented.
+	^(env GetArrayLength: (self asAlien)) unsignedLongAt: 1.
 )
 public value = (
 	^(elementsFrom: 0 to: (length - 1)) collect: [:eachElement | eachElement value].
@@ -86,7 +90,7 @@ public value = (
 )
 ) : (
 )
-public class JavaClass on: jclass = JavaAlien on: jclass (|
+public class JavaClass on: jclass = JavaNonPrimitive on: jclass (|
 	TypeTranslator = translation TypeTranslator.
 	MethodTypeTranslator = translation MethodTypeTranslator.
 	GetTypeTranslator = translation GetTypeTranslator.
@@ -98,7 +102,6 @@ public class JavaClass on: jclass = JavaAlien on: jclass (|
 	constructTranslator = ConstructTranslator new.
 
 	cachedClassName
-	cachedClassObject
 |) (
 private class CallStaticMethodTypeTranslator = MethodTypeTranslator (
 (* Attempts to relay messages through method invokation. *)|
@@ -196,10 +199,6 @@ public cast: obj <JavaObject> = (
 
 	^javaObject.
 )
-private classObject = (
-	cachedClassObject ifNil: [cachedClassObject:: JavaObject on: (self asAlien)].
-	^cachedClassObject.
-)
 public construct = (
 	^constructTranslator
 )
@@ -224,7 +223,7 @@ public isJavaClass = (
 private lookupClassName = (
 	(* Directly call method "getName" on this class object. *)
 	| nameJavaString |
-	nameJavaString:: classObject call method: 'getName' sig: '()Ljava/lang/String;' args: {}.
+	nameJavaString:: javaObject call method: 'getName' sig: '()Ljava/lang/String;' args: {}.
 	^nameJavaString value copyReplaceAll: '.' with: '/' asTokens: false.
 )
 public name = (
@@ -272,7 +271,47 @@ public value = (
 )
 ) : (
 )
-public class JavaObject on: jobject <Alien> = JavaAlien on: jobject (|
+private class JavaNonPrimitive on: jobject = JavaAlien on: jobject ((*
+Non-Primitive types use a pointer alien, have a class, and can be treated in Java as objects.
+
+In JavaAliens the types JavaArray, JavaClass, and JavaObject define distinct abilities (namely element, static, or instance accessors), with shared abilities inherited from JavaNonPrimitive.
+*)|
+	cachedObject
+	cachedClass
+	cachedClassObject
+|) (
+public isNull = (
+	^help isNullPtr: (self asAlien).
+)
+public javaClass = (
+	(* Return a JavaClass corresponding to this non-primitive's class. *)
+	cachedClass ifNil: [cachedClass:: lookupClass].
+	^cachedClass.
+)
+public javaClassObject = (
+	(* Return a JavaObject for the class object corresponding to this non-primtive's class. *)
+	cachedClassObject ifNil: [cachedClassObject:: lookupClassObject].
+	^cachedClassObject.
+)
+public javaObject = (
+	(* Return a JavaObject corresponding to this non-primitive. *)
+	cachedObject ifNil: [cachedObject:: lookupObject].
+	^cachedObject.
+)
+private lookupClass = (
+	^isNull
+		ifTrue: [ObjectIsNull]
+		ifFalse: [JavaClass on: (env GetObjectClass: (self asAlien))].
+)
+private lookupClassObject = (
+	^JavaObject on: (javaClass asAlien).
+)
+private lookupObject = (
+	^JavaObject on: (self asAlien)
+)
+) : (
+)
+public class JavaObject on: jobject <Alien> = JavaNonPrimitive on: jobject (|
 	MethodTypeTranslator = translation MethodTypeTranslator.
 	GetTypeTranslator = translation GetTypeTranslator.
 	SetTypeTranslator = translation SetTypeTranslator.
@@ -280,8 +319,6 @@ public class JavaObject on: jobject <Alien> = JavaAlien on: jobject (|
 	callTranslator = CallMethodTypeTranslator new.
 	getTranslator = GetFieldTypeTranslator new.
 	setTranslator = SetFieldTypeTranslator new.
-
-	cachedClass
 |) (
 private class CallMethodTypeTranslator = MethodTypeTranslator (
 (* Attempts to relay messages through method invokation. *)|
@@ -300,7 +337,7 @@ public translateMethod: instanceMethodName numArgs: numArgs = (
 )
 public translateMethod: instanceMethodName sig: sig = (
 	| methodID type returnType alienClass |
-	methodID:: env GetMethodID: (javaClass asAlien) name: (help cstring: instanceMethodName) sig: (help cstring: sig).
+	methodID:: env GetMethodID: (outer JavaObject javaClass asAlien) name: (help cstring: instanceMethodName) sig: (help cstring: sig).
 	(help isNullPtr: methodID) ifTrue: [^InstanceMethodNotFound].
 
 	type:: translateSig: (returnSignature: sig).
@@ -381,18 +418,6 @@ invokeSetTypeField: returnType fieldID: fieldID value: value = (
 public isJavaObject = (
 	^true.
 )
-public isNull = (
-	^help isNullPtr: (self asAlien).
-)
-public javaClass = (
-	cachedClass ifNil: [cachedClass:: lookupClass].
-	^cachedClass.
-)
-private lookupClass = (
-	^isNull
-		ifTrue: [ObjectIsNull]
-		ifFalse: [JavaClass on: (env GetObjectClass: (self asAlien))].
-)
 public set = (
 	(* Equivalent to NullPointerException. *)
 	isNull ifTrue: [^ObjectIsNull].
@@ -407,6 +432,10 @@ public synchronized: block <BlockClosure> = (
 	env MonitorExit: (self asAlien).
 
 	^result.
+)
+public value = (
+	(* No Newspeak-friendly value for a JavaObject. *)
+	^self.
 )
 ) : (
 )
@@ -449,21 +478,25 @@ public elementsFrom: firstIndex to: lastIndex put: values <Collection[JavaObject
 	(lastIndex < firstIndex) ifTrue: [^ArrayIndexesOutOfOrder].
 	(lastIndex > (length - 1))  ifTrue: [^ArrayIndexOutOfBounds].
 	
-	index:: 0
-	values do: [:eachValue |
-		(value instanceOf: cachedElementClass) ifFalse: [^ArrayStoreException].
-		env SetObjectArrayElement: (self asAlien) index: index value: (value asAlien).
+	index:: 0.
+	values do: [:eachElement |
+		(eachElement instanceOf: elementClass) ifFalse: [^ArrayStoreException].
+		env SetObjectArrayElement: (self asAlien) index: index value: (eachElement asAlien).
 		index:: index + 1.
 	].
 )
 private lookupElementClass = (
-	Unimplemented.
+	| jclass |
+	^javaClassObject call method: 'getComponentType' sig: '()Ljava/lang/Class;' args: {}.
 )
 ) : (
 public class: clazz <JavaClass> length: length = (
+	^self class: clazz length: length initialElement: (help nullPtr).
+)
+public class: clazz <JavaClass> length: length initialElement: initialElement <JavaObject> = (
 	| jarray packager |
 
-	jarray:: env NewObjectArray: length elementClass: (clazz asAlien) initialElement: (help nullPtr).
+	jarray:: env NewObjectArray: length elementClass: (clazz asAlien) initialElement: initialElement.
 	(help isNullPtr: jarray) ifTrue: [^NewObjectArrayFailed].
 
 	packager:: (clazz name = 'java/lang/String')
@@ -471,6 +504,12 @@ public class: clazz <JavaClass> length: length = (
 		ifFalse: [jobjectPackager].
 
 	^self on: jarray packager: packager.
+)
+public class: clazz <JavaClass> with: values <Collection[JavaObject]> = (
+	| objectArray |
+	objectArray:: self class: clazz length: (values size) initialElement: (help nullPtr).
+	objectArray elementsFrom: 0 to: (values size - 1) put: values.
+	^objectArray.
 )
 private jobjectPackager = (
 	^[:result | JavaObject on: result].
@@ -665,6 +704,7 @@ private recreateVM = (
 private class Translation = (|
 	JavaObject = javaAliens JavaObject.
 	JavaString = javaAliens JavaString.
+	JavaClass = javaAliens JavaClass.
 	JavaBoolean = javaAliens JavaBoolean.
 	JavaInt = javaAliens JavaInt.
 	JavaDouble = javaAliens JavaDouble.
@@ -777,9 +817,10 @@ protected translateSig: sig = (
 	| firstChar = (sig at: 1). |
 
 	firstChar = "V" ifTrue: [^TypeEntry returnType: (env ReturnType void) alienClass: nil].
-	firstChar = "L" ifTrue: [^sig = 'Ljava/lang/String;'
-		ifTrue: [TypeEntry returnType: (env ReturnType jobject) alienClass: JavaString]
-		ifFalse: [TypeEntry returnType: (env ReturnType jobject) alienClass: JavaObject]
+	firstChar = "L" ifTrue: [
+		(sig = 'Ljava/lang/String;') ifTrue: [^TypeEntry returnType: (env ReturnType jobject) alienClass: JavaString].
+		(sig = 'Ljava/lang/Class;') ifTrue: [^TypeEntry returnType: (env ReturnType jobject) alienClass: JavaClass].
+		^TypeEntry returnType: (env ReturnType jobject) alienClass: JavaObject
 	].
 	firstChar = "Z" ifTrue: [^TypeEntry returnType: (env ReturnType jboolean) alienClass: javaAliens JavaBoolean].
 	firstChar = "I" ifTrue: [^TypeEntry returnType: (env ReturnType jint) alienClass: javaAliens JavaInt].

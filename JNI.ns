@@ -256,6 +256,14 @@ public FindClass: name  = (
 	| apiCall = api methodAtIndex: 6. |
 	^pointerResult: [:result | apiCall primFFICallResult: result with: env with: name].
 )
+public GetArrayLength: jarray = (
+	(*	jsize GetArrayLength(JNIEnv *env, jarray array);
+
+		Returns the number of elements in the array.	*)
+
+	| apiCall = api methodAtIndex: 171. |
+	^longResult: [:result | apiCall primFFICallResult: result with: env with: jarray].
+)
 public GetFieldID: clazz name: name sig: sig = (
 	(*	jfieldID GetFieldID(JNIEnv *env, jclass clazz, const char *name, const char *sig);
 
