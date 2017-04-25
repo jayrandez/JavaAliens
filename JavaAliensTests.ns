@@ -255,7 +255,6 @@ _5_getField: javaObject = (
 	(*floatField:: javaObject get field: 'floatField' sig: 'F'.
 	doubleField:: javaObject get field: 'doubleField' sig: 'D'.*)
 
-	here.
 	(objectField instanceOf: (JavaClass find: 'java/lang/String')) ifTrue: [TestFailed].
 	(booleanField value) = false ifFalse: [TestFailed].
 	(byteField value) = 1 ifFalse: [TestFailed].

@@ -100,15 +100,6 @@ public value = (
 )
 ) : (
 )
-public class JavaCastObject on: jobject <Alien> clazz: clazz <JavaClass> = JavaObject on: jobject (|
-|assign: clazz) (
-private assign: clazz <JavaClass> = (
-	(self instanceOf: clazz)
-		ifTrue: [cachedClass:: clazz.]
-		ifFalse: [ClassCastFailed].
-)
-) : (
-)
 public class JavaChar on: jchar = JavaPrimitive on: jchar (|
 |) (
 public value = (
@@ -128,6 +119,7 @@ public class JavaClass on: jclass = JavaAlien on: jclass (|
 	constructTranslator = ConstructTranslator new.
 
 	cachedClassName
+	cachedClassObject
 |) (
 private class CallStaticMethodTypeTranslator = MethodTypeTranslator (
 (* Attempts to relay messages through method invokation. *)|
@@ -214,6 +206,21 @@ public translateField: staticFieldName sig: sig = (
 public call = (
 	^callTranslator
 )
+public cast: obj <JavaObject> = (
+	(* Directly call method "cast" on this class object, should be valid if obj is null. *)
+	| callSignature javaObject |
+
+	(obj instanceOf: self) ifFalse: [^ClassCastError].
+
+	callSignature:: '(Ljava/lang/Object;)Ljava/lang/Object;'.
+	javaObject:: classObject call method: 'cast' sig: callSignature args: {obj}.
+
+	^javaObject.
+)
+private classObject = (
+	cachedClassObject ifNil: [cachedClassObject:: JavaObject on: (self asAlien)].
+	^cachedClassObject.
+)
 public construct = (
 	^constructTranslator
 )
@@ -235,15 +242,15 @@ invokeSetStaticTypeField: returnType fieldID: fieldID value: value = (
 public isJavaClass = (
 	^true
 )
-public javaClassName = (
+private lookupClassName = (
+	(* Directly call method "getName" on this class object. *)
+	| nameJavaString |
+	nameJavaString:: classObject call method: 'getName' sig: '()Ljava/lang/String;' args: {}.
+	^nameJavaString value copyReplaceAll: '.' with: '/' asTokens: false.
+)
+public name = (
 	cachedClassName ifNil: [cachedClassName:: lookupClassName].
 	^cachedClassName.
-)
-private lookupClassName = (
-	(* Directly call method "getName" on this class as if it were a JavaObject. *)
-	| clazzObject = (JavaObject on: (self asAlien)). nameJavaString |
-	nameJavaString:: clazzObject call method: 'getName' sig: '()Ljava/lang/String;' args: {}.
-	^nameJavaString value copyReplaceAll: '.' with: '/' asTokens: false.
 )
 public set = (
 	^setTranslator
@@ -363,14 +370,6 @@ public call = (
 	isNull ifTrue: [^ObjectIsNull].
 
 	^callTranslator
-)
-public castTo: clazz <JavaClass> = (
-	| alienCopy result |
-
-	clazz isJavaClass ifFalse: [^NotAJavaClass].
-
-	alienCopy:: Alien forPointer: ((self asAlien) address).
-	^JavaCastObject on: alienCopy clazz: clazz.
 )
 public get = (
 	(* Equivalent to NullPointerException. *)
