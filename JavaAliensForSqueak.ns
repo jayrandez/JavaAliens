@@ -190,14 +190,14 @@ public call = (
 )
 public cast: obj <JavaObject> = (
 	(* Directly call method "cast" on this class object, should be valid if obj is null. *)
-	| callSignature javaObject |
+	| callSignature resultObj |
 
 	(obj instanceOf: self) ifFalse: [^ClassCastError].
 
 	callSignature:: '(Ljava/lang/Object;)Ljava/lang/Object;'.
-	javaObject:: classObject call method: 'cast' sig: callSignature args: {obj}.
+	resultObj:: javaObject call method: 'cast' sig: callSignature args: {obj}.
 
-	^javaObject.
+	^resultObj.
 )
 public construct = (
 	^constructTranslator
@@ -354,7 +354,7 @@ public translateField: staticFieldName = (
 )
 public translateField: staticFieldName sig: sig = (
 	| fieldID type returnType alienClass |
-	fieldID:: env GetFieldID: (javaClass asAlien) name: (help cstring: staticFieldName) sig: (help cstring: sig).
+	fieldID:: env GetFieldID: (outer JavaObject javaClass asAlien) name: (help cstring: staticFieldName) sig: (help cstring: sig).
 	(help isNullPtr: fieldID) ifTrue: [^FieldNotFound].
 
 	type:: translateSig: sig.
@@ -371,7 +371,7 @@ public translateField: staticFieldName = (
 )
 public translateField: staticFieldName sig: sig = (
 	| fieldID type returnType alienClass |
-	fieldID:: env GetFieldID: (javaClass asAlien) name: (help cstring: staticFieldName) sig: (help cstring: sig).
+	fieldID:: env GetFieldID: (outer JavaObject javaClass asAlien) name: (help cstring: staticFieldName) sig: (help cstring: sig).
 	(help isNullPtr: fieldID) ifTrue: [^FieldNotFound].
 
 	type:: translateSig: sig.
@@ -439,8 +439,8 @@ public value = (
 )
 ) : (
 )
-public class JavaObjectArray on: jarray packager: packager = JavaArray on: jarray (|
-	packager = packager.
+public class JavaObjectArray on: jarray = JavaArray on: jarray (|
+	cachedPackager
 	cachedElementClass
 |) (
 public elementAt: index = (
@@ -448,7 +448,7 @@ public elementAt: index = (
 	^packager value: (env GetObjectArrayElement: (self asAlien) index: index).
 )
 public elementAt: index put: obj <JavaObject> = (
-	(obj instanceOf: cachedElementClass) ifFalse: [^ArrayStoreException].
+	(obj instanceOf: elementClass) ifFalse: [^ArrayStoreException].
 	(index > (length - 1)) ifTrue: [^ArrayIndexOutOfBounds]. 
 
 	env SetObjectArrayElement: (self asAlien) index: index value: (obj asAlien).
@@ -485,9 +485,24 @@ public elementsFrom: firstIndex to: lastIndex put: values <Collection[JavaObject
 		index:: index + 1.
 	].
 )
+private jobjectPackager = (
+	^[:result | JavaObject on: result].
+)
+private jstringPackager = (
+	^[:result | JavaString on: result].
+)
 private lookupElementClass = (
 	| jclass |
 	^javaClassObject call method: 'getComponentType' sig: '()Ljava/lang/Class;' args: {}.
+)
+private lookupPackager = (
+	(elementClass name = 'java/lang/String')
+		ifTrue: [jstringPackager]
+		ifFalse: [jobjectPackager].
+)
+private packager = (
+	cachedPackager ifNil: [cachedPackager:: lookupPackager].
+	^cachedPackager.
 )
 ) : (
 public class: clazz <JavaClass> length: length = (
@@ -499,23 +514,13 @@ public class: clazz <JavaClass> length: length initialElement: initialElement <J
 	jarray:: env NewObjectArray: length elementClass: (clazz asAlien) initialElement: initialElement.
 	(help isNullPtr: jarray) ifTrue: [^NewObjectArrayFailed].
 
-	packager:: (clazz name = 'java/lang/String')
-		ifTrue: [jstringPackager]
-		ifFalse: [jobjectPackager].
-
-	^self on: jarray packager: packager.
+	^self on: jarray.
 )
 public class: clazz <JavaClass> with: values <Collection[JavaObject]> = (
 	| objectArray |
 	objectArray:: self class: clazz length: (values size) initialElement: (help nullPtr).
 	objectArray elementsFrom: 0 to: (values size - 1) put: values.
 	^objectArray.
-)
-private jobjectPackager = (
-	^[:result | JavaObject on: result].
-)
-private jstringPackager = (
-	^[:result | JavaString on: result].
 )
 )
 public class JavaPrimitive on: direct <Alien> = JavaAlien on: direct (|
@@ -705,6 +710,8 @@ private class Translation = (|
 	JavaObject = javaAliens JavaObject.
 	JavaString = javaAliens JavaString.
 	JavaClass = javaAliens JavaClass.
+	JavaObjectArray = javaAliens JavaObjectArray.
+	JavaPrimitiveArray = javaAliens JavaPrimitiveArray.
 	JavaBoolean = javaAliens JavaBoolean.
 	JavaInt = javaAliens JavaInt.
 	JavaDouble = javaAliens JavaDouble.
@@ -816,11 +823,18 @@ public package: alien <Alien> as: alienClass <JavaAlien class> = (
 protected translateSig: sig = (
 	| firstChar = (sig at: 1). |
 
+	(* This is almost certainly the crux of optimization. *)
+
 	firstChar = "V" ifTrue: [^TypeEntry returnType: (env ReturnType void) alienClass: nil].
 	firstChar = "L" ifTrue: [
 		(sig = 'Ljava/lang/String;') ifTrue: [^TypeEntry returnType: (env ReturnType jobject) alienClass: JavaString].
 		(sig = 'Ljava/lang/Class;') ifTrue: [^TypeEntry returnType: (env ReturnType jobject) alienClass: JavaClass].
 		^TypeEntry returnType: (env ReturnType jobject) alienClass: JavaObject
+	].
+	firstChar = "[" ifTrue: [ | secondChar = (sig at: 2). |
+		((secondChar = "[") or: (secondChar = "L"))
+			ifTrue: [^TypeEntry returnType: (env ReturnType jobject) alienClass: JavaObjectArray]
+			ifFalse: [^TypeEntry returnType: (env ReturnType jobject) alienClass: JavaPrimitiveArray].
 	].
 	firstChar = "Z" ifTrue: [^TypeEntry returnType: (env ReturnType jboolean) alienClass: javaAliens JavaBoolean].
 	firstChar = "I" ifTrue: [^TypeEntry returnType: (env ReturnType jint) alienClass: javaAliens JavaInt].

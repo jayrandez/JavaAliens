@@ -281,9 +281,24 @@ public run = (
 ) : (
 )
 class TestObjectArray classpath: classpath = Test classpath: classpath (|
+	_Object
+	_Integer
 |) (
 _1_putElements: javaClass <JavaClass> = (
-	
+	| integerList objectArray integerObjectArray |
+
+	objectArray:: javaClass get field: 'objectArray' sig: '[Ljava/lang/Object;'.
+	integerObjectArray:: javaClass get field: 'integerObjectArray' sig: '[Ljava/lang/Integer;'.
+
+	(* Put value *)
+	objectArray elementAt: 1 put: (_Object construct new: {} sig: '()V').
+
+	(* Put range of values *)
+	integerList:: (0 to: 4) collect: [:value || integerPrimitive |
+		integerPrimitive:: JavaPrimitive int: value.
+		_Integer construct new: {integerPrimitive} sig: '(I)V'.
+	].
+	integerObjectArray elementsFrom: 0 to: 4 put: integerList.
 )
 _2_getElements: javaClass <JavaClass> = (
 	
@@ -298,6 +313,10 @@ public run = (
 	| javaClass |
 
 	java loadClasspath: classpath.
+
+	_Object:: JavaClass find: 'java/lang/Object'.
+	_Integer:: JavaClass find: 'java/lang/Integer'.
+
 	javaClass:: JavaClass find: 'TestObjectArray'.
 
 	_1_putElements: javaClass.
@@ -426,7 +445,7 @@ public main: platform args: args = (
 runTests = (
 	| tests classpath |
 	classpath:: '.\bin'.
-	tests:: { TestStatic. TestInstance. }.
+	tests:: { TestStatic. TestInstance. TestObjectArray. }.
 	tests do: [:eachTest | eachTest classpath: classpath].
 	testsComplete.
 )
