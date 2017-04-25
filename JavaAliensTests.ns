@@ -15,6 +15,7 @@ class JavaAliensTests packageUsing: manifest = (|
 	JavaClass
 	JavaPrimitive
 	JavaString
+	JavaObjectArray
 |) (
 class JNIStartVM classpath: classpath = Test classpath: classpath (
 (* No longer used. Formed basis for Runtime in JavaAliensForSqueak.
@@ -276,6 +277,33 @@ public run = (
 	_3_callMethod: javaObject.
 	_4_callMethodVoidAndArgs: javaObject.
 	_5_getField: javaObject.
+)
+) : (
+)
+class TestObjectArray classpath: classpath = Test classpath: classpath (|
+|) (
+_1_putElements: javaClass <JavaClass> = (
+	
+)
+_2_getElements: javaClass <JavaClass> = (
+	
+)
+_3_getArrayInfo: javaClass <JavaClass> = (
+	
+)
+_4_createArray: javaClass <JavaClass> = (
+	
+)
+public run = (
+	| javaClass |
+
+	java loadClasspath: classpath.
+	javaClass:: JavaClass find: 'TestObjectArray'.
+
+	_1_putElements: javaClass.
+	_2_getElements: javaClass.
+	_3_getArrayInfo: javaClass.
+	_4_createArray: javaClass.
 )
 ) : (
 )
