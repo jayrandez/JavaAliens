@@ -285,7 +285,7 @@ class TestObjectArray classpath: classpath = Test classpath: classpath (|
 	_Integer
 |) (
 _1_putElements: javaClass <JavaClass> = (
-	| integerList objectArray integerObjectArray |
+	| objectArray integerObjectArray integerList |
 
 	objectArray:: javaClass get field: 'objectArray' sig: '[Ljava/lang/Object;'.
 	integerObjectArray:: javaClass get field: 'integerObjectArray' sig: '[Ljava/lang/Integer;'.
@@ -301,7 +301,26 @@ _1_putElements: javaClass <JavaClass> = (
 	integerObjectArray elementsFrom: 0 to: 4 put: integerList.
 )
 _2_getElements: javaClass <JavaClass> = (
-	
+	| objectArray integerObjectArray first second integerList |
+
+	objectArray:: javaClass get field: 'objectArray' sig: '[Ljava/lang/Object;'.
+	integerObjectArray:: javaClass get field: 'integerObjectArray' sig: '[Ljava/lang/Integer;'.
+
+	(* Get value *)
+	first:: objectArray elementAt: 0.
+	second:: objectArray elementAt: 1.
+
+	(* Get range of values *)
+	integerList:: integerObjectArray elementsFrom: 0 to: 9.
+
+	(* Confirmation *)
+	((first isNull) and: (first instanceOf: _Object)) ifFalse: [TestFailed].
+	((second isNull not) and: (second instanceOf: _Object)) ifFalse: [TestFailed].
+	(1 to: 5) do: [:index || integerPrimitive |
+		integerPrimitive:: (integerList at: index) call method: 'intValue' sig: '()I' args: {}.
+		(integerPrimitive value = (index - 1)) ifFalse: [TestFailed].
+	].
+	(6 to: 10) do: [:index | (integerList at: index) isNull ifFalse: [TestFailed]].
 )
 _3_getArrayInfo: javaClass <JavaClass> = (
 	

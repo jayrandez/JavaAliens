@@ -458,31 +458,19 @@ public elementClass = (
 	^cachedElementClass.
 )
 public elementsFrom: firstIndex to: lastIndex = (
-	| index collection = List new. |
-
 	(lastIndex < firstIndex) ifTrue: [^ArrayIndexesOutOfOrder].
 	(lastIndex > (length - 1))  ifTrue: [^ArrayIndexOutOfBounds].
 
-	index:: 0.
-	(index < length) whileTrue: [
-		| packaged |
-		packaged:: packager value: (env GetObjectArrayElement: (self asAlien) index: index).
-		collection add: packaged.
-	].
-
-	^collection.
+	^(firstIndex to: lastIndex)
+		collect: [:i | packager value: (env GetObjectArrayElement: (self asAlien) index: i)].
 )
 public elementsFrom: firstIndex to: lastIndex put: values <Collection[JavaObject]> = (
-	| index |
-
 	(lastIndex < firstIndex) ifTrue: [^ArrayIndexesOutOfOrder].
 	(lastIndex > (length - 1))  ifTrue: [^ArrayIndexOutOfBounds].
 	
-	index:: 0.
-	values do: [:eachElement |
-		(eachElement instanceOf: elementClass) ifFalse: [^ArrayStoreException].
-		env SetObjectArrayElement: (self asAlien) index: index value: (eachElement asAlien).
-		index:: index + 1.
+	(firstIndex to: lastIndex) do: [:i || valueForIndex |
+		valueForIndex:: values at: (i - firstIndex + 1).
+		env SetObjectArrayElement: (self asAlien) index: i value: (valueForIndex asAlien)
 	].
 )
 private jobjectPackager = (
@@ -496,7 +484,7 @@ private lookupElementClass = (
 	^javaClassObject call method: 'getComponentType' sig: '()Ljava/lang/Class;' args: {}.
 )
 private lookupPackager = (
-	(elementClass name = 'java/lang/String')
+	^(elementClass name = 'java/lang/String')
 		ifTrue: [jstringPackager]
 		ifFalse: [jobjectPackager].
 )

@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 
 public class TestObjectArray
 {
@@ -9,7 +8,7 @@ public class TestObjectArray
 	public static Integer[] integerObjectArray = new Integer[10];
 	
 	// Get the type.
-	public static ArrayList<?>[] specialTypeArray = new ArrayList<?>[0];
+	public static Integer[] specialTypeArray = new Integer[] {5, 4, 3, 2, 1};
 		
 	// Create array and read length.
 	public static String[] uninitializedArray;
