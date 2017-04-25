@@ -101,10 +101,11 @@ public value = (
 ) : (
 )
 public class JavaCastObject on: jobject <Alien> clazz: clazz <JavaClass> = JavaObject on: jobject (|
-	explicitClass = clazz.
-|) (
-public javaClass = (
-	^explicitClass
+|assign: clazz) (
+private assign: clazz <JavaClass> = (
+	(self instanceOf: clazz)
+		ifTrue: [cachedClass:: clazz.]
+		ifFalse: [ClassCastFailed].
 )
 ) : (
 )
@@ -125,6 +126,8 @@ public class JavaClass on: jclass = JavaAlien on: jclass (|
 	getTranslator = GetStaticFieldTypeTranslator new.
 	setTranslator = SetStaticFieldTypeTranslator new.
 	constructTranslator = ConstructTranslator new.
+
+	cachedClassName
 |) (
 private class CallStaticMethodTypeTranslator = MethodTypeTranslator (
 (* Attempts to relay messages through method invokation. *)|
@@ -232,6 +235,16 @@ invokeSetStaticTypeField: returnType fieldID: fieldID value: value = (
 public isJavaClass = (
 	^true
 )
+public javaClassName = (
+	cachedClassName ifNil: [cachedClassName:: lookupClassName].
+	^cachedClassName.
+)
+private lookupClassName = (
+	(* Directly call method "getName" on this class as if it were a JavaObject. *)
+	| clazzObject = (JavaObject on: (self asAlien)). nameJavaString |
+	nameJavaString:: clazzObject call method: 'getName' sig: '()Ljava/lang/String;' args: {}.
+	^nameJavaString value copyReplaceAll: '.' with: '/' asTokens: false.
+)
 public set = (
 	^setTranslator
 )
@@ -281,6 +294,8 @@ public class JavaObject on: jobject <Alien> = JavaAlien on: jobject (|
 	callTranslator = CallMethodTypeTranslator new.
 	getTranslator = GetFieldTypeTranslator new.
 	setTranslator = SetFieldTypeTranslator new.
+
+	cachedClass
 |) (
 private class CallMethodTypeTranslator = MethodTypeTranslator (
 (* Attempts to relay messages through method invokation. *)|
@@ -392,8 +407,13 @@ public isNull = (
 	^help isNullPtr: (self asAlien).
 )
 public javaClass = (
-	| returnType |
-	^JavaClass on: (env GetObjectClass: (self asAlien)).
+	cachedClass ifNil: [cachedClass:: lookupClass].
+	^cachedClass.
+)
+private lookupClass = (
+	^isNull
+		ifTrue: [ObjectIsNull]
+		ifFalse: [JavaClass on: (env GetObjectClass: (self asAlien))].
 )
 public set = (
 	(* Equivalent to NullPointerException. *)

@@ -171,7 +171,7 @@ class TestInstance classpath: classpath = Test classpath: classpath (|
 |) (
 _1_construction: javaClass = (
 	| javaObject aDifferentClass |
-
+	
 	javaObject:: javaClass construct new: {} sig: '()V'.
 	(javaObject instanceOf: javaClass) ifFalse: [TestFailed].
 	
@@ -212,7 +212,7 @@ _3_callMethod: javaObject = (
 	longField:: javaObject call method: 'getLong' sig: '()J'.
 	(*floatField:: javaObject call method: 'getFloat' sig: '()F'.
 	doubleField:: javaObject call method: 'getDouble' sig: '()D'.*)
-
+	
 	(objectField instanceOf: (JavaClass find: 'java/lang/String')) ifFalse: [TestFailed].
 	(booleanField value) = true ifFalse: [TestFailed].
 	(byteField value) = 2 ifFalse: [TestFailed].
@@ -255,6 +255,7 @@ _5_getField: javaObject = (
 	(*floatField:: javaObject get field: 'floatField' sig: 'F'.
 	doubleField:: javaObject get field: 'doubleField' sig: 'D'.*)
 
+	here.
 	(objectField instanceOf: (JavaClass find: 'java/lang/String')) ifTrue: [TestFailed].
 	(booleanField value) = false ifFalse: [TestFailed].
 	(byteField value) = 1 ifFalse: [TestFailed].
@@ -283,7 +284,7 @@ class TestStatic classpath: classpath = Test classpath: classpath (|
 |) (
 _1_staticSetField: javaClass = (
 	| objectField booleanField byteField charField shortField intField longField floatField doubleField |
-
+	
 	objectField:: nil.
 	booleanField:: JavaPrimitive boolean: true.
 	byteField:: JavaPrimitive byte: 2.
@@ -306,7 +307,7 @@ _1_staticSetField: javaClass = (
 )
 _2_staticCallMethod: javaClass = (
 	| objectField booleanField byteField charField shortField intField longField floatField doubleField |
-	
+
 	objectField:: javaClass call method: 'getObject' sig: '()Ljava/lang/Object;'.
 	booleanField:: javaClass call method: 'getBoolean' sig: '()Z'.
 	byteField:: javaClass call method: 'getByte' sig: '()B'.
@@ -329,7 +330,7 @@ _2_staticCallMethod: javaClass = (
 )
 _3_staticCallMethodVoidAndArgs: javaClass = (
 	| objectField booleanField byteField charField shortField intField longField floatField doubleField |
-
+	
 	objectField:: (JavaClass find: 'java/util/ArrayList') construct new: {} sig: '()V'.	
 	booleanField:: JavaPrimitive boolean: false.
 	byteField:: JavaPrimitive byte: 1.
@@ -347,7 +348,7 @@ _3_staticCallMethodVoidAndArgs: javaClass = (
 )
 _4_staticGetField: javaClass = (
 	| objectField booleanField byteField charField shortField intField longField floatField doubleField |
-
+	
 	objectField:: javaClass get field: 'objectField' sig: 'Ljava/lang/Object;'.
 	booleanField:: javaClass get field: 'booleanField' sig: 'Z'.
 	byteField:: javaClass get field: 'byteField' sig: 'B'.
