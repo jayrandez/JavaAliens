@@ -50,41 +50,20 @@ public javaSignature = (
 )
 ) : (
 )
-public class JavaArray on: jarray <Alien> = JavaAlien on: jarray (|
+public class JavaArray on: jarray = JavaAlien on: jarray (|
+	cachedLength
 |) (
-public getElement: index = (
-	(* Currently assuming the object is a String. *)
-	| jobject |
-	jobject:: env GetObjectArrayElement: (self asAlien) index: index.
-	^(help isNullPtr: jobject)
-		ifTrue: [nil]
-		ifFalse: [String jstring: jobject].
+public length = (
+	cachedLength ifNil: [cachedLength:: lookupLength].
+	^cachedLength.
 )
-public setElements: values = (
-	| index |
-	index:: 0.
-	values do: [:eachValue |
-		| valuePointer |
-		valuePointer:: eachValue asAlien.
-		env SetObjectArrayElement: (self asAlien) index: index value: valuePointer.
-		index:: index + 1
-	]
+private lookupLength = (
+	Unimplemented.
+)
+public value = (
+	^(elementsFrom: 0 to: (length - 1)) collect: [:eachElement | eachElement value].
 )
 ) : (
-public emptyOf: elementClass = (
-	^self of: elementClass size: 0
-)
-public of: elementClass size: size = (
-	| jarray <Alien> |
-	jarray:: env NewObjectArray: size elementClass: (elementClass asAlien) initialElement: help nullPtr.
-	^(jarray address = 0) ifFalse: [JavaArray on: jarray] ifTrue: [NewObjectArrayFailed.]
-)
-public of: elementClass values: values = (
-	| instance <JavaArray> |
-	instance:: self of: elementClass size: (values size).
-	instance setElements: values.
-	^instance.
-)
 )
 public class JavaBoolean on: jboolean = JavaPrimitive on: jboolean (|
 |) (
@@ -431,6 +410,75 @@ public synchronized: block <BlockClosure> = (
 )
 ) : (
 )
+public class JavaObjectArray on: jarray packager: packager = JavaArray on: jarray (|
+	packager = packager.
+	cachedElementClass
+|) (
+public elementAt: index = (
+	(index > (length - 1)) ifTrue: [^ArrayIndexOutOfBounds]. 
+	^packager value: (env GetObjectArrayElement: (self asAlien) index: index).
+)
+public elementAt: index put: obj <JavaObject> = (
+	(obj instanceOf: cachedElementClass) ifFalse: [^ArrayStoreException].
+	(index > (length - 1)) ifTrue: [^ArrayIndexOutOfBounds]. 
+
+	env SetObjectArrayElement: (self asAlien) index: index value: (obj asAlien).
+)
+public elementClass = (
+	cachedElementClass ifNil: [cachedElementClass:: lookupElementClass].
+	^cachedElementClass.
+)
+public elementsFrom: firstIndex to: lastIndex = (
+	| index collection = List new. |
+
+	(lastIndex < firstIndex) ifTrue: [^ArrayIndexesOutOfOrder].
+	(lastIndex > (length - 1))  ifTrue: [^ArrayIndexOutOfBounds].
+
+	index:: 0.
+	(index < length) whileTrue: [
+		| packaged |
+		packaged:: packager value: (env GetObjectArrayElement: (self asAlien) index: index).
+		collection add: packaged.
+	].
+
+	^collection.
+)
+public elementsFrom: firstIndex to: lastIndex put: values <Collection[JavaObject]> = (
+	| index |
+
+	(lastIndex < firstIndex) ifTrue: [^ArrayIndexesOutOfOrder].
+	(lastIndex > (length - 1))  ifTrue: [^ArrayIndexOutOfBounds].
+	
+	index:: 0
+	values do: [:eachValue |
+		(value instanceOf: cachedElementClass) ifFalse: [^ArrayStoreException].
+		env SetObjectArrayElement: (self asAlien) index: index value: (value asAlien).
+		index:: index + 1.
+	].
+)
+private lookupElementClass = (
+	Unimplemented.
+)
+) : (
+public class: clazz <JavaClass> length: length = (
+	| jarray packager |
+
+	jarray:: env NewObjectArray: length elementClass: (clazz asAlien) initialElement: (help nullPtr).
+	(help isNullPtr: jarray) ifTrue: [^NewObjectArrayFailed].
+
+	packager:: (clazz name = 'java/lang/String')
+		ifTrue: [jstringPackager]
+		ifFalse: [jobjectPackager].
+
+	^self on: jarray packager: packager.
+)
+private jobjectPackager = (
+	^[:result | JavaObject on: result].
+)
+private jstringPackager = (
+	^[:result | JavaString on: result].
+)
+)
 public class JavaPrimitive on: direct <Alien> = JavaAlien on: direct (|
 |) (
 ) : (
@@ -477,6 +525,22 @@ public short: value <Integer> = (
 	^self on: jshort.
 )
 )
+public class JavaPrimitiveArray on: jarray = JavaArray on: jarray (|
+|) (
+public elementAt: index = (
+	^Unimplemented.
+)
+public elementAt: index put: value <JavaPrimitive> = (
+	^Unimplemented.
+)
+public elementsFrom: firstIndex to: lastIndex = (
+	^Unimplemented.
+)
+public elementsFrom: firstIndex to: lastIndex put: values <Collection[JavaPrimitive]> = (
+	^Unimplemented.
+)
+) : (
+)
 public class JavaShort on: jshort = JavaPrimitive on: jshort (|
 |) (
 public value = (
@@ -484,7 +548,7 @@ public value = (
 )
 ) : (
 )
-public class JavaString on: jstring <Alien> = JavaAlien on: jstring (|
+public class JavaString on: jstring <Alien> = JavaObject on: jstring (|
 |) (
 public value = (
 	| cstring |
