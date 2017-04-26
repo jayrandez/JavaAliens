@@ -709,6 +709,78 @@ private class Translation = (|
 	JavaChar = javaAliens JavaChar.
 	JavaShort = javaAliens JavaShort.
 |) (
+public class ArrayedReturnBuilder carry: leadingSig forwardTo: forward = (|
+	forward = forward.
+	public signature
+	public packager
+	public jniReturnType = env ReturnType jobject.
+|signature:: leadingSig, '[') (
+public array = (
+	^ArrayedReturnBuilder carry: signature forwardTo: forward.
+)
+public boolean = (
+	packager:: primitivePackager.
+	signature:: signature, 'Z'.
+	^forward return: self.
+)
+public byte = (
+	packager:: primitivePackager.
+	signature:: signature, 'B'.
+	^forward return: self.
+)
+public char = (
+	packager:: primitivePackager.
+	signature:: signature, 'C'.
+	^forward return: self.
+)
+public class = (
+	packager:: objectPackager.
+	signature:: 'Ljava/lang/Class;'.
+	^forward return: self.
+)
+public double = (
+	packager:: primitivePackager.
+	signature:: signature, 'D'.
+	^forward return: self.
+)
+public float = (
+	packager:: primitivePackager.
+	signature:: signature, 'F'.
+	^forward return: self.
+)
+public int = (
+	packager:: primitivePackager.
+	signature:: signature, 'I'.
+	^forward return: self.
+)
+public long = (
+	packager:: primitivePackager.
+	signature:: signature, 'J'.
+	^forward return: self.
+)
+public object: clazz <JavaClass> = (
+	packager:: objectPackager.
+	signature:: signature, 'L', (clazz name), ';'.
+	^forward return: self.
+)
+private objectPackager = (
+	^[:result | JavaObjectArray on: result].
+)
+private primitivePackager = (
+	^[:result | JavaPrimitiveArray on: result].
+)
+public short = (
+	packager:: primitivePackager.
+	signature:: signature, 'S'.
+	^forward return: self.
+)
+public string = (
+	packager:: objectPackager.
+	signature:: signature, 'Ljava/lang/String;'.
+	^forward return: self.
+)
+) : (
+)
 public class GetTypeTranslator = TypeTranslator (|
 |) (
 public field: fieldName = (
@@ -768,6 +840,89 @@ public translateMethod: methodName numArgs: numArgs = (
 )
 public translateMethod: methodName sig: sig = (
 	subclassResponsibility
+)
+) : (
+)
+public class ReturnBuilder forwardTo: forward = (|
+	forward = forward.
+	public signature
+	public packager
+	public jniReturnType
+|) (
+public array = (
+	^ArrayedReturnBuilder carry: '' forwardTo: forward.
+)
+public boolean = (
+	jniReturnType:: env ReturnType jboolean.
+	packager:: [:result | JavaByte on: result].
+	signature:: 'Z'.
+	^forward return: self.
+)
+public byte = (
+	jniReturnType:: env ReturnType jbyte.
+	packager:: [:result | JavaByte on: result].
+	signature:: 'B'.
+	^forward return: self.
+)
+public char = (
+	jniReturnType:: env ReturnType jchar.
+	packager:: [:result | JavaChar on: result].
+	signature:: 'C'.
+	^forward return: self.
+)
+public class = (
+	jniReturnType:: env ReturnType jobject.
+	packager:: [:result | JavaClass on: result].
+	signature:: 'Ljava/lang/Class;'.
+	^forward return: self.
+)
+public double = (
+	jniReturnType:: env ReturnType jdouble.
+	packager:: [:result | JavaDouble on: result].
+	signature:: 'D'.
+	^forward return: self.
+)
+public float = (
+	jniReturnType:: env ReturnType jfloat.
+	packager:: [:result | JavaFloat on: result].
+	signature:: 'F'.
+	^forward return: self.
+)
+public int = (
+	jniReturnType:: env ReturnType jint.
+	packager:: [:result | JavaInt on: result].
+	signature:: 'I'.
+	^forward return: self.	
+)
+public long = (
+	jniReturnType:: env ReturnType jlong.
+	packager:: [:result | JavaLong on: result].
+	signature:: 'J'.
+	^forward return: self.
+)
+public object: clazz <JavaClass> = (
+	jniReturnType:: env ReturnType jobject.
+	packager:: [:result | JavaObject on: result].
+	signature:: 'L', (clazz name), ';'.
+	^forward return: self.
+)
+public short = (
+	jniReturnType:: env ReturnType jshort.
+	packager:: [:result | JavaShort on: result].
+	signature:: 'S'.
+	^forward return: self.
+)
+public string = (
+	jniReturnType:: env ReturnType jobject.
+	packager:: [:result | JavaString on: result].
+	signature:: 'Ljava/lang/String;'.
+	^forward return: self.
+)
+public void = (
+	jniReturnType:: env ReturnType void.
+	packager:: [:result | nil].
+	signature:: signature, 'V'.
+	^forward return: self.
 )
 ) : (
 )
