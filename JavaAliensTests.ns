@@ -323,7 +323,15 @@ _2_getElements: javaClass <JavaClass> = (
 	(6 to: 10) do: [:index | (integerList at: index) isNull ifFalse: [TestFailed]].
 )
 _3_getArrayInfo: javaClass <JavaClass> = (
+	| specialTypeArray values |
 	
+	specialTypeArray:: javaClass get field: 'specialTypeArray' sig: '[Ljava/lang/String;'.
+	values:: specialTypeArray value.
+
+	(* Verify type, length, values *)
+	(specialTypeArray elementClass name = 'java/lang/String') ifFalse: [TestFailed].
+	(specialTypeArray length = 5) ifFalse: [TestFailed].
+	(1 to: 5) do: [:index | ((values at: index) = (index asString)) ifFalse: [TestFailed]].
 )
 _4_createArray: javaClass <JavaClass> = (
 	

@@ -7,10 +7,10 @@ public class TestObjectArray
 	// Put range of values, get range of values.
 	public static Integer[] integerObjectArray = new Integer[10];
 	
-	// Get the type.
-	public static Integer[] specialTypeArray = new Integer[] {5, 4, 3, 2, 1};
+	// Get the type, length, and casted value.
+	public static String[] specialTypeArray = new String[] {"1", "2", "3", "4", "5"};
 		
-	// Create array and read length.
+	// Create array.
 	public static String[] uninitializedArray;
 	
 	public static boolean checkValues() {
