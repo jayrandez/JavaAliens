@@ -12,7 +12,7 @@ Currently all arguments must be JavaAliens, which provide type information. So o
 | `obj call boolean method: 'methodName' args: {arg}` | `public boolean methodName(int arg);` |
 | `obj call array int method: 'methodName' args: {arg}` | `public int[] methodName(int arg);` |
 | `obj call object: ArrayList; method: 'methodName' args: {arg}` | `public ArrayList<?> methodName(int arg);` |
-| `obj call sig: '(II)[J'; method: 'methodName' args: {arg}` | `public long[] methodName(int arg);` |
+| `obj call sig: '(I)[J'; method: 'methodName' args: {arg}` | `public long[] methodName(int arg);` |
 
 **Return type determined using Java reflection:**
 
