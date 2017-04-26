@@ -13,9 +13,23 @@ public class TestObjectArray
 	// Create array.
 	public static String[] uninitializedArray;
 	
-	public static boolean checkValues() {
+	public static boolean checkValuesNull() {
+		for(int i = 0; i < 5; i++)
+			if(uninitializedArray[i] != null)
+				return false;
+		return true;
+	}
+	
+	public static boolean checkValuesInOrder() {
 		for(int i = 0; i < 5; i++)
 			if(Integer.parseInt(uninitializedArray[i]) != i)
+				return false;
+		return true;
+	}
+	
+	public static boolean checkValuesSame() {
+		for(int i = 0; i < 5; i++)
+			if(!uninitializedArray[i].equals(" :) "))
 				return false;
 		return true;
 	}

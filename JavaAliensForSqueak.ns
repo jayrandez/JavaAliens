@@ -499,7 +499,7 @@ public class: clazz <JavaClass> length: length = (
 public class: clazz <JavaClass> length: length initialElement: initialElement <JavaObject> = (
 	| jarray packager |
 
-	jarray:: env NewObjectArray: length elementClass: (clazz asAlien) initialElement: initialElement.
+	jarray:: env NewObjectArray: length elementClass: (clazz asAlien) initialElement: (initialElement asAlien).
 	(help isNullPtr: jarray) ifTrue: [^NewObjectArrayFailed].
 
 	^self on: jarray.

@@ -283,6 +283,7 @@ public run = (
 class TestObjectArray classpath: classpath = Test classpath: classpath (|
 	_Object
 	_Integer
+	_String
 |) (
 _1_putElements: javaClass <JavaClass> = (
 	| objectArray integerObjectArray integerList |
@@ -334,7 +335,28 @@ _3_getArrayInfo: javaClass <JavaClass> = (
 	(1 to: 5) do: [:index | ((values at: index) = (index asString)) ifFalse: [TestFailed]].
 )
 _4_createArray: javaClass <JavaClass> = (
-	
+	| inOrderValues sameValue nullArray inOrderArray sameValuesArray result |
+
+	inOrderValues:: (0 to: 4) collect: [:index | JavaString from: (index asString)].
+	sameValue:: JavaString from: ' :) '.
+
+	(* Check creation of empty array *)
+	nullArray:: JavaObjectArray class: _String length: 5.
+	javaClass set field: 'uninitializedArray' sig: '[Ljava/lang/String;' to: nullArray.
+	result:: javaClass call method: 'checkValuesNull' sig: '()Z' args: {}.
+	(result value) ifFalse: [TestFailed].
+
+	(* Check creation of array from predefined list *)
+	inOrderArray:: JavaObjectArray class: _String with: inOrderValues.
+	javaClass set field: 'uninitializedArray' sig: '[Ljava/lang/String;' to: inOrderArray.
+	result:: javaClass call method: 'checkValuesInOrder' sig: '()Z' args: {}.
+	(result value) ifFalse: [TestFailed].
+
+	(* Check creation of array with initial value *)
+	sameValuesArray:: JavaObjectArray class: _String length: 5 initialElement: sameValue.
+	javaClass set field: 'uninitializedArray' sig: '[Ljava/lang/String;' to: sameValuesArray.
+	result:: javaClass call method: 'checkValuesSame' sig: '()Z' args: {}.
+	(result value) ifFalse: [TestFailed].
 )
 public run = (
 	| javaClass |
@@ -343,7 +365,8 @@ public run = (
 
 	_Object:: JavaClass find: 'java/lang/Object'.
 	_Integer:: JavaClass find: 'java/lang/Integer'.
-
+	_String:: JavaClass find: 'java/lang/String'.
+	
 	javaClass:: JavaClass find: 'TestObjectArray'.
 
 	_1_putElements: javaClass.
@@ -466,6 +489,7 @@ public main: platform args: args = (
 	JavaClass:: java javaAliens JavaClass.
 	JavaPrimitive:: java javaAliens JavaPrimitive.
 	JavaString:: java javaAliens JavaString.
+	JavaObjectArray:: java javaAliens JavaObjectArray.
 	
 	runTests
 )
