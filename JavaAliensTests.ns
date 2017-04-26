@@ -379,7 +379,7 @@ public run = (
 class TestStatic classpath: classpath = Test classpath: classpath (|
 |) (
 _1_staticSetField: javaClass = (
-	| objectField booleanField byteField charField shortField intField longField floatField doubleField |
+	| _Object objectField booleanField byteField charField shortField intField longField floatField doubleField |
 	
 	objectField:: nil.
 	booleanField:: JavaPrimitive boolean: true.
@@ -391,15 +391,17 @@ _1_staticSetField: javaClass = (
 	(*floatField:: JavaPrimitive float: 7.0.
 	doubleField:: JavaPrimitive double: 8.0*)
 
-	javaClass set field: 'objectField' sig: 'Ljava/lang/Object;' to: objectField.
-	javaClass set field: 'booleanField' sig: 'Z' to: booleanField.
-	javaClass set field: 'byteField' sig: 'B' to: byteField.
-	javaClass set field: 'charField' sig: 'C' to: charField.
-	javaClass set field: 'shortField' sig: 'S' to: shortField.
-	javaClass set field: 'intField' sig: 'I' to: intField.
-	javaClass set field: 'longField' sig: 'J' to: longField.
-	(*javaClass set field: 'floatField' sig: 'F' to: javaFloat.
-	javaClass set field: 'doubleField' sig: 'D' to: javaDouble.*)
+	_Object:: JavaClass find: 'java/lang/Object'.
+
+	(javaClass set object: _Object) field: 'objectField' to: objectField.
+	javaClass set boolean field: 'booleanField' to: booleanField.
+	javaClass set byte field: 'byteField' to: byteField.
+	javaClass set char field: 'charField' to: charField.
+	javaClass set short field: 'shortField' to: shortField.
+	javaClass set int field: 'intField' to: intField.
+	javaClass set long field: 'longField' to: longField.
+	(*javaClass set float field: 'floatField' to: javaFloat.
+	javaClass set double field: 'doubleField' to: javaDouble.*)
 )
 _2_staticCallMethod: javaClass = (
 	| objectField booleanField byteField charField shortField intField longField floatField doubleField |

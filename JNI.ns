@@ -447,7 +447,7 @@ public SetStaticTypeField: returnType clazz: clazz fieldID: fieldID value: value
 	index:: 154 + (returnType tablePosition) - 1.
 	apiCall:: api methodAtIndex: index.
 
-	^returnType result: [:result | apiCall primFFICallResult: result with: env with: clazz with: fieldID with: value].
+	^voidResult: [:result | apiCall primFFICallResult: result with: env with: clazz with: fieldID with: value].
 )
 public SetTypeField: returnType obj: obj fieldID: fieldID value: value = (
 	(*	void Set<type>Field(JNIEnv *env, jobject obj, jfieldID fieldID, NativeType value);
@@ -461,7 +461,7 @@ public SetTypeField: returnType obj: obj fieldID: fieldID value: value = (
 	index:: 104 + (returnType tablePosition) - 1.
 	apiCall:: api methodAtIndex: index.
 
-	^returnType result: [:result | apiCall primFFICallResult: result with: env with: obj with: fieldID with: value].
+	^voidResult: [:result | apiCall primFFICallResult: result with: env with: obj with: fieldID with: value].
 )
 ) : (
 )

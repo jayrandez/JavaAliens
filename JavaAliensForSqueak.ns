@@ -71,6 +71,9 @@ public value = (
 )
 public class JavaBoolean on: jboolean = JavaPrimitive on: jboolean (|
 |) (
+public signature = (
+	^'Z'.
+)
 public value = (
 	^((self asAlien) unsignedByteAt: 1) ~= 0.
 )
@@ -78,6 +81,9 @@ public value = (
 )
 public class JavaByte on: jbyte = JavaPrimitive on: jbyte (|
 |) (
+public signature = (
+	^'B'.
+)
 public value = (
 	^(self asAlien) signedByteAt: 1.
 )
@@ -85,6 +91,9 @@ public value = (
 )
 public class JavaChar on: jchar = JavaPrimitive on: jchar (|
 |) (
+public signature = (
+	^'C'.
+)
 public value = (
 	^Character value: ((self asAlien) unsignedShortAt: 1).
 )
@@ -98,7 +107,8 @@ public class JavaClass on: jclass = JavaNonPrimitive on: jclass (|
 
 	callTranslator = CallStaticMethodTypeTranslator new.
 	getTranslator = GetStaticFieldTypeTranslator new.
-	setTranslator = SetStaticFieldTypeTranslator new.
+	setBuilder = translation SetBuilder translator: self.
+	returnBuilder = translation ReturnBuilder new.
 	constructTranslator = ConstructTranslator new.
 
 	cachedClassName
@@ -231,7 +241,18 @@ public name = (
 	^cachedClassName.
 )
 public set = (
-	^setTranslator
+	^returnBuilder forwardTo: setBuilder.
+)
+public signature = (
+	^'Ljava/lang/Class;'.
+)
+public translateSet: fieldName return: return sig: sig = (
+	(* Return a block to be invoked with the field value. *)
+	| fieldID |
+	fieldID:: env GetStaticFieldID: (self asAlien) name: (help cstring: fieldName) sig: (help cstring: sig).
+	(help isNullPtr: fieldID) ifTrue: [^StaticFieldNotFound].
+
+	^[:value <JavaAlien> | invokeSetStaticTypeField: (return jniReturnType) fieldID: fieldID value: (value asAlien)].
 )
 ) : (
 public find: name <String> = (
@@ -244,6 +265,9 @@ public find: name <String> = (
 )
 public class JavaDouble on: jdouble = JavaPrimitive on: jdouble (|
 |) (
+public signature = (
+	^'D'.
+)
 public value = (
 	^(self asAlien) doubleAt: 1.
 )
@@ -251,6 +275,9 @@ public value = (
 )
 public class JavaFloat on: jfloat = JavaPrimitive on: jfloat (|
 |) (
+public signature = (
+	^'F'.
+)
 public value = (
 	^(self asAlien) floatAt: 1.
 )
@@ -258,6 +285,9 @@ public value = (
 )
 public class JavaInt on: jint = JavaPrimitive on: jint (|
 |) (
+public signature = (
+	^'I'.
+)
 public value = (
 	^(self asAlien) signedLongAt: 1.
 )
@@ -265,6 +295,9 @@ public value = (
 )
 public class JavaLong on: jlong = JavaPrimitive on: jlong (|
 |) (
+public signature = (
+	^'J'.
+)
 public value = (
 	(* Should be "signedWordAt", per Java, but it is currently crashing, possibly stack frame issue w/ 32-bit arch. *)
 	^(self asAlien) unsignedWordAt: 1.
@@ -424,6 +457,9 @@ public set = (
 
 	^setTranslator
 )
+public signature = (
+	^'L', (javaClass name), ';'.
+)
 public synchronized: block <BlockClosure> = (
 	| result |
 
@@ -575,6 +611,9 @@ public elementsFrom: firstIndex to: lastIndex put: values <Collection[JavaPrimit
 )
 public class JavaShort on: jshort = JavaPrimitive on: jshort (|
 |) (
+public signature = (
+	^'S'.
+)
 public value = (
 	^(self asAlien) signedShortAt: 1.
 )
@@ -582,6 +621,9 @@ public value = (
 )
 public class JavaString on: jstring <Alien> = JavaObject on: jstring (|
 |) (
+public signature = (
+	^'Ljava/lang/String;'
+)
 public value = (
 	| cstring |
 	cstring:: env GetStringUTFChars: (self asAlien) isCopy: (help nullPtr).
@@ -781,12 +823,13 @@ public string = (
 )
 ) : (
 )
-public class GetBuilder = (|
+public class GetBuilder translator: translator = (|
+	translator = translator.
 	returnBuilder
 |) (
 public field: fieldName = (
 	| invokeBlock |
-	invokeBlock:: translateGet: fieldName sig: (returnBuilder signature).
+	invokeBlock:: translator translateGet: fieldName return: returnBuilder sig: (returnBuilder signature).
 	^invokeBlock value.
 )
 public return: return = (
@@ -819,7 +862,8 @@ public translateField: fieldName sig: sig = (
 )
 ) : (
 )
-public class MethodBuilder = (|
+public class MethodBuilder translator: translator = (|
+	translator = translator.
 	returnBuilder
 |) (
 public method: methodName = (
@@ -832,9 +876,9 @@ public method: methodName args: args <Collection[JavaAlien]> = (
 	signature:: (args inject: '(' into: [:left :each | left, (each signature)]), ')', (returnBuilder signature).
 	^method: methodName sig: signature args: args.
 )
-private method: methodName sig: signature args: args = (
+private method: methodName sig: sig args: args = (
 	| invokeBlock |
-	invokeBlock:: translateMethod: methodName sig: signature.
+	invokeBlock:: translator translateMethod: methodName return: returnBuilder sig: sig.
 	^invokeBlock value: args.
 )
 public return: return = (
@@ -881,8 +925,8 @@ public translateMethod: methodName sig: sig = (
 )
 ) : (
 )
-public class ReturnBuilder forwardTo: forward = (|
-	forward = forward.
+public class ReturnBuilder = (|
+	forward
 	public signature
 	public packager
 	public jniReturnType
@@ -926,6 +970,10 @@ public float = (
 	signature:: 'F'.
 	^forward return: self.
 )
+public forwardTo: forwardBuilder = (
+	forward:: forwardBuilder.
+	^self.
+)
 public int = (
 	jniReturnType:: env ReturnType jint.
 	packager:: [:result | JavaInt on: result].
@@ -964,12 +1012,18 @@ public void = (
 )
 ) : (
 )
-public class SetBuilder = (|
+public class SetBuilder translator: translator = (|
+	translator = translator.
+	returnBuilder
 |) (
-public field: fieldName value: value <JavaAlien> = (
+public field: fieldName to: value <JavaAlien> = (
 	| invokeBlock |
-	invokeBlock:: translateSet: fieldName sig: (value signature).
+	invokeBlock:: translator translateSet: fieldName return: returnBuilder sig: (returnBuilder signature).
 	^invokeBlock value: value.
+)
+public return: return = (
+	returnBuilder:: return.
+	^self.
 )
 ) : (
 )
