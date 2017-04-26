@@ -781,6 +781,20 @@ public string = (
 )
 ) : (
 )
+public class GetBuilder = (|
+	returnBuilder
+|) (
+public field: fieldName = (
+	| invokeBlock |
+	invokeBlock:: translateGet: fieldName sig: (returnBuilder signature).
+	^invokeBlock value.
+)
+public return: return = (
+	returnBuilder:: return.
+	^self.
+)
+) : (
+)
 public class GetTypeTranslator = TypeTranslator (|
 |) (
 public field: fieldName = (
@@ -802,6 +816,30 @@ public translateField: fieldName = (
 )
 public translateField: fieldName sig: sig = (
 	^subclassResponsibility
+)
+) : (
+)
+public class MethodBuilder = (|
+	returnBuilder
+|) (
+public method: methodName = (
+	| signature invokeBlock |
+	signature:: '()', (returnBuilder signature).
+	^method: methodName sig: signature args: {}.
+)
+public method: methodName args: args <Collection[JavaAlien]> = (
+	| signature invokeBlock |
+	signature:: (args inject: '(' into: [:left :each | left, (each signature)]), ')', (returnBuilder signature).
+	^method: methodName sig: signature args: args.
+)
+private method: methodName sig: signature args: args = (
+	| invokeBlock |
+	invokeBlock:: translateMethod: methodName sig: signature.
+	^invokeBlock value: args.
+)
+public return: return = (
+	returnBuilder:: return.
+	^self.
 )
 ) : (
 )
@@ -923,6 +961,15 @@ public void = (
 	packager:: [:result | nil].
 	signature:: signature, 'V'.
 	^forward return: self.
+)
+) : (
+)
+public class SetBuilder = (|
+|) (
+public field: fieldName value: value <JavaAlien> = (
+	| invokeBlock |
+	invokeBlock:: translateSet: fieldName sig: (value signature).
+	^invokeBlock value: value.
 )
 ) : (
 )
