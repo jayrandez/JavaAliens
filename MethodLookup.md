@@ -17,7 +17,9 @@ function: MyClass = (
 
 3. Type inference follows Java's rules, but is based on the data available in the map. The inferred method may be incorrect per Java if the map is not completely loaded - user's responsibility.
 
-4. To overcome an undersireable inference, exactly typed arguments should be used, as is the case in the Java language.
+4. To overcome an undersireable inference, exactly typed arguments can be used, as is the case in the Java language.
+
+5. Another way to avoid inference is to directly invoke the JavaMethods returned by the explicit method loaders (below). This construct does not exist in the Java langauge.
 
 ## Explicit (Incomplete) Class Map Loading:
 
