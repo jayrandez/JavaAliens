@@ -31,9 +31,9 @@ function: MyClass = (
 
 MyClass:: JavaClass find: 'com/me/MyClass'.
 
-MyClass constructor sig: '(II)V'.
-MyClass static method: 'method' sig: '(II)J'.
-MyClass instance field: 'field' sig: 'I'.
+MyClass constructor sig: '()V'.
+MyClass static method: 'method' sig: '(II)Z'.
+MyClass instance field: 'field' sig: 'Ljava/util/ArrayList;'.
 ```
 
 ## Reflective (Complete) Class Map Loading
