@@ -20,7 +20,7 @@ useClass: MyClass explicitMethod: aMethod = (
 
 2. Type checking is mandatory to prevent segfaults, stack issues, and undefined operation. It verifies all non-JavaAliens can be coerced to matching arguments, every JavaObject is InstanceOf each argument class, and the number of arguments matches.
 
-3. Call-by-name uses type inference following Java's rules, but is based on the data available in the map. The inferred method may be incorrect per Java if the map is not completely loaded - user's responsibility.
+3. Name calls use type inference following Java's rules, but it is based on the data available in the map. The inferred method may be incorrect per Java if the map is not completely loaded - user's responsibility.
 
 4. To overcome an undersireable inference, exactly typed arguments can be used, as is the case in the Java language.
 
@@ -34,8 +34,9 @@ useClass: MyClass explicitMethod: aMethod = (
 MyClass:: JavaClass find: 'com/me/MyClass'.
 
 MyClass constructor: '()V'.
-MyClass staticField: 'field' sig: 'Ljava/util/ArrayList;'.
-aMethod:: MyClass method: 'method' sig: '(II)Z'.
+aMethod:: MyClass method: 'methodName' sig: '(II)Z'.
+MyClass staticField: 'fieldName' sig: 'Ljava/util/ArrayList;'.
+
 
 ```
 
