@@ -37,6 +37,8 @@ Here, the first option is the most correct, but if we weren't aware of it, the s
 
 Here, the second option is the most correct, but if the second option were missing from the map, the first option would be improperly chosen.
 
+If the inferred type is undesireable, the user should provide explicit JavaPrimitive types and cast JavaObjects as necessary in order ensure the desired method is called, as is done within the Java language.
+
 ## Explicit (Incomplete) Class Map Loading:
 
 ```
