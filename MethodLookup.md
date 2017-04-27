@@ -66,11 +66,11 @@ Constructor List
 Static/Instance Method Maps
 
 ```
-name: { return_signature, [ { arg_signature, methodID} ] }
-		  	    { arg_signature, methodID}
+name: { return_signature, [ { arg_signature, methodID } ] }
+		  	    { arg_signature, methodID }
 			    ...
-name: {	return_Signature, [ { arg_signature, methodID} ] }
-			    { arg_signature, methodID} 
+name: {	return_Signature, [ { arg_signature, methodID } ] }
+			    { arg_signature, methodID } 
 			    ...
 ...
 ```
