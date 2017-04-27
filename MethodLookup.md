@@ -58,17 +58,21 @@ MyClass:: (JavaClass find: 'com/me/MyClass') load.
 Constructor List
 
 ```
-[ arg_signature, methodID ]
-  arg_signature, methodID
+[ { arg_signature, methodID } ]
+  { arg_signature, methodID }
+  ...
 ```
 
 Static/Instance Method Maps
 
 ```
-name: { return_signature, [ arg_signature, methodID ] }
-		  	    arg_signature, methodID 
-name: {	return_Signature, [ arg_signature, methodID ] }
-			    arg_signature, methodID 
+name: { return_signature, [ { arg_signature, methodID} ] }
+		  	    { arg_signature, methodID}
+			    ...
+name: {	return_Signature, [ { arg_signature, methodID} ] }
+			    { arg_signature, methodID} 
+			    ...
+...
 ```
 
 Static/Instance Field Maps
@@ -76,4 +80,5 @@ Static/Instance Field Maps
 ```
 name: { signature, fieldID }
 name: { signature, fieldID }
+...
 ```
