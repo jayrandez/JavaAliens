@@ -1,39 +1,88 @@
-## Method Lookup
+## Example Class Map Lookup (Invocation):
+```
+function: MyClass = (
 
-Java requires a fully-qualified-signature in order to look up a methodID. The return and argument types must be provided
-with the method's name.
+    | obj |
 
-Currently all arguments must be JavaAliens, which provide type information. So only return type is left to ascertain.
+    obj:: MyClass new: {arg1. arg2}.
 
-**Return type explicitly provided:**
+    obj call: 'method' args: {arg1. arg2}.
 
-| Newspeak Invocation | Java Method Declaration |
-| - | - |
-| `obj call boolean method: 'methodName' args: {arg}` | `public boolean methodName(int arg);` |
-| `obj call int array method: 'methodName' args: {arg}` | `public int[] methodName(int arg);` |
-| `obj call object: ArrayList; method: 'methodName' args: {arg}` | `public ArrayList<?> methodName(int arg);` |
-| `obj call sig: '(I)[J'; method: 'methodName' args: {arg}` | `public long[] methodName(int arg);` |
+    obj set: 'field' to: arg1
 
-**Return type determined using Java reflection:**
+    MyClass call: 'staticMethod'.
 
-| Newspeak Invocation | Java Method Declaration |
-| - | - |
-| `obj call method: 'methodName' args: {arg}` | `public boolean methodName(int arg);` |
-| | or `public int[] methodName(int arg);` |
-| | or `public ArrayList<?> methodName(int arg);` |
-| | or `public long[] methodName(int arg);` |
+)
+```
 
-Here, `call` in JavaObject returns a mutable Translator object. The Translator forms a signature according to any `sig:` or return type
-messages e.g. `void`, `object: clazz`, or `array` which is compound. It executes once it receives `method:` or `method:args:`.
-If no return type was provided it uses reflection.
 
-**Forwarding of doesNotUnderstand:**
+## Lookup Rules:
 
-| Sugary Message Send | Becomes Standard Newspeak Invocation |
-| - | - |
-| `obj methodName: arg` | `obj call method: 'methodName' args: {arg}` |
-| `obj methodName: arg1 et: arg2` | `obj call method: 'methodName' args: {arg1. arg2}` |
-| `obj methodName: arg1 _: arg2 _: arg3` | `obj call method: 'methodName' args: {arg1. arg2. arg3}` |
+1. Method must be in map, regardless of loading approach used.
+2. Type checking is mandatory to prevent segfaults and undefined operation, so
+  a. Exactly typed JavaAliens are needed if the class map is incomplete.
+	b. Type inference can be used if the class map is complete.
 
-The doesNotUnderstand behavior uses the selector's first component as the method name. The remaining selector component names are
-not used, but their number indicates the number of arguments. Since no return type is provided, reflection is always used.
+** Exact Type Validation: **
+Map is scanned for a method in which all JavaPrimitive arguments match the signature exactly (i.e. JavaInt for each int, JavaChar for each char), and where all of the JavaObject classes match the method signature exactly. JavaObjects can be cast beforehand.
+
+** Type Inference: **
+Type inference requires a fully loaded class map, because the most suitable method for a set of arguments might be unknown otherwise.
+
+E.x. The user sends: obj call: 'method' args: {1}.
+And java provides: void method(int a), and void method(short a).
+
+Here, the first option is the most correct, but if we weren't aware of it, the second option would be improperly chosen, causing undefined operation.
+
+E.x. The user sends: obj call: 'method' args: {ArrayList new}
+And java provides: void method(Object a), and void method(ArrayList a).
+
+Here, the second option is the most correct, but if the second option weren't in the map, the first option would be improperly chosen.
+
+## Explicit (Incomplete) Class Map Loading:
+```
+| MyClass | 
+
+MyClass:: JavaClass find: 'com/me/MyClass'.
+
+MyClass constructor sig: '(II)V'.
+
+MyClass static method: 'method' sig: '(II)J'.
+
+MyClass instance field: 'field' sig: 'I'
+```
+
+## Reflection-Driven (Complete) Map Loading:
+```
+| MyClass | 
+
+MyClass:: JavaClass find: 'com/me/MyClass'
+
+MyClass load.
+
+	or simply,
+
+| MyClass |
+
+MyClass:: (JavaClass find: 'com/me/MyClass') load.
+```
+
+## Class Map Construction
+
+- Constructor List
+```
+	[ arg_signature, methodID ]
+	  arg_signature, methodID
+```
+- Static/Instance Method Maps:
+```
+	name: { return_signature, [ arg_signature methodID ] }
+				    arg_signature methodID 
+	name: {	return_Signature, [ arg_signature methodID ] }
+				    arg_signature methodID 
+```
+- Static/Instance Field Maps:
+```
+	name: { signature, fieldID }
+	name: { signature, fieldID }
+```
