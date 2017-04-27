@@ -19,7 +19,7 @@ function: MyClass = (
 
 4. To overcome an undersireable inference, exactly typed arguments can be used, as is the case in the Java language.
 
-5. Another way to avoid inference is to directly invoke the JavaMethods returned by the explicit method loaders (below). This construct does not exist in the Java langauge.
+5. Another way to avoid inference is to directly invoke the JavaMethods returned by the explicit method loaders (below). This construct does not exist in the Java langauge. Arguments are still verified.
 
 ## Explicit (Incomplete) Class Map Loading:
 
