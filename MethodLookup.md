@@ -1,4 +1,4 @@
-## Example Class Map Lookup (Invocation)
+## Example Invocation (Class Map Lookup)
 
 The syntax for method, field, constructor invocation is the same regardless of whether the fields and methods were explicitly declared or loaded using reflection.
 
@@ -24,7 +24,7 @@ function: MyClass = (
 
 5. Another way to avoid inference is to directly invoke the JavaMethods returned by the explicit method loaders (below). This construct does not exist in the Java langauge. Arguments are still verified.
 
-## Explicit (Incomplete) Class Map Loading
+## Explicit Class Map Loading
 
 ```
 | MyClass | 
@@ -36,7 +36,7 @@ MyClass static method: 'method' sig: '(II)Z'.
 MyClass instance field: 'field' sig: 'Ljava/util/ArrayList;'.
 ```
 
-## Reflective (Complete) Class Map Loading
+## Reflective Class Map Loading
 
 ```
 | MyClass | 
