@@ -6,11 +6,11 @@ The syntax for method, field, constructor invocation is the same regardless of w
 useClass: MyClass explicitMethod: aMethod = (
     | obj fieldVal |
     obj:: MyClass new: {arg1. arg2}.
-    obj call: 'method' args: {arg1. arg2}.		Name call, type inference if method name is ambiguous
+    obj call: 'methodName' args: {arg1. arg2}.		Name call, type inference if method name is ambiguous
     obj call: aMethod args: {arg1. arg2}.		Explicit call, type validated but not inferred
-    obj set: 'field' to: arg1.
-    fieldVal:: MyClass get: 'staticField'.
-    obj field: arg2.					doesNotUnderstand forwards to obj set: 'field' to: arg2.
+    obj set: 'fieldName' to: arg1.
+    fieldVal:: MyClass get: 'staticFieldName'.
+    obj fieldName: arg2.				doesNotUnderstand forwards to obj set: 'fieldName' to: arg2.
 )
 ```
 
