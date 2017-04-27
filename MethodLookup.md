@@ -8,13 +8,12 @@ function: MyClass = (
 
     obj call: 'method' args: {arg1. arg2}.
 
-    obj set: 'field' to: arg1
+    obj set: 'field' to: arg1.
 
     MyClass call: 'staticMethod'.
 
 )
 ```
-
 
 ## Lookup Rules:
 
@@ -44,9 +43,10 @@ Here, the first option is the most correct, but if we weren't aware of it, the s
 
 > Java provides: `void method(Object a)`, and `void method(ArrayList a)`.
 
-Here, the second option is the most correct, but if the second option weren't in the map, the first option would be improperly chosen.
+Here, the second option is the most correct, but if the second option were missing from the map, the first option would be improperly chosen.
 
 ## Explicit (Incomplete) Class Map Loading:
+
 ```
 | MyClass | 
 
@@ -56,19 +56,22 @@ MyClass constructor sig: '(II)V'.
 
 MyClass static method: 'method' sig: '(II)J'.
 
-MyClass instance field: 'field' sig: 'I'
+MyClass instance field: 'field' sig: 'I'.
 ```
 
 ## Reflection-Driven (Complete) Map Loading:
+
 ```
 | MyClass | 
 
-MyClass:: JavaClass find: 'com/me/MyClass'
+MyClass:: JavaClass find: 'com/me/MyClass'.
 
 MyClass load.
+```
 
-	or simply,
+or simply,
 
+```
 | MyClass |
 
 MyClass:: (JavaClass find: 'com/me/MyClass') load.
@@ -76,19 +79,24 @@ MyClass:: (JavaClass find: 'com/me/MyClass') load.
 
 ## Class Map Construction
 
-- Constructor List
+Constructor List
+
 ```
 	[ arg_signature, methodID ]
 	  arg_signature, methodID
 ```
-- Static/Instance Method Maps:
+
+Static/Instance Method Maps
+
 ```
 	name: { return_signature, [ arg_signature methodID ] }
 				    arg_signature methodID 
 	name: {	return_Signature, [ arg_signature methodID ] }
-				    arg_signature methodID 
+			            arg_signature methodID 
 ```
-- Static/Instance Field Maps:
+
+Static/Instance Field Maps
+
 ```
 	name: { signature, fieldID }
 	name: { signature, fieldID }
