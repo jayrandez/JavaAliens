@@ -1,6 +1,6 @@
 ## Example Invocation
 
-The syntax for method, field, constructor invocation is the same regardless of whether the field and method signatures are provided by the user or loaded through using reflection.
+The syntax for method, field, constructor invocation is the same regardless of whether the field and method signatures are provided by the user or loaded through reflection.
 
 ```
 public useClass: MyClass explicitMethod: aMethod = (
