@@ -19,7 +19,6 @@ function: MyClass = (
 
 4. To overcome an undersireable inference, exactly typed arguments should be used, as is the case in the Java language.
 
-
 ## Explicit (Incomplete) Class Map Loading:
 
 ```
