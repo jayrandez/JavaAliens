@@ -13,7 +13,7 @@ function: MyClass = (
 
 1. Method must be in map beforehand.
 
-2. Type checking is mandatory to prevent segfaults, stack issues, and undefined operation. It verifies all non-JavaAliens can be coerced to matching arguments, every JavaObject's class IsAssignableFrom each argument class, and the number of arguments matches.
+2. Type checking is mandatory to prevent segfaults, stack issues, and undefined operation. It verifies all non-JavaAliens can be coerced to matching arguments, every JavaObject is InstanceOf each argument class, and the number of arguments matches.
 
 3. Type inference follows Java's rules, but is based on the data available in the map. The inferred method may be incorrect per Java if the map is not completely loaded - user's responsibility.
 
