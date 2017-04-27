@@ -1,4 +1,7 @@
 ## Example Class Map Lookup (Invocation)
+
+The syntax for method, field, constructor invocation is the same regardless of whether the fields and methods were explicitly declared or loaded using reflection.
+
 ```
 function: MyClass = (
     | obj |
@@ -8,7 +11,6 @@ function: MyClass = (
     MyClass call: 'staticMethod'.
 )
 ```
-The syntax for method, field, constructor invocation is the same regardless of whether the fields and methods were found via reflection, or explicitly declared.
 
 ## Lookup Rules
 
