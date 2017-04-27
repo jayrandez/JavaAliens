@@ -1,4 +1,4 @@
-## Example Class Map Lookup (Invocation):
+## Example Class Map Lookup (Invocation)
 ```
 function: MyClass = (
     | obj |
@@ -21,7 +21,7 @@ function: MyClass = (
 
 5. Another way to avoid inference is to directly invoke the JavaMethods returned by the explicit method loaders (below). This construct does not exist in the Java langauge. Arguments are still verified.
 
-## Explicit (Incomplete) Class Map Loading:
+## Explicit (Incomplete) Class Map Loading
 
 ```
 | MyClass | 
@@ -33,7 +33,7 @@ MyClass static method: 'method' sig: '(II)J'.
 MyClass instance field: 'field' sig: 'I'.
 ```
 
-## Reflection-Driven (Complete) Map Loading:
+## Reflective (Complete) Class Map Loading
 
 ```
 | MyClass | 
