@@ -39,8 +39,6 @@ MyClass:: JavaClass find: 'com/me/MyClass'.
 MyClass constructor: '()V'.
 aMethod:: MyClass method: 'methodName' sig: '(II)Z'.
 MyClass staticField: 'fieldName' sig: 'Ljava/util/ArrayList;'.
-
-
 ```
 
 ## Reflective Class Map Loading
