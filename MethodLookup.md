@@ -3,27 +3,28 @@
 The syntax for method, field, constructor invocation is the same regardless of whether the fields and methods were explicitly declared or loaded using reflection.
 
 ```
-useClass: MyClass declaredMethod: aMethod = (
-    | obj |
+useClass: MyClass explicitMethod: aMethod = (
+    | obj fieldVal |
     obj:: MyClass new: {arg1. arg2}.
-    obj call: 'method' args: {arg1. arg2}.		Map lookup by name, type inference if name is ambiguous
-    obj call: aMethod args: {arg1. arg2}.		Directly call a declared method, type validated but not inferred
+    obj call: 'method' args: {arg1. arg2}.		Name call, type inference if method name is ambiguous
+    obj call: aMethod args: {arg1. arg2}.		Explicit call, type validated but not inferred
     obj set: 'field' to: arg1.
-    MyClass get: 'staticField'.
+    fieldVal:: MyClass get: 'staticField'.
+    obj field: arg2.					doesNotUnderstand forwards to obj set: 'field' to: arg2.
 )
 ```
 
 ## Lookup Rules
 
-1. Method must be found beforehand through either explicit or reflective class loading.
+1. Method must be found beforehand, either through explicit or reflective class loading.
 
 2. Type checking is mandatory to prevent segfaults, stack issues, and undefined operation. It verifies all non-JavaAliens can be coerced to matching arguments, every JavaObject is InstanceOf each argument class, and the number of arguments matches.
 
-3. Call by name uses type inference following Java's rules, but is based on the data available in the map. The inferred method may be incorrect per Java if the map is not completely loaded - user's responsibility.
+3. Call-by-name uses type inference following Java's rules, but is based on the data available in the map. The inferred method may be incorrect per Java if the map is not completely loaded - user's responsibility.
 
 4. To overcome an undersireable inference, exactly typed arguments can be used, as is the case in the Java language.
 
-5. Inference is not used when directly calling a method object, as returned by the explicit method loaders (below). Arguments will still be verified.
+5. Explicit calls using JavaMethod objects do not use inference. JavaMethods are returned by the explicit method loaders (below) and require a signature. Arguments will still be verified.
 
 ## Explicit Class Map Loading
 
