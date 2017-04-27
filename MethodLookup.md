@@ -10,7 +10,7 @@ useClass: MyClass explicitMethod: aMethod = (
     obj call: aMethod args: {arg1. arg2}.		Explicit call, type validated but not inferred
     obj set: 'fieldName' to: arg1.
     fieldVal:: MyClass get: 'staticFieldName'.
-    obj fieldName: arg2.				doesNotUnderstand forwards to obj set: 'fieldName' to: arg2.
+    obj fieldName: arg2.				Forwarded to obj set: 'fieldName' to: arg2.
 )
 ```
 
