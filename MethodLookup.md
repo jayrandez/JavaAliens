@@ -1,17 +1,11 @@
 ## Example Class Map Lookup (Invocation):
 ```
 function: MyClass = (
-
     | obj |
-
     obj:: MyClass new: {arg1. arg2}.
-
     obj call: 'method' args: {arg1. arg2}.
-
     obj set: 'field' to: arg1.
-
     MyClass call: 'staticMethod'.
-
 )
 ```
 
@@ -51,9 +45,7 @@ Here, the second option is the most correct, but if the second option were missi
 MyClass:: JavaClass find: 'com/me/MyClass'.
 
 MyClass constructor sig: '(II)V'.
-
 MyClass static method: 'method' sig: '(II)J'.
-
 MyClass instance field: 'field' sig: 'I'.
 ```
 
@@ -63,7 +55,6 @@ MyClass instance field: 'field' sig: 'I'.
 | MyClass | 
 
 MyClass:: JavaClass find: 'com/me/MyClass'.
-
 MyClass load.
 ```
 
@@ -87,10 +78,10 @@ Constructor List
 Static/Instance Method Maps
 
 ```
-name: { return_signature, [ arg_signature methodID ] }
-		  	    arg_signature methodID 
-name: {	return_Signature, [ arg_signature methodID ] }
-			    arg_signature methodID 
+name: { return_signature, [ arg_signature, methodID ] }
+		  	    arg_signature, methodID 
+name: {	return_Signature, [ arg_signature, methodID ] }
+			    arg_signature, methodID 
 ```
 
 Static/Instance Field Maps
