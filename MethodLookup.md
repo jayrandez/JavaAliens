@@ -33,14 +33,12 @@ Map is scanned for a method in which all JavaPrimitive arguments match the signa
 
 Type inference requires a fully loaded class map, because the most suitable method for a set of arguments might be unknown otherwise.
 
-> The user does: `obj call: 'method' args: {1}.`
-
+> The user does: `obj call: 'method' args: {1}.`  
 > Java provides: `void method(int a)`, and `void method(short a)`.
 
 Here, the first option is the most correct, but if we weren't aware of it, the second option would be improperly chosen, causing undefined operation.
 
-> The user does: `obj call: 'method' args: {ArrayList new}.`
-
+> The user does: `obj call: 'method' args: {ArrayList new}.`  
 > Java provides: `void method(Object a)`, and `void method(ArrayList a)`.
 
 Here, the second option is the most correct, but if the second option were missing from the map, the first option would be improperly chosen.
