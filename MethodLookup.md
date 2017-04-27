@@ -3,14 +3,17 @@
 The syntax for method, field, constructor invocation is the same regardless of whether the fields and methods were explicitly declared or loaded using reflection.
 
 ```
-useClass: MyClass explicitMethod: aMethod = (
+public useClass: MyClass explicitMethod: aMethod = (
     | obj fieldVal |
+    
     obj:: MyClass new: {arg1. arg2}.
-    obj call: 'methodName' args: {arg1. arg2}.		Name call, type inference if method name is ambiguous
-    obj call: aMethod args: {arg1. arg2}.		Explicit call, type validated but not inferred
+    
+    obj call: 'methodName' args: {arg1. arg2}.	   (* Name call, type inference if method name is ambiguous *)
+    obj call: aMethod args: {arg1. arg2}.	   (* Explicit call, type validated but not inferred *)
     obj set: 'fieldName' to: arg1.
+    
     fieldVal:: MyClass get: 'staticFieldName'.
-    obj fieldName: arg2.				Forwarded to obj set: 'fieldName' to: arg2.
+    obj fieldName: fieldVal.			   (* Forwarded to obj set: 'fieldName' to: fieldVal. *)
 )
 ```
 
