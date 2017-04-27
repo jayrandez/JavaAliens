@@ -14,7 +14,7 @@ function: MyClass = (
 
 ## Lookup Rules
 
-1. Method must be in map beforehand.
+1. Method must be loaded into the class map beforehand.
 
 2. Type checking is mandatory to prevent segfaults, stack issues, and undefined operation. It verifies all non-JavaAliens can be coerced to matching arguments, every JavaObject is InstanceOf each argument class, and the number of arguments matches.
 
