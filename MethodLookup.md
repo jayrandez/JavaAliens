@@ -8,8 +8,8 @@ public useClass: MyClass explicitMethod: aMethod = (
     
     obj:: MyClass new: {arg1. arg2}.
     
-    obj call: 'methodName' args: {arg1. arg2}.         (* Name call, type inference if method name is ambiguous *)
-    obj call: aMethod args: {arg1. arg2}.              (* Explicit call, type validated but not inferred *)
+    obj call: 'methodName' args: {arg1. arg2}.        (* Name call, type inference if method name is ambiguous *)
+    obj call: aMethod args: {arg1. arg2}.             (* Explicit call, type validated but not inferred *)
     obj set: 'fieldName' to: arg1.
     
     fieldVal:: MyClass get: 'staticFieldName'.
@@ -34,7 +34,7 @@ public useClass: MyClass explicitMethod: aMethod = (
 MyClass:: JavaClass find: 'com/me/MyClass'.
 
 MyClass constructor: '(Ljava/util/ArrayList;)V'.
-aMethod:: MyClass method: 'methodName' sig: '(II)Z'.  (* Retain a JavaMethod to perform an explicit call. *)
+aMethod:: MyClass method: 'methodName' sig: '(II)Z'.   (* Retain a JavaMethod to perform an explicit call. *)
 MyClass staticField: 'fieldName' sig: 'J'.
 ```
 
