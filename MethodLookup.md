@@ -71,4 +71,4 @@ obj set: 'anotherField' to: (ArrayList new).               obj anotherField: (Ar
 obj call: 'myMethod' args: {'hello'. 'world'}.             obj myMethod: 'hello' et: 'world'.			
 ```
 
-doesNotUnderstand captures the selector. The first selector component is the method/field name. The remaining selector component names are not used, but their number determines the number of arguments. Newspeak-style message sends always use name calling.
+The `doesNotUnderstand` implementation uses the first selector component as a method/field name. The remaining selector components names are discarded, only the arguments are used. Newspeak-style message sends always use name calling.
