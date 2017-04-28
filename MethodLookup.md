@@ -24,7 +24,7 @@ public useClass: MyClass explicitMethod: aMethod = (
 
 3. Name calls use type inference as needed following Java's rules, based on the data available in the map. The inferred method may be incorrect per Java if the map is not completely loaded - user's responsibility.
 
-5. Explicit calls using JavaMethod objects do not use inference. JavaMethods are returned by the explicit method loaders (below) and require a signature. Arguments will still be verified.
+5. Explicit calls using JavaMethod objects do not use inference. JavaMethods are returned by the manual method loaders (below) and require a signature. Arguments will still be verified.
 
 ## Manual Class Map Loading
 
