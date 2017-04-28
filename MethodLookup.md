@@ -56,7 +56,7 @@ MyClass load.
 Rather than retaining a method and calling it explicitly in two separate steps, you can call an explicit method by providing its name and signature at the same time. The following are equivalent:
 
 ```
-aMethod:: MyClass method: 'methodName' sig: '(I)V'
+aMethod:: MyClass method: 'methodName' sig: '(I)V'.
 obj call: aMethod args: {1}.                               obj call: 'methodName' sig: '(I)V' args: {1}.
 ```
 
