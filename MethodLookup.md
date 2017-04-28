@@ -9,7 +9,7 @@ public useClass: MyClass explicitMethod: aMethod = (
     obj:: MyClass new: {arg1. arg2}.
     
     obj call: 'methodName' args: {arg1. arg2}.	   (* Name call, type inference if method name is ambiguous *)
-    obj call: aMethod args: {arg1. arg2}.	   (* Explicit call, type validated but not inferred *)
+    obj call: aMethod args: {arg1. arg2}.	       (* Explicit call, type validated but not inferred *)
     obj set: 'fieldName' to: arg1.
     
     fieldVal:: MyClass get: 'staticFieldName'.
@@ -40,19 +40,17 @@ MyClass staticField: 'fieldName' sig: 'J'.
 
 ## Reflective Class Map Loading
 
-```
-| MyClass | 
+JavaAliens can use the Java "Trails" reflection API to load all method and field signatures from the class. The actual MethodIDs are obtained from JNI only if they are used, which transfers some overhead from class lookup to first-use of a method.
 
-MyClass:: JavaClass find: 'com/me/MyClass'.
-MyClass load.
-```
+Naturally, if a method name has many type signatures, name calls will be lengthier than explicit calls due to the need to perform type inference at run time.
 
-or simply,
+The following are equivalent:
 
 ```
-| MyClass |
+| MyClass |                                                 | MyClass |
 
-MyClass:: (JavaClass find: 'com/me/MyClass') load.
+MyClass:: JavaClass find: 'com/me/MyClass'.                 MyClass:: (JavaClass find: 'com/me/MyClass') load.
+MyClass load.                                               
 ```
 
 ## Sugary Sends
