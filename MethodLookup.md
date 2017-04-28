@@ -1,6 +1,6 @@
 ## Example Invocation
 
-The syntax for method, field, constructor invocation is the same regardless of whether the field and method signatures are provided by the user or loaded through reflection.
+The syntax for method, field, constructor invocation is the same regardless of whether the field and method signatures are manually provided by the user or loaded through reflection.
 
 ```
 public useClass: MyClass explicitMethod: aMethod = (
@@ -19,7 +19,7 @@ public useClass: MyClass explicitMethod: aMethod = (
 
 ## Lookup Rules
 
-1. Method must be found beforehand, either through explicit or reflective class loading.
+1. Method must be found beforehand, either through manual or reflective class loading.
 
 2. Type checking is mandatory to prevent segfaults, stack issues, and undefined operation. It verifies all non-JavaAliens can be coerced to matching arguments, every JavaObject is InstanceOf each argument class, and the number of arguments matches.
 
@@ -27,7 +27,7 @@ public useClass: MyClass explicitMethod: aMethod = (
 
 5. Explicit calls using JavaMethod objects do not use inference. JavaMethods are returned by the explicit method loaders (below) and require a signature. Arguments will still be verified.
 
-## Explicit Class Map Loading
+## Manual Class Map Loading
 
 ```
 | MyClass aMethod | 
@@ -35,7 +35,7 @@ public useClass: MyClass explicitMethod: aMethod = (
 MyClass:: JavaClass find: 'com/me/MyClass'.
 
 MyClass constructor: '()V'.
-aMethod:: MyClass method: 'methodName' sig: '(II)Z'.
+aMethod:: MyClass method: 'methodName' sig: '(II)Z'.	(* Retain a JavaMethod to perform an explicit call. *)
 MyClass staticField: 'fieldName' sig: 'Ljava/util/ArrayList;'.
 ```
 
