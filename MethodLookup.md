@@ -13,7 +13,6 @@ public useClass: MyClass explicitMethod: aMethod = (
     obj set: 'fieldName' to: arg1.
     
     fieldVal:: MyClass get: 'staticFieldName'.
-    obj fieldName: fieldVal.			   (* Forwarded to obj set: 'fieldName' to: fieldVal. *)
 )
 ```
 
@@ -56,32 +55,24 @@ or simply,
 MyClass:: (JavaClass find: 'com/me/MyClass') load.
 ```
 
-## Class Map Structure
+## Sugary Sends
 
-Constructor List
-
-```
-[ { arg_signature, methodID } ]
-  { arg_signature, methodID }
-  ...
-```
-
-Static/Instance Method Maps
+Rather than retaining a method and calling it explicitly in two separate steps, you can call an explicit method by providing its name and signature at the same time. The following are equivalent:
 
 ```
-name: { return_signature, [ { arg_signature, methodID } ] }
-		  	    { arg_signature, methodID }
-			    ...
-name: {	return_Signature, [ { arg_signature, methodID } ] }
-			    { arg_signature, methodID } 
-			    ...
-...
+aMethod:: MyClass method: 'methodName' sig: '(I)V'
+obj call: aMethod args: {1}.				obj call: 'methodName' sig: '(I)V' args: {1}.
 ```
 
-Static/Instance Field Maps
+In both cases, the method and signature are manually loaded into the class map if not already present.
+
+Rather than using `call:`, `call:args:`, `get:`, or `set:to:` with a method/field name, you can send a Newspeak-style message to the JavaClass or JavaObject. The following are equivalent:
 
 ```
-name: { signature, fieldID }
-name: { signature, fieldID }
-...
+MyClass call: 'doSomething' args: {1}.			MyClass doSomething: 1.
+fieldValue:: obj get: 'someField'.			fieldValue:: obj someField.				
+obj set: 'anotherField' to: (ArrayList new).		obj anotherField: (ArrayList new).			
+obj call: 'myMethod' args: {'hello'. 'world'}.		obj myMethod: 'hello' et: 'world'.			
 ```
+
+doesNotUnderstand captures the selector. The first selector component is the method/field name. The remaining selector component names are not used, but their number determines the number of arguments. Newspeak-style message sends always use name calling.
