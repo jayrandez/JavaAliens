@@ -34,9 +34,9 @@ public useClass: MyClass explicitMethod: aMethod = (
 
 MyClass:: JavaClass find: 'com/me/MyClass'.
 
-MyClass constructor: '()V'.
+MyClass constructor: '(Ljava/util/ArrayList;)V'.
 aMethod:: MyClass method: 'methodName' sig: '(II)Z'.	(* Retain a JavaMethod to perform an explicit call. *)
-MyClass staticField: 'fieldName' sig: 'Ljava/util/ArrayList;'.
+MyClass staticField: 'fieldName' sig: 'J'.
 ```
 
 ## Reflective Class Map Loading
