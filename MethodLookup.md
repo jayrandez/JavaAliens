@@ -8,8 +8,8 @@ public useClass: MyClass explicitMethod: aMethod = (
     
     obj:: MyClass new: {arg1. arg2}.
     
-    obj call: 'methodName' args: {arg1. arg2}.	   (* Name call, type inference if method name is ambiguous *)
-    obj call: aMethod args: {arg1. arg2}.	       (* Explicit call, type validated but not inferred *)
+    obj call: 'methodName' args: {arg1. arg2}.         (* Name call, type inference if method name is ambiguous *)
+    obj call: aMethod args: {arg1. arg2}.              (* Explicit call, type validated but not inferred *)
     obj set: 'fieldName' to: arg1.
     
     fieldVal:: MyClass get: 'staticFieldName'.
@@ -34,7 +34,7 @@ public useClass: MyClass explicitMethod: aMethod = (
 MyClass:: JavaClass find: 'com/me/MyClass'.
 
 MyClass constructor: '(Ljava/util/ArrayList;)V'.
-aMethod:: MyClass method: 'methodName' sig: '(II)Z'.	(* Retain a JavaMethod to perform an explicit call. *)
+aMethod:: MyClass method: 'methodName' sig: '(II)Z'.  (* Retain a JavaMethod to perform an explicit call. *)
 MyClass staticField: 'fieldName' sig: 'J'.
 ```
 
@@ -47,9 +47,9 @@ Naturally, if a method name has many type signatures, name calls will be lengthi
 The following are equivalent:
 
 ```
-| MyClass |                                                 | MyClass |
+| MyClass |                                                | MyClass |
 
-MyClass:: JavaClass find: 'com/me/MyClass'.                 MyClass:: (JavaClass find: 'com/me/MyClass') load.
+MyClass:: JavaClass find: 'com/me/MyClass'.                MyClass:: (JavaClass find: 'com/me/MyClass') load.
 MyClass load.                                               
 ```
 
@@ -59,7 +59,7 @@ Rather than retaining a method and calling it explicitly in two separate steps, 
 
 ```
 aMethod:: MyClass method: 'methodName' sig: '(I)V'
-obj call: aMethod args: {1}.				obj call: 'methodName' sig: '(I)V' args: {1}.
+obj call: aMethod args: {1}.                               obj call: 'methodName' sig: '(I)V' args: {1}.
 ```
 
 In both cases, the method and signature are manually loaded into the class map if not already present.
@@ -67,10 +67,10 @@ In both cases, the method and signature are manually loaded into the class map i
 Rather than using `call:`, `call:args:`, `get:`, or `set:to:` with a method/field name, you can send a Newspeak-style message to the JavaClass or JavaObject. The following are equivalent:
 
 ```
-MyClass call: 'doSomething' args: {1}.			MyClass doSomething: 1.
-fieldValue:: obj get: 'someField'.			fieldValue:: obj someField.				
-obj set: 'anotherField' to: (ArrayList new).		obj anotherField: (ArrayList new).			
-obj call: 'myMethod' args: {'hello'. 'world'}.		obj myMethod: 'hello' et: 'world'.			
+MyClass call: 'doSomething' args: {1}.                     MyClass doSomething: 1.
+fieldValue:: obj get: 'someField'.                         fieldValue:: obj someField.				
+obj set: 'anotherField' to: (ArrayList new).               obj anotherField: (ArrayList new).			
+obj call: 'myMethod' args: {'hello'. 'world'}.             obj myMethod: 'hello' et: 'world'.			
 ```
 
 doesNotUnderstand captures the selector. The first selector component is the method/field name. The remaining selector component names are not used, but their number determines the number of arguments. Newspeak-style message sends always use name calling.
