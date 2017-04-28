@@ -56,7 +56,7 @@ or simply,
 MyClass:: (JavaClass find: 'com/me/MyClass') load.
 ```
 
-## Class Map Construction
+## Class Map Structure
 
 Constructor List
 
