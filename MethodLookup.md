@@ -44,8 +44,6 @@ JavaAliens can use the Java "Trails" reflection API to load all method and field
 
 Naturally, if a method name has many type signatures, name calls will be lengthier than explicit calls due to the need to perform type inference at run time.
 
-The following are equivalent:
-
 ```
 | MyClass |                                                | MyClass |
 
