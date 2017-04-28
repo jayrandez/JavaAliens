@@ -23,9 +23,7 @@ public useClass: MyClass explicitMethod: aMethod = (
 
 2. Type checking is mandatory to prevent segfaults, stack issues, and undefined operation. It verifies all non-JavaAliens can be coerced to matching arguments, every JavaObject is InstanceOf each argument class, and the number of arguments matches.
 
-3. Name calls use type inference following Java's rules, but it is based on the data available in the map. The inferred method may be incorrect per Java if the map is not completely loaded - user's responsibility.
-
-4. To overcome an undersireable inference, exactly typed arguments can be used, as is the case in the Java language.
+3. Name calls use type inference as needed following Java's rules, based on the data available in the map. The inferred method may be incorrect per Java if the map is not completely loaded - user's responsibility.
 
 5. Explicit calls using JavaMethod objects do not use inference. JavaMethods are returned by the explicit method loaders (below) and require a signature. Arguments will still be verified.
 
