@@ -2,8 +2,10 @@ Newspeak3
 'JavaAliens'
 class JavaAliensForSqueak usingPlatform: platform usingJNI: jni = (
 (* Java FFI built using JNI and Newspeak Aliens FFI. *)|
+	Transcript = platform squeak Transcript.
 	Alien = platform aliens Alien.
 	List = platform collections List.
+	Map = platform collections Map.
 	jni = jni.
 	private theRuntime = Runtime new.
 	private theAlienHelpers = AlienHelpers new.
@@ -100,18 +102,8 @@ public value = (
 ) : (
 )
 public class JavaClass on: jclass = JavaNonPrimitive on: jclass (|
-	TypeTranslator = translation TypeTranslator.
-	MethodTypeTranslator = translation MethodTypeTranslator.
-	GetTypeTranslator = translation GetTypeTranslator.
-	SetTypeTranslator = translation SetTypeTranslator.
-
-	callTranslator = CallStaticMethodTypeTranslator new.
-	getTranslator = GetStaticFieldTypeTranslator new.
-	setBuilder = translation SetBuilder translator: self.
-	returnBuilder = translation ReturnBuilder new.
-	constructTranslator = ConstructTranslator new.
-
-	cachedClassName
+	cachedClassmap
+	cachedName
 |) (
 private class CallStaticMethodTypeTranslator = MethodTypeTranslator (
 (* Attempts to relay messages through method invokation. *)|
@@ -195,8 +187,14 @@ public translateField: staticFieldName sig: sig = (
 )
 ) : (
 )
-public call = (
-	^callTranslator
+private class StaticTranslator = (|
+|) (
+) : (
+)
+public call: staticMethod <String | Method> args: args <Collection> = (
+	| inferenceGroup |
+	inferenceGroup:: classmap static method: staticMethod.
+	inferenceGroup collapse: args executor: staticMethodExecutor.
 )
 public cast: obj <JavaObject> = (
 	(* Directly call method "cast" on this class object, should be valid if obj is null. *)
@@ -209,11 +207,9 @@ public cast: obj <JavaObject> = (
 
 	^resultObj.
 )
-public construct = (
-	^constructTranslator
-)
-public get = (
-	^getTranslator.
+private classmap = (
+	cachedClassmap isNil ifTrue: [cachedClassmap:: lookupClassmap].
+	^cachedClassmap.
 )
 invokeCallStaticTypeMethod: returnType methodID: methodID args: args <Collection> = (
 	^env CallStaticTypeMethod: returnType clazz: (self asAlien) methodID: methodID withArguments: args.
@@ -230,21 +226,32 @@ invokeSetStaticTypeField: returnType fieldID: fieldID value: value = (
 public isJavaClass = (
 	^true
 )
-private lookupClassName = (
+private lookupClassmap = (
+	^runtime classmap: name.
+)
+private lookupName = (
 	(* Directly call method "getName" on this class object. *)
 	| nameJavaString |
 	nameJavaString:: javaObject call method: 'getName' sig: '()Ljava/lang/String;' args: {}.
 	^nameJavaString value copyReplaceAll: '.' with: '/' asTokens: false.
 )
+public  method: staticMethodName  <String> sig: signature <String> = (
+	^classmap static method: staticMethodName sig: signature finder: staticMethodFinder.
+)
 public name = (
-	cachedClassName ifNil: [cachedClassName:: lookupClassName].
-	^cachedClassName.
+	cachedName ifNil: [cachedName:: lookupName].
+	^cachedName.
 )
-public set = (
-	^returnBuilder forwardTo: setBuilder.
+private staticMethodExecutor = (
+	^[:jniType :methodID :args |
+		env CallStaticTypeMethod: jniType 
+			clazz: (self asAlien)
+			methodID: methodID
+			withArguments: (help coerceList: args)
+	].
 )
-public signature = (
-	^'Ljava/lang/Class;'.
+private staticMethodFinder = (
+	^[:methodName :sig | env GetStaticMethodID: (self asAlien) name: (help cstring: methodName) sig: (help cstring: sig)].
 )
 public translateSet: fieldName return: return sig: sig = (
 	(* Return a block to be invoked with the field value. *)
@@ -646,7 +653,11 @@ private class Runtime = (
 	public env
 	public running
 	public preexisting 
+	private classmap = Map new.
 |running:: false) (
+public classmap: className <String> = (
+	^classmap at: className ifAbsentPut: [translation ClassTable new].
+)
 private createVM: classpath = (
 	| options initArgs jvmPtrBuffer envPtrBuffer result success |
 
@@ -823,6 +834,18 @@ public string = (
 )
 ) : (
 )
+public class ClassTable = (|
+	staticTable = MethodFieldTable new.
+	instanceTable = MethodFieldTable new.
+|) (
+public instance = (
+	^instanceTable.
+)
+public static = (
+	^staticTable.
+)
+) : (
+)
 public class GetBuilder translator: translator = (|
 	translator = translator.
 	returnBuilder
@@ -862,6 +885,64 @@ public translateField: fieldName sig: sig = (
 )
 ) : (
 )
+public class InferenceGroup with: initial = List (|
+	returnSignature
+	jniType
+	packager
+	alienClass
+|initialAdd: initial) (
+public at: signature ifAbsentPut: absentBlock <BlockClosure> = (
+	| absentValue |
+	self do: [:each | (each signature = signature) ifTrue: [^each]].
+	
+	absentValue:: absentBlock value.
+	self add: absentValue.
+	^absentValue.
+)
+public collapse: args <Collection> executor: exe <BlockClosure> = (
+	(* Entry-point to the method/argument type inference & coercion algorithm. *)
+
+	| soleMethod |
+
+	(self size ~= 1) ifTrue: [^Ambiguous].
+
+	soleMethod:: self at: 1.
+	packager value: (exe value: jniType value: (soleMethod methodID) value: args).
+)
+private initialAdd: initial = (
+	self add: initial.
+	returnSignature:: (initial signature subStrings: ')') at: 2.
+	translateSig.
+	packager:: [:result | result isNil ifFalse: [alienClass on: result] ifTrue: [nil]].
+)
+private translateSig = (
+	| firstChar = (returnSignature at: 1). |
+
+	firstChar = "V" ifTrue: [jniType: env ReturnType void. alienClass:: nil].
+	firstChar = "L" ifTrue: [
+		(returnSignature = 'Ljava/lang/String;') ifTrue: [jniType:: env ReturnType jobject. alienClass:: JavaString].
+		(returnSignature = 'Ljava/lang/Class;') ifTrue: [jniType:: env ReturnType jobject. alienClass:: JavaClass].
+		jniType:: env ReturnType jobject. alienClass:: JavaObject
+	].
+	firstChar = "[" ifTrue: [ | secondChar = (returnSignature at: 2). |
+		((secondChar = "[") or: (secondChar = "L"))
+			ifTrue: [jniType:: env ReturnType jobject. alienClass:: JavaObjectArray]
+			ifFalse: [jniType:: env ReturnType jobject. alienClass:: JavaPrimitiveArray].
+	].
+	firstChar = "Z" ifTrue: [jniType:: env ReturnType jboolean. alienClass:: javaAliens JavaBoolean].
+	firstChar = "I" ifTrue: [jniType:: env ReturnType jint. alienClass:: javaAliens JavaInt.].
+	firstChar = "D" ifTrue: [jniType:: env ReturnType jdouble. alienClass:: javaAliens JavaDouble].
+	firstChar = "J" ifTrue: [jniType:: env ReturnType jlong. alienClass:: javaAliens JavaLong].
+	firstChar = "B" ifTrue: [jniType:: env ReturnType jbyte. alienClass: javaAliens JavaByte].
+	firstChar = "F" ifTrue: [jniType:: env ReturnType jfloat. alienClass: javaAliens JavaFloat].
+	firstChar = "C" ifTrue: [jniType:: env ReturnType jchar. alienClass: javaAliens JavaChar].
+	firstChar = "S" ifTrue: [jniType:: env ReturnType jshort. alienClass: javaAliens JavaShort].
+)
+) : (
+public defaultCapacity = (
+	^5.
+)
+)
 public class MethodBuilder translator: translator = (|
 	translator = translator.
 	returnBuilder
@@ -884,6 +965,44 @@ private method: methodName sig: sig args: args = (
 public return: return = (
 	returnBuilder:: return.
 	^self.
+)
+) : (
+)
+public class MethodFieldTable = (|
+	methodMap = Map new.
+	fieldMap = Map new.
+|) (
+class Method sig: sig id: id = (|
+	public signature = sig.
+	public methodID = id.
+|) (
+) : (
+)
+private findMethod: name sig: sig finder: finder= (
+	(* The executor block provides ID lookup for a private/instance method/field within some context. *)
+	| methodID |
+	methodID:: finder value: name value: sig.
+	^Method sig: sig id: methodID.
+)
+public method: name = (
+	(* Return an InferenceGroup with all methods that have the same name, fail if not in map. *)
+	^methodMap at: name ifAbsent: [NameNotFound].
+)
+public method: name sig: sig finder: exe= (
+	(* Return an InferenceGroup with just this particular method, and also ensure it is stored in the map. *)
+	| method |
+
+	methodMap at: name ifPresent: [:group |
+		method:: group at: sig ifAbsentPut: [
+			method:: findMethod: name sig: sig finder: exe.
+		].
+	]
+	ifAbsentPut: [
+		method:: findMethod: name sig: sig finder: exe.
+		InferenceGroup with: method.
+	].
+	
+	^InferenceGroup with: method.
 )
 ) : (
 )

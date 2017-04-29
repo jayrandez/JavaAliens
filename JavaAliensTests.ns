@@ -280,6 +280,20 @@ public run = (
 )
 ) : (
 )
+class TestNewOrg classpath: classpath = Test classpath: classpath (|
+|) (
+public run = (
+	| clazz method |
+	
+	java loadClasspath: './bin'.
+
+	clazz:: JavaClass find: 'TestStatic'.
+	clazz method: 'success' sig: '()Ljava/lang/Object;'.
+	clazz method: 'success' sig: '(I)Ljava/lang/Object;'.
+	clazz call: 'success' args: {JavaPrimitive int: 1}.
+)
+) : (
+)
 class TestObjectArray classpath: classpath = Test classpath: classpath (|
 	_Object
 	_Integer
@@ -498,9 +512,9 @@ public main: platform args: args = (
 runTests = (
 	| tests classpath |
 	classpath:: '.\bin'.
-	tests:: { TestStatic. TestInstance. TestObjectArray. }.
+	tests:: { TestNewOrg. }.
 	tests do: [:eachTest | eachTest classpath: classpath].
-	testsComplete.
+	(*testsComplete.*)
 )
 testsComplete = (
 	| _JOptionPane string |

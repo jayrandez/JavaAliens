@@ -1,3 +1,4 @@
+import javax.swing.JOptionPane;
 
 public class TestStatic
 {
@@ -33,4 +34,14 @@ public class TestStatic
 	public static long getLong() { return longField; }
 	public static float getFloat() { return floatField; }
 	public static double getDouble() { return doubleField; }
+	
+	public static Object success() {
+		JOptionPane.showMessageDialog(null, "Success!");
+		return new Object();
+	}
+	
+	public static Object success(int haha) {
+		JOptionPane.showMessageDialog(null, "Alternative success: " + haha);
+		return null;
+	}
 }
