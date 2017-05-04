@@ -211,17 +211,13 @@ private classmap = (
 	cachedClassmap isNil ifTrue: [cachedClassmap:: lookupClassmap].
 	^cachedClassmap.
 )
-invokeCallStaticTypeMethod: returnType methodID: methodID args: args <Collection> = (
-	^env CallStaticTypeMethod: returnType clazz: (self asAlien) methodID: methodID withArguments: args.
+public constructor: signature = (
+	(* Declare a constructor for this class *)
+	^classmap static method: '<init>' sig: signature finder: staticMethodFinder.
 )
-invokeGetStaticTypeField: returnType fieldID: fieldID = (
-	^env GetStaticTypeField: returnType clazz: (self asAlien) fieldID: fieldID.
-)
-invokeNewObject: methodID args: args = (
-	^env NewObject: (self asAlien) methodID: methodID withArguments: args.
-)
-invokeSetStaticTypeField: returnType fieldID: fieldID value: value = (
-	^env SetStaticTypeField: returnType clazz: (self asAlien) fieldID: fieldID value: value.
+public field: staticFieldName <String> sig: signature <String> = (
+	(* Declare a static field within this class *)
+	^classmap static field: staticFieldName sig: signature finder: staticFieldFinder.
 )
 public isJavaClass = (
 	^true
@@ -236,30 +232,39 @@ private lookupName = (
 	^nameJavaString value copyReplaceAll: '.' with: '/' asTokens: false.
 )
 public  method: staticMethodName  <String> sig: signature <String> = (
+	(* Declare a static method within this class *)
 	^classmap static method: staticMethodName sig: signature finder: staticMethodFinder.
 )
 public name = (
 	cachedName ifNil: [cachedName:: lookupName].
 	^cachedName.
 )
+public set: staticField <String | Field> to: arg = (
+	| inferenceGroup |
+	inferenceGroup:: classmap static field: staticField.
+	inferenceGroup collapse: arg executor: staticSetFieldExecutor.
+)
+private staticFieldFinder = (
+	^[:fieldName :sig | env GetStaticFieldID: (self asAlien) name: (help cstring: fieldName) sig: (help cstring: sig)].
+)
 private staticMethodExecutor = (
-	^[:jniType :methodID :args |
+	^[:jniType :id :args |
 		env CallStaticTypeMethod: jniType 
 			clazz: (self asAlien)
-			methodID: methodID
+			methodID: id
 			withArguments: (help coerceList: args)
 	].
 )
 private staticMethodFinder = (
 	^[:methodName :sig | env GetStaticMethodID: (self asAlien) name: (help cstring: methodName) sig: (help cstring: sig)].
 )
-public translateSet: fieldName return: return sig: sig = (
-	(* Return a block to be invoked with the field value. *)
-	| fieldID |
-	fieldID:: env GetStaticFieldID: (self asAlien) name: (help cstring: fieldName) sig: (help cstring: sig).
-	(help isNullPtr: fieldID) ifTrue: [^StaticFieldNotFound].
-
-	^[:value <JavaAlien> | invokeSetStaticTypeField: (return jniReturnType) fieldID: fieldID value: (value asAlien)].
+private staticSetFieldExecutor = (
+	^[:jniType :id :args |
+		env SetStaticTypeField: jniType
+			clazz: (self asAlien)
+			fieldID: id
+			withArguments: (help coerceList: args)
+	].
 )
 ) : (
 public find: name <String> = (
@@ -972,17 +977,40 @@ public class MethodFieldTable = (|
 	methodMap = Map new.
 	fieldMap = Map new.
 |) (
-class Method sig: sig id: id = (|
-	public signature = sig.
-	public methodID = id.
+class Method returnSig: rs argSig: as fullSig: fs id: id = (|
+	public returnSig = rs.
+	public argSig = rs.
+	public fullSig = fs.
+	public id = id.
 |) (
 ) : (
 )
+public field: name = (
+	(* Return an InferenceGroup containing this field, fail if not in map. *)
+	^fieldMap at: name ifAbsent: [NameNotFound].
+)
+public field: name sig: sig finder: exe = (
+	(* Return the InferenceGroup for this field, and also ensure it is stored in the map. *)
+	| fieldID setter getter group |
+
+	^fieldMap at: name ifAbsentPut: [
+		fieldID:: exe value: name value: sig.
+
+		setter:: setterForFieldID: fieldID sig: sig.
+		getter:: getterForFieldID: fieldID sig: sig.
+
+		group InferenceGroup with: getter.
+		group add: setter; yourself.
+	].
+)
 private findMethod: name sig: sig finder: finder= (
-	(* The executor block provides ID lookup for a private/instance method/field within some context. *)
+	(* Finder block executes the env lookup method within the context of some class. *)
 	| methodID |
 	methodID:: finder value: name value: sig.
 	^Method sig: sig id: methodID.
+)
+private getterForFieldID: fieldID sig: sig = (
+	Unimplemented.
 )
 public method: name = (
 	(* Return an InferenceGroup with all methods that have the same name, fail if not in map. *)
@@ -1003,6 +1031,9 @@ public method: name sig: sig finder: exe= (
 	].
 	
 	^InferenceGroup with: method.
+)
+private setterForFieldID: fieldID sig: sig = (
+	Unimplemented.
 )
 ) : (
 )
