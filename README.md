@@ -72,15 +72,15 @@ public helloWindow = (
 **Obtain a class by fully qualified name**
 ```
 ClassName:: runtime class: 'com.package.ClassName'
+        or,
+ClassName:: runtime class: 'com/package/ClassName'
 ```
-or, `ClassName:: runtime class: 'com/package/ClassName'`
-
 **Obtain a package**
 ```
 package:: runtime package: 'com.package'
+        or,
+package:: runtime package: 'com/package'
 ```
-or, `package:: runtime package: 'com/package'`
-
 **Obtain a class within a package**
 ```
 ClassName:: package class: 'ClassName'
@@ -112,9 +112,9 @@ object:: ClassName new: [instA. instB].
 ```
 constructor:: ClassName constructor: [ClassNameA. ClassNameB].
 object:: constructor call: [instA. instB].
+        or,
+object:: ClassName new: constructor with: [instA. instB].
 ```
-or, `object:: ClassName new: constructor with: [instA. instB].`
-
 **Getting the real class of an object**
 ```
 RealClass:: object class.
@@ -162,9 +162,9 @@ object myMethod
 ```
 method:: object method: 'myMethod' with: [ClassNameA. ClassNameB].
 method call: [instA. instB].
+        or,
+object call: method with: [instA. instB].
 ```
-or, `object call: method with: [instA. instB].`
-
 **Call method with args on object (implicit)**
 ```
 object call: 'myMethod' with: [instA. instB].
@@ -200,9 +200,9 @@ ClassName theMethod.
 ```
 staticMethod:: ClassName method: 'theMethod' with: [ClassNameA. ClassNameB].
 staticMethod call: [instA. instB].
+        or,
+ClassName call: staticMethod with: [instA. instB].
 ```
-or, `ClassName call: staticMethod with: [instA. instB].`
-
 **Call static method with args on class (implicit)**
 ```
 ClassName call: 'staticMethod' with: [instA. instB].
