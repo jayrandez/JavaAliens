@@ -2,14 +2,15 @@ Newspeak3
 'JavaAliens'
 class JavaAliensTests packageUsing: manifest = (|
 	private JNI = manifest JNI.
-	private JavaAliens = manifest JavaAliensForSqueak.
+	private JavaAliens = manifest JavaAliens.
 	private RegexMatcher = manifest RegexMatcher.
-	
+
 	jni
 	java
 	regex
 	generator
 
+	Transcript
 	List
 	Alien
 	JavaClass
@@ -17,6 +18,16 @@ class JavaAliensTests packageUsing: manifest = (|
 	JavaString
 	JavaObjectArray
 |) (
+class BasicRuntime classpath: classpath = Test classpath: classpath (||) (
+public run = (
+	| runtime lang String |
+	runtime:: java runtime: classpath.
+	lang:: runtime package: 'java/lang'.
+	String:: lang String.
+	String inspect.
+)
+) : (
+)
 class JNIStartVM classpath: classpath = Test classpath: classpath (
 (* No longer used. Formed basis for Runtime in JavaAliensForSqueak.
 
@@ -500,19 +511,16 @@ public main: platform args: args = (
 	regex:: RegexMatcher usingPlatform: platform.
 	generator:: jni Generator usingPlatform: platform usingRegex: regex.
 	
+	Transcript:: platform squeak Transcript.
 	List:: platform collections List.
 	Alien:: platform aliens Alien.
-	JavaClass:: java javaAliens JavaClass.
-	JavaPrimitive:: java javaAliens JavaPrimitive.
-	JavaString:: java javaAliens JavaString.
-	JavaObjectArray:: java javaAliens JavaObjectArray.
 	
 	runTests
 )
 runTests = (
 	| tests classpath |
 	classpath:: '.\bin'.
-	tests:: { TestNewOrg. }.
+	tests:: { BasicRuntime. }.
 	tests do: [:eachTest | eachTest classpath: classpath].
 	(*testsComplete.*)
 )

@@ -131,7 +131,7 @@ private class Libraries = (|
 public class JNIEnv withEnvPtr: envPointerAlien = (
 (* Encapsulates standard env methods. Function table provided by struct JNINativeInterface. *)|
 	env = envPointerAlien.
-	api = struct FunctionTable on: (derefPtrPtr: envPointerAlien).
+	api = struct FunctionTable on: (derefAsPtr: envPointerAlien).
 |) (
 public class ReturnType resultBuilder: resultBuilder tablePosition: tablePosition = (|
 	resultBuilder = resultBuilder.
@@ -468,7 +468,7 @@ public SetTypeField: returnType obj: obj fieldID: fieldID value: value = (
 public class JavaVM withVmPtr: vmPointerAlien = (
 (* Encapsulates standard vm methods. Function table provided by struct JNIInvokeInterface. *)|
 	vm = vmPointerAlien.
-	api = struct FunctionTable on: (derefPtrPtr: vmPointerAlien).
+	api = struct FunctionTable on: (derefAsPtr: vmPointerAlien).
 |) (
 public DestroyJavaVM = (
 	(*	jint DestroyJavaVM(JavaVM *vm);
@@ -497,8 +497,8 @@ public byteResult: primFFIBlock = (
 	primFFIBlock value: result.
 	^result.
 )
-public derefPtrPtr: pointerPointerAlien = (
-	(* pointerPointerAlien points to a value "A". Return a pointer to the value at address "A". *)
+public derefAsPtr: pointerPointerAlien = (
+	(* pointerPointerAlien points to a value "A" which is an address. Return a pointer alien for address "A". *)
 	| pointerAlien |
 	pointerAlien:: Alien forPointer: (pointerPointerAlien unsignedLongAt: 1).
 	^pointerAlien

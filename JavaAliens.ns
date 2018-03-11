@@ -1,0 +1,128 @@
+Newspeak3
+'JavaAliens'
+class JavaAliens usingPlatform: platform usingJNI: jni = (
+(*Java FFI for Newspeak built using Aliens and JNI.*)|
+	Alien = platform aliens Alien.
+	jni = jni.
+	private theRuntime
+|) (
+class JavaClass on: jclass = (
+(**)|
+	alien = jclass.
+|) (
+) : (
+)
+class JavaPackage path: path = (
+(* Psuedo-JavaAlien which simplifies lookup of classes with a common base path. *)|
+	private path = path.
+|) (
+public class: name = (
+	^runtime class: (path, '/', name)
+)
+public doesNotUnderstand: message = (
+	^class: (message selector).
+)
+) : (
+)
+class Runtime classpath: classpath = (
+(**)|
+	public created
+	jvm
+	env 
+|init: classpath) (
+public class: name = (
+	| jclass |
+	jclass:: env FindClass: (name asAlien address).
+	^(isNullPtr: jclass)
+		ifTrue: [ FindClassFailed. ]
+		ifFalse: [ JavaClass on: jclass ]
+)
+private createVM: classpath = (
+	| options initArgs jvmPtrBuffer envPtrBuffer result success |
+
+	options:: jni JavaVMOption newC.
+	options optionString: (('-Djava.class.path=', classpath) asAlien address).
+	
+	initArgs:: jni JavaVMInitArgs newC.
+	initArgs version: (jni VERSION_1_2).
+	initArgs nOptions: 1.
+	initArgs options: (options address).
+	initArgs ignoreUnrecognized = (jni FALSE).
+
+	jvmPtrBuffer:: Alien newC: 4.
+	envPtrBuffer:: Alien newC: 4.
+
+	result:: jni CreateJavaVM: (jvmPtrBuffer address) p_env: (envPtrBuffer address) vm_args: (initArgs address).
+
+	(result = (jni OK)) ifTrue: [
+		jvm:: jni JavaVM withVmPtr: (jni derefAsPtr: jvmPtrBuffer).
+		env:: jni JNIEnv withEnvPtr: (jni derefAsPtr: envPtrBuffer).
+	].
+
+	jvmPtrBuffer free.
+	envPtrBuffer free.
+
+	^result = (jni OK).
+)
+private init: classpath = (
+	loadExistingVM
+		ifTrue: [ created:: true ]
+		ifFalse: [ created:: (createVM: classpath) ]
+)
+private loadEnvFromVM: jvmInst = (
+	| envPtrBuffer result |
+	envPtrBuffer:: Alien newC: 4.
+	result:: Alien new: 4.
+
+	result:: jvmInst GetEnv: (envPtrBuffer address) version: (jni VERSION_1_2).
+	result = (jni OK) ifTrue: [env:: jni JNIEnv withEnvPtr: (jni derefAsPtr: envPtrBuffer)].
+
+	^result
+)
+private loadExistingVM = (
+	| jvmPtrBuffer jvmInst nVMsBuffer numVMs result |
+	jvmPtrBuffer:: Alien newC: 4.
+	nVMsBuffer:: Alien newC: 4.
+	
+	result:: jni GetCreatedJavaVMs: (jvmPtrBuffer address) bufLen: 1 nVMs: (nVMsBuffer address).
+	result = (jni OK) ifFalse: [^false].
+
+	numVMs:: nVMsBuffer unsignedLongAt: 1.
+	numVMs = 1 ifFalse: [^false]. (* Would always be 0 or 1 in modern JNI *)
+
+	jvmInst:: jni JavaVM withVmPtr: (jni derefAsPtr: jvmPtrBuffer).
+	result:: loadEnvFromVM: jvmInst.
+	result = (jni OK) ifTrue: [jvm:: jvmInst].
+	
+	^result = (jni OK)
+)
+public package: path = (
+	^JavaPackage path: path.
+)
+public reload = (
+	(* Reload the classpath. *)
+	Unimplemented
+)
+) : (
+)
+public double: value = (
+	
+)
+isNullPtr: pointerAlien = (
+	^pointerAlien address = 0
+)
+public runtime = (
+	^runtime: nil
+)
+public runtime: classpath = (
+	(* Return the runtime loaded with the specified classpath. *)
+
+	theRuntime isNil ifTrue: [
+		theRuntime:: Runtime classpath: classpath.
+		theRuntime created ifFalse: [ RuntimeCreationFailed ]
+	].
+
+	^theRuntime.
+)
+) : (
+)
